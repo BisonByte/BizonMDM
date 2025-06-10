@@ -1,4 +1,4 @@
-package com.example.mdmjive.data
+package com.example.mdmjive.database.repository
 
 import com.example.mdmjive.database.dao.AuditDao
 import kotlinx.coroutines.Dispatchers
@@ -9,12 +9,9 @@ import com.example.mdmjive.database.dao.PolicyDao
 import com.example.mdmjive.database.entities.DeviceInfo
 import com.example.mdmjive.database.entities.LogEntry
 import com.example.mdmjive.database.entities.PolicyRecord
-import com.example.mdmjive.models.DeviceInfo
-import com.example.mdmjive.models.LogEntry
-import com.example.mdmjive.models.PolicyRecord
-import com.example.mdmjive.models.AuditRecord
+import com.example.mdmjive.database.entities.AuditRecord
 
-class LogRepository<AuditRecord>(
+class LogRepository(
     private val logDao: LogDao,
     private val deviceDao: DeviceDao,
     private val policyDao: PolicyDao,
@@ -35,22 +32,22 @@ class LogRepository<AuditRecord>(
             severity = severity,
             deviceId = deviceId
         )
-        logDao.insert(logEntry)
+        logDao.insertLog(logEntry)
     }
 
     // Add device information
     suspend fun addDeviceInfo(deviceInfo: DeviceInfo) {
-        deviceDao.insert(deviceInfo)
+        deviceDao.insertDevice(deviceInfo)
     }
 
     // Add new policy
     suspend fun addPolicy(policy: PolicyRecord) {
-        policyDao.insert(policy)
+        policyDao.insertPolicy(policy)
     }
 
     // Add audit record
     suspend fun addAudit(audit: AuditRecord) {
-        auditDao.insert(audit)
+        auditDao.insertAudit(audit)
     }
 
     // Clean old logs based on a specified number of days

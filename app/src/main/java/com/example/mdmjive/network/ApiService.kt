@@ -3,7 +3,12 @@ package com.example.mdmjive.network
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
+import com.example.mdmjive.network.models.ApiResponse
+import com.example.mdmjive.network.models.DeviceInfo
+import com.example.mdmjive.network.models.DeviceStatus
 
 // Interface para los endpoints de la API
 interface ApiService {
@@ -14,24 +19,7 @@ interface ApiService {
     suspend fun updateStatus(@Body status: DeviceStatus): Response<ApiResponse>
 }
 
-// Data classes para las respuestas y requests
-data class ApiResponse(
-    val success: Boolean,
-    val message: String? = null
-)
 
-data class DeviceStatus(
-    val deviceId: String,
-    val status: String,
-    val lastUpdate: Long = System.currentTimeMillis()
-)
-
-data class DeviceInfo(
-    val deviceId: String,
-    val model: String,
-    val manufacturer: String,
-    val osVersion: String
-)
 
 // Clase para manejar las respuestas de la API de manera segura
 sealed class ApiResult<out T> {
@@ -91,5 +79,15 @@ class DeviceOperations(private val apiService: ApiService) {
             Log.e("DeviceOperations", "Operation failed", e)
             ApiResult.Error(e)
         }
+    }
+}
+
+object ApiServiceFactory {
+    fun create(baseUrl: String): ApiService {
+        val retrofit = Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+        return retrofit.create(ApiService::class.java)
     }
 }

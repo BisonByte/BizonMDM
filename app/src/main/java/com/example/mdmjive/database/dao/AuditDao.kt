@@ -11,5 +11,4 @@ interface AuditDao {
 
     @Insert
     suspend fun insertAudit(audit: AuditRecord)
-    abstract fun <AuditRecord1> insert(audit: AuditRecord1)
 }

@@ -3,15 +3,14 @@ package com.example.mdmjive.core
 import android.content.Context
 import com.example.mdmjive.security.PolicyManager
 import com.example.mdmjive.security.SecurityChecker
-import com.example.mdmjive.monitor.DeviceMonitor
-import com.example.mdmjive.remote.RemoteControlManager
-import com.example.mdmjive.logging.LogManager
+import com.example.mdmjive.monitoring.DeviceMonitor
+import com.example.mdmjive.monitoring.LogManager
+import com.example.mdmjive.database.LogDatabase
 
 class MDMCore private constructor(private val context: Context) {
     private val policyManager: PolicyManager
     private val securityChecker: SecurityChecker
     private val deviceMonitor: DeviceMonitor
-    private val remoteControl: RemoteControlManager
     private val logManager: LogManager
 
     init {
@@ -19,8 +18,7 @@ class MDMCore private constructor(private val context: Context) {
         policyManager = PolicyManager(context)
         securityChecker = SecurityChecker
         deviceMonitor = DeviceMonitor(context)
-        remoteControl = RemoteControlManager(context)
-        logManager = LogManager()
+        logManager = LogManager(LogDatabase.getDatabase(context))
     }
 
     companion object {
@@ -44,10 +42,6 @@ class MDMCore private constructor(private val context: Context) {
 
     fun getDeviceMonitor(): DeviceMonitor {
         return deviceMonitor
-    }
-
-    fun getRemoteControlManager(): RemoteControlManager {
-        return remoteControl
     }
 
     fun getLogManager(): LogManager {
