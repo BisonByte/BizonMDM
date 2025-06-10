@@ -4,11 +4,10 @@ import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import android.util.Log
-import com.example.mdmjive.network.ApiService
-import com.example.mdmjive.database.DeviceDao
+import com.example.mdmjive.network.ApiServiceFactory
+import com.example.mdmjive.database.LogDatabase
 import com.example.mdmjive.repository.DeviceRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class SyncWorker(
     context: Context,
@@ -16,7 +15,10 @@ class SyncWorker(
 ) : CoroutineWorker(context, params) {
 
     private val TAG = "SyncWorker"
-    private val deviceRepository: DeviceRepository = DeviceRepository(ApiService.create(), DeviceDao())
+    private val deviceRepository: DeviceRepository = DeviceRepository(
+        ApiServiceFactory.create("https://example.com/"),
+        LogDatabase.getDatabase(context).deviceDao()
+    )
 
     override suspend fun doWork(): Result {
         return try {

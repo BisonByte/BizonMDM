@@ -1,20 +1,15 @@
 import android.app.Application
-import androidx.room.Room
-import com.example.mdmjive.database.DeviceDatabase
+import com.example.mdmjive.database.LogDatabase
 import timber.log.Timber
 
 class MDMApplication : Application() {
-    lateinit var database: DeviceDatabase
+    lateinit var database: LogDatabase
 
     override fun onCreate() {
         super.onCreate()
 
         // Inicializamos la base de datos
-        database = Room.databaseBuilder(
-            applicationContext,
-            DeviceDatabase::class.java,
-            "device_database"
-        ).build()
+        database = LogDatabase.getDatabase(applicationContext)
 
         // Plantamos Timber para logging
         if (BuildConfig.DEBUG) {

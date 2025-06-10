@@ -1,7 +1,8 @@
-package com.example.mdmjive.logging
+package com.example.mdmjive.monitoring
 
 import android.util.Log
-import com.example.mdmjive.database.LogDatabase // Asegúrate de implementar esta clase de base de datos
+import com.example.mdmjive.database.LogDatabase
+import com.example.mdmjive.database.entities.LogEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -72,13 +73,6 @@ class LogManager(private val logDatabase: LogDatabase) {
         }
     }
 }
-
-data class LogEntry(
-    val timestamp: Date,
-    val type: String,
-    val message: String,
-    val details: String? = null
-)
 
 data class MDMEvent(
     val type: String,

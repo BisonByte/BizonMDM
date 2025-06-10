@@ -1,7 +1,10 @@
 package com.example.mdmjive.repository
 
-import com.example.mdmjive.database.DeviceDao
+import com.example.mdmjive.database.dao.DeviceDao
 import com.example.mdmjive.network.ApiService
+import com.example.mdmjive.network.models.DeviceInfo as NetworkDeviceInfo
+import com.example.mdmjive.network.models.DeviceStatus
+import com.example.mdmjive.database.entities.DeviceInfo
 import android.provider.Settings
 import android.os.Build
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +31,7 @@ class DeviceRepository(
 
     // Registrar dispositivo
     suspend fun registerDevice(context: android.content.Context) {
-        val deviceInfo = DeviceInfo(
+        val deviceInfo = NetworkDeviceInfo(
             deviceId = getDeviceId(context),
             model = Build.MODEL,
             manufacturer = Build.MANUFACTURER,
@@ -38,13 +41,15 @@ class DeviceRepository(
         try {
             val response = apiService.registerDevice(deviceInfo)
             if (response.isSuccessful) {
-                deviceDao.insertDeviceInfo(
-                    DeviceInfoEntity(
-                        deviceId = deviceInfo.deviceId,
-                        status = "REGISTERED",
-                        lastSync = SYNC_TIME
-                    )
+                val entity = DeviceInfo(
+                    deviceId = deviceInfo.deviceId,
+                    model = deviceInfo.model,
+                    manufacturer = deviceInfo.manufacturer,
+                    osVersion = deviceInfo.osVersion,
+                    status = "REGISTERED",
+                    lastSync = SYNC_TIME
                 )
+                deviceDao.insertDevice(entity)
                 Log.d(TAG, "Dispositivo registrado exitosamente")
             } else {
                 Log.e(TAG, "Error en el registro del dispositivo: ${response.message()}")

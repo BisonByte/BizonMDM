@@ -7,11 +7,13 @@ data class DeviceIntegrityResult(
     val integrityScore: Int
 )
 
-class DeviceCertificationManager {
+import android.content.Context
+
+class DeviceCertificationManager(private val context: Context) {
     fun validateDeviceIntegrity(): DeviceIntegrityResult {
         val isRooted = SecurityChecker.isDeviceRooted()
         val isEmulator = SecurityChecker.isRunningOnEmulator()
-        val hasUnknownSources = SecurityChecker.hasUnknownSources()
+        val hasUnknownSources = SecurityChecker.hasUnknownSources(context)
         val integrityScore = calculateIntegrityScore(isRooted, isEmulator, hasUnknownSources)
 
         return DeviceIntegrityResult(

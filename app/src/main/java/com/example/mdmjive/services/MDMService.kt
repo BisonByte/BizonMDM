@@ -1,22 +1,21 @@
 package com.example.mdmjive.services
 
 import android.app.Service
-import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.IBinder
-import android.provider.Settings
 import android.util.Log
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.mdmjive.repository.DeviceRepository
-import com.example.mdmjive.network.ApiService
+import com.example.mdmjive.network.ApiServiceFactory
+import com.example.mdmjive.database.LogDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
+import android.app.admin.DevicePolicyManager
 
 class MDMService : Service() {
 
@@ -36,22 +35,14 @@ class MDMService : Service() {
         workManager = WorkManager.getInstance(applicationContext)
 
         // Inicializa el repositorio
-        val apiService = ApiService.create() // Asegúrate de tener un ApiService creado
-        repository = DeviceRepository(apiService)
-
-        // Registro del dispositivo
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-        val deviceInfo = DeviceInfo(
-            deviceId = deviceId,
-            model = Build.MODEL,
-            manufacturer = Build.MANUFACTURER,
-            osVersion = Build.VERSION.RELEASE
-        )
+        val apiService = ApiServiceFactory.create("https://example.com/")
+        val database = LogDatabase.getDatabase(applicationContext)
+        repository = DeviceRepository(apiService, database.deviceDao())
 
         // Llamada asincrónica para registrar el dispositivo
         job = CoroutineScope(Dispatchers.IO).launch {
             try {
-                repository.registerDevice(deviceInfo)
+                repository.registerDevice(applicationContext)
                 Log.d("MDMService", "Dispositivo registrado correctamente")
                 startMonitoring() // Iniciar monitoreo periódicamente
             } catch (e: Exception) {

@@ -11,5 +11,4 @@ interface PolicyDao {
 
     @Insert
     suspend fun insertPolicy(policy: PolicyRecord)
-    abstract fun insert(policy: PolicyRecord)
 }
