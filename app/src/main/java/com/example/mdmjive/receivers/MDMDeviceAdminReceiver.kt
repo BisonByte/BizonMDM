@@ -9,6 +9,7 @@ import android.os.Build
 import android.content.pm.PackageManager
 import com.example.mdmjive.MainActivity
 import android.util.Log
+import com.example.mdmjive.security.PolicyManager
 
 class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
 
@@ -27,7 +28,7 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
         // Verifica si la app es propietaria del dispositivo
         if (dpm.isDeviceOwnerApp(context.packageName)) {
             Log.d("MDM", "La app es propietaria del dispositivo. Aplicando políticas.")
-            applyPolicies(dpm, componentName)
+            applyPolicies(context, dpm, componentName)
             startMDMService(context)
         } else {
             Log.e("MDM", "La app no es propietaria del dispositivo.")
@@ -35,7 +36,7 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
     }
 
     // Aplica las políticas de seguridad en el dispositivo
-    private fun applyPolicies(dpm: DevicePolicyManager, componentName: ComponentName) {
+    private fun applyPolicies(context: Context, dpm: DevicePolicyManager, componentName: ComponentName) {
         try {
             // Aplicando las políticas
             dpm.apply {
@@ -50,6 +51,11 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
                 // Bloquear la desinstalación de la propia app
                 setUninstallBlocked(componentName, packageName, true)
             }
+            val policyManager = PolicyManager(context)
+            policyManager.disableFactoryReset()
+            policyManager.lockBrightness()
+            policyManager.lockGPS()
+            policyManager.lockDateTime()
             Log.d("MDM", "Políticas aplicadas correctamente.")
         } catch (e: Exception) {
             Log.e("MDM", "Error aplicando políticas: ${e.message}")
