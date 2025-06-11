@@ -38,4 +38,23 @@ En la carpeta `Servidor` se incluye un pequeño servidor REST escrito en
 Python para propósitos de prueba. Consulta su [README](Servidor/README.md)
 para instrucciones de instalación y ejecución.
 
+## Configuración del servidor
+
+Para que la aplicación se comunique con tu servidor debes modificar la URL
+base que utiliza el cliente HTTP. Edita las siguientes clases y reemplaza
+`https://example.com/` por la dirección donde ejecutes el servidor:
+
+- `app/src/main/java/com/example/mdmjive/services/MDMService.kt`
+- `app/src/main/java/com/example/mdmjive/workers/SyncWorker.kt`
+
+Una vez actualizadas las rutas, compila e instala la aplicación.
+
+## Puesta en marcha
+
+1. Inicia el servidor como se indica en la carpeta `Servidor`.
+2. Instala el APK generado en tu dispositivo Android.
+3. Abre la app y pulsa **"Activar MDM"** para conceder privilegios.
+4. Tras la activación, la app se ocultará y comenzará a sincronizarse con el
+   servidor cada 15 minutos.
+
 
