@@ -117,3 +117,5 @@ Todos los endpoints responden con un JSON similar a:
 - `GET /provisioning/qr/<deviceId>` – genera el código QR de aprovisionamiento.
 
 Este servidor es un ejemplo para desarrollo y pruebas.
+
+Para una guía más detallada consulta [MANUAL.md](MANUAL.md).
