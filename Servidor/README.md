@@ -5,7 +5,7 @@ Este directorio contiene un peque\u00f1o servidor REST implementado con Flask. S
 ## Contenido
 
 - `server.py` - implementaci\u00f3n de los endpoints REST.
-- `requirements.txt` - dependencias de Python (actualmente solo Flask).
+- `requirements.txt` - dependencias de Python (Flask y qrcode).
 
 ## Requisitos
 
@@ -46,6 +46,21 @@ Puedes detenerlo con `Ctrl+C`. El host y el puerto pueden cambiarse con las vari
 ```bash
 BIZON_HOST=127.0.0.1 BIZON_PORT=8000 python server.py
 ```
+
+### Generar QR de aprovisionamiento
+
+Para facilitar la instalación del MDM sin intervención manual puedes
+obtener un código QR único accediendo a:
+
+```
+http://<host>:<puerto>/provisioning/qr/<deviceId>
+```
+
+Ese código debe escanearse desde el asistente de configuración de un
+dispositivo recién restaurado. El sistema descargará el APK y activará
+la aplicación automáticamente.
+Recuerda colocar el archivo `mdm.apk` en el directorio `downloads/` del
+servidor para que esté disponible en la ruta utilizada por el código QR.
 
 ## Pruebas r\u00e1pidas
 
@@ -93,5 +108,6 @@ Todos los endpoints responden con un JSON similar a:
 - `GET /logs/<deviceId>` – devuelve los logs registrados.
 - `POST /commands` – guarda un comando pendiente.
 - `GET /commands/<deviceId>` – obtiene y limpia los comandos para el dispositivo.
+- `GET /provisioning/qr/<deviceId>` – genera el código QR de aprovisionamiento.
 
 Este servidor es un ejemplo para desarrollo y pruebas.

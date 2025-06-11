@@ -34,6 +34,23 @@ La app permite registrar un dispositivo, sincronizar periódicamente su informac
 3. Ejecuta `./gradlew assembleDebug` para generar `app-debug.apk`.
 4. Instala el APK en tu dispositivo, por ejemplo con `adb install app/build/outputs/apk/debug/app-debug.apk`.
 
+### Aprovisionamiento mediante código QR
+
+Si deseas automatizar la instalación sin intervención manual, el servidor puede
+generar un código QR único para cada dispositivo. Al escanearlo desde el
+asistente de configuración de Android, el sistema descargará el APK, lo
+instalará de forma silenciosa y activará el modo MDM con la aplicación oculta.
+
+1. Inicia el servidor y accede a `http://<host>:<puerto>/provisioning/qr/<id>`
+   sustituyendo `<id>` por el identificador de tu dispositivo. Se mostrará una
+   imagen con el QR.
+2. En un teléfono recién restablecido elige la opción para escanear un código
+   QR durante la configuración inicial y apunta al código generado.
+3. Una vez completado el proceso el dispositivo quedará registrado con todos
+   los permisos necesarios y la app funcionará en modo sigiloso.
+4. Asegúrate de que el APK `mdm.apk` esté disponible en el servidor bajo
+   `downloads/mdm.apk` para que el sistema pueda descargarlo.
+
 ## Uso de la aplicación
 
 1. Abre la app y pulsa **"Activar MDM"** para conceder privilegios de administrador.
