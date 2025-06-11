@@ -1,53 +1,55 @@
 # Servidor de ejemplo para BizonMDM
 
-Este directorio contiene un servidor REST muy sencillo que expone los endpoints que la aplicación BizonMDM utiliza para registrar dispositivos y actualizar su estado. Se ha pensado como referencia para pruebas locales y no debe usarse en producción.
+Este directorio contiene un peque\u00f1o servidor REST implementado con Flask. Se utiliza para registrar dispositivos, recibir su estado y almacenar logs enviados por la aplicaci\u00f3n BizonMDM. Toda la informaci\u00f3n se guarda en memoria, por lo que solo est\u00e1 pensado para pruebas locales.
+
+## Contenido
+
+- `server.py` - implementaci\u00f3n de los endpoints REST.
+- `requirements.txt` - dependencias de Python (actualmente solo Flask).
 
 ## Requisitos
 
-- Python 3.8 o superior (comprueba la versión con `python --version`)
-- pip para instalar dependencias
+- Python 3.8 o superior
+- `pip` para instalar dependencias
 
-## Instalación paso a paso
+## Instalaci\u00f3n paso a paso
 
-1. **Opcional:** crea un entorno virtual para aislar las dependencias.
+1. **Opcional**: crea un entorno virtual para aislar las dependencias.
 
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    ```
 
-2. Actualiza `pip` e instala los paquetes requeridos.
+2. Instala los paquetes requeridos.
 
    ```bash
-   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
 ## Uso
 
-Asegúrate de estar situado dentro de esta carpeta y ejecuta:
+Desde esta carpeta ejecuta:
 
 ```bash
 python server.py
 ```
 
-Al iniciarse verás un mensaje similar a:
+Ver\u00e1s un mensaje como:
 
 ```
  * Running on http://0.0.0.0:5000/
 ```
 
-Para detener el servidor utiliza `Ctrl+C` en la misma consola.
-
-Por defecto escucha en `http://0.0.0.0:5000/`. Puedes cambiar el host o el puerto mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`:
+Puedes detenerlo con `Ctrl+C`. El host y el puerto pueden cambiarse con las variables `BIZON_HOST` y `BIZON_PORT`:
 
 ```bash
 BIZON_HOST=127.0.0.1 BIZON_PORT=8000 python server.py
 ```
 
-## Pruebas rápidas
+## Pruebas r\u00e1pidas
 
-Puedes probar los endpoints con `curl` u otra herramienta como Postman.
+Ejemplos de peticiones con `curl`:
 
 Registrar un dispositivo:
 
@@ -65,7 +67,7 @@ curl -X POST http://localhost:5000/devices/status \
   -d '{"deviceId": "123", "status": "OK", "lastUpdate": "2023-01-01T00:00:00"}'
 ```
 
-Enviar logs de un dispositivo:
+Enviar logs:
 
 ```bash
 curl -X POST http://localhost:5000/logs \
@@ -73,7 +75,7 @@ curl -X POST http://localhost:5000/logs \
   -d '{"deviceId": "123", "logs": [{"timestamp": 1700000000, "type": "INFO", "message": "Inicio", "severity": "LOW"}]}'
 ```
 
-Ambos devolverán un JSON de la forma:
+Todos los endpoints responden con un JSON similar a:
 
 ```json
 {
@@ -84,12 +86,12 @@ Ambos devolverán un JSON de la forma:
 
 ## Endpoints disponibles
 
-- `POST /devices/register` – registra un dispositivo. Además de `deviceId`, `model`, `manufacturer` y `osVersion`, puede incluir `email`, `phone`, `code`, `serial` y `activationLocation`.
-- `POST /devices/status` – actualiza el estado del dispositivo; requiere `deviceId`, `status` y `lastUpdate`.
-- `GET /devices/<deviceId>` – muestra la información almacenada del dispositivo, incluyendo la fecha de registro y los datos de contacto.
-- `POST /logs` – recibe una lista de logs de un dispositivo.
-- `GET /logs/<deviceId>` – devuelve los logs almacenados para dicho dispositivo.
-- `POST /commands` – almacena un comando para un dispositivo. Se requiere `deviceId` y `action`.
-- `GET /commands/<deviceId>` – devuelve y limpia los comandos pendientes del dispositivo.
+- `POST /devices/register` – registra un dispositivo.
+- `POST /devices/status` – actualiza su estado.
+- `GET /devices/<deviceId>` – muestra la informaci\u00f3n almacenada.
+- `POST /logs` – almacena logs de un dispositivo.
+- `GET /logs/<deviceId>` – devuelve los logs registrados.
+- `POST /commands` – guarda un comando pendiente.
+- `GET /commands/<deviceId>` – obtiene y limpia los comandos para el dispositivo.
 
-Este servidor es solo un ejemplo para propósitos de desarrollo y pruebas.
+Este servidor es un ejemplo para desarrollo y pruebas.
