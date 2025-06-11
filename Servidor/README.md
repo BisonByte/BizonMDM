@@ -1,11 +1,11 @@
 # Servidor de ejemplo para BizonMDM
 
-Este directorio contiene un peque\u00f1o servidor REST implementado con Flask. Se utiliza para registrar dispositivos, recibir su estado y almacenar logs enviados por la aplicaci\u00f3n BizonMDM. Toda la informaci\u00f3n se guarda en memoria, por lo que solo est\u00e1 pensado para pruebas locales.
+Este directorio contiene un peque\u00f1o servidor REST implementado con Flask. Se utiliza para registrar dispositivos, recibir su estado y almacenar logs enviados por la aplicaci\u00f3n BizonMDM. A partir de esta versi\u00f3n la informaci\u00f3n se almacena en una base de datos SQLite para conservarse entre reinicios.
 
 ## Contenido
 
 - `server.py` - implementaci\u00f3n de los endpoints REST.
-- `requirements.txt` - dependencias de Python (Flask y qrcode).
+- `requirements.txt` - dependencias de Python (Flask, SQLAlchemy y qrcode).
 
 ## Requisitos
 
@@ -32,6 +32,7 @@ Este directorio contiene un peque\u00f1o servidor REST implementado con Flask. S
 Desde esta carpeta ejecuta:
 
 ```bash
+python server.py --init-db      # solo la primera vez
 python server.py
 ```
 
@@ -44,8 +45,13 @@ Ver\u00e1s un mensaje como:
 Puedes detenerlo con `Ctrl+C`. El host y el puerto pueden cambiarse con las variables `BIZON_HOST` y `BIZON_PORT`:
 
 ```bash
-BIZON_HOST=127.0.0.1 BIZON_PORT=8000 python server.py
+BIZON_HOST=127.0.0.1 BIZON_PORT=8000 BIZON_TOKEN=secreto python server.py
 ```
+
+Si defines la variable `BIZON_TOKEN`, todas las peticiones deberán incluir el
+encabezado `Authorization: Bearer <token>`.
+La base de datos se almacena en el archivo indicado por `BIZON_DB` (por defecto
+`bizon.db`).
 
 ### Generar QR de aprovisionamiento
 

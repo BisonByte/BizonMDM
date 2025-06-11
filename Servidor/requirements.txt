@@ -1,2 +1,3 @@
 Flask==2.3.2
 qrcode
+SQLAlchemy>=2.0
