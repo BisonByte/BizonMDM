@@ -30,7 +30,12 @@ Ejecuta el servidor con:
 python server.py
 ```
 
-Por defecto escucha en `http://0.0.0.0:5000/`.
+Por defecto escucha en `http://0.0.0.0:5000/`. Puedes cambiar el host o puerto
+mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`:
+
+```bash
+BIZON_HOST=127.0.0.1 BIZON_PORT=8000 python server.py
+```
 
 ## Endpoints
 
