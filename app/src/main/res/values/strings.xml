@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">MDMJIVE</string>
+    <string name="activate_mdm">Activar MDM</string>
+    <string name="mdm_active">MDM activo</string>
+    <string name="mdm_inactive">MDM inactivo</string>
+    <string name="service_started">Servicio iniciado</string>
 </resources>
