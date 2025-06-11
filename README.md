@@ -32,4 +32,10 @@ El proyecto requiere un mínimo de **Android 7.0 (API 24)**.
 2. Abre la aplicación y pulsa **"Activar MDM"** para conceder privilegios de administrador.
 3. Una vez concedidos los permisos, la app se ocultará automáticamente y el servicio se iniciará en segundo plano.
 
+## Servidor de ejemplo
+
+En la carpeta `Servidor` se incluye un pequeño servidor REST escrito en
+Python para propósitos de prueba. Consulta su [README](Servidor/README.md)
+para instrucciones de instalación y ejecución.
+
 
