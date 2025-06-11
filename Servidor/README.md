@@ -65,6 +65,14 @@ curl -X POST http://localhost:5000/devices/status \
   -d '{"deviceId": "123", "status": "OK", "lastUpdate": "2023-01-01T00:00:00"}'
 ```
 
+Enviar logs de un dispositivo:
+
+```bash
+curl -X POST http://localhost:5000/logs \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "logs": [{"timestamp": 1700000000, "type": "INFO", "message": "Inicio", "severity": "LOW"}]}'
+```
+
 Ambos devolverán un JSON de la forma:
 
 ```json
@@ -79,5 +87,7 @@ Ambos devolverán un JSON de la forma:
 - `POST /devices/register` – registra un dispositivo. Además de `deviceId`, `model`, `manufacturer` y `osVersion`, puede incluir `email`, `phone`, `code`, `serial` y `activationLocation`.
 - `POST /devices/status` – actualiza el estado del dispositivo; requiere `deviceId`, `status` y `lastUpdate`.
 - `GET /devices/<deviceId>` – muestra la información almacenada del dispositivo, incluyendo la fecha de registro y los datos de contacto.
+- `POST /logs` – recibe una lista de logs de un dispositivo.
+- `GET /logs/<deviceId>` – devuelve los logs almacenados para dicho dispositivo.
 
 Este servidor es solo un ejemplo para propósitos de desarrollo y pruebas.

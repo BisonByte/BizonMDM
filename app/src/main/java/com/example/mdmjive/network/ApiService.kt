@@ -9,6 +9,7 @@ import android.util.Log
 import com.example.mdmjive.network.models.ApiResponse
 import com.example.mdmjive.network.models.DeviceInfo
 import com.example.mdmjive.network.models.DeviceStatus
+import com.example.mdmjive.network.models.LogPayload
 
 // Interface para los endpoints de la API
 interface ApiService {
@@ -17,6 +18,9 @@ interface ApiService {
 
     @POST("devices/status")
     suspend fun updateStatus(@Body status: DeviceStatus): Response<ApiResponse>
+
+    @POST("logs")
+    suspend fun uploadLogs(@Body payload: LogPayload): Response<ApiResponse>
 }
 
 
