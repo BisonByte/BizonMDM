@@ -19,7 +19,7 @@ class DeviceRepository(
 
     companion object {
         private const val TAG = "DeviceRepository"
-        private const val SYNC_TIME = System.currentTimeMillis()
+        private fun currentSyncTime() = System.currentTimeMillis()
     }
 
     // Obtener ID único del dispositivo
@@ -48,7 +48,7 @@ class DeviceRepository(
                     manufacturer = deviceInfo.manufacturer,
                     osVersion = deviceInfo.osVersion,
                     status = "REGISTERED",
-                    lastSync = SYNC_TIME
+                    lastSync = currentSyncTime()
                 )
                 deviceDao.insertDevice(entity)
                 Log.d(TAG, "Dispositivo registrado exitosamente")
@@ -66,13 +66,13 @@ class DeviceRepository(
         val status = DeviceStatus(
             deviceId = deviceId,
             status = newStatus,
-            lastSync = SYNC_TIME
+            lastSync = currentSyncTime()
         )
 
         try {
             val response = apiService.updateStatus(status)
             if (response.isSuccessful) {
-                deviceDao.updateDeviceStatus(deviceId, newStatus, SYNC_TIME)
+                deviceDao.updateDeviceStatus(deviceId, newStatus, currentSyncTime())
                 Log.d(TAG, "Estado del dispositivo actualizado")
             } else {
                 Log.e(TAG, "Error al actualizar el estado del dispositivo: ${response.message()}")
