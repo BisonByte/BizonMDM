@@ -1,56 +1,71 @@
 # Servidor de ejemplo para BizonMDM
 
-Este directorio contiene un ejemplo sencillo de servidor REST que expone los endpoints que la aplicación BizonMDM utiliza para registrar dispositivos y actualizar su estado.
+Este directorio contiene un servidor REST muy sencillo que expone los endpoints que la aplicación BizonMDM utiliza para registrar dispositivos y actualizar su estado. Se ha pensado como referencia para pruebas locales y no debe usarse en producción.
 
 ## Requisitos
 
-- Python 3.8 o superior
+- Python 3.8 o superior (comprueba la versión con `python --version`)
 - pip para instalar dependencias
 
-## Instalación
+## Instalación paso a paso
 
-1. Opcional: crea un entorno virtual de Python.
+1. **Opcional:** crea un entorno virtual para aislar las dependencias.
 
    ```bash
    python3 -m venv venv
    source venv/bin/activate
    ```
 
-2. Instala las dependencias indicadas en `requirements.txt`.
+2. Actualiza `pip` e instala los paquetes requeridos.
 
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
 ## Uso
 
-Ejecuta el servidor con:
+Asegúrate de estar situado dentro de esta carpeta y ejecuta:
 
 ```bash
 python server.py
 ```
 
-Por defecto escucha en `http://0.0.0.0:5000/`. Puedes cambiar el host o puerto
-mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`:
+Al iniciarse verás un mensaje similar a:
+
+```
+ * Running on http://0.0.0.0:5000/
+```
+
+Para detener el servidor utiliza `Ctrl+C` en la misma consola.
+
+Por defecto escucha en `http://0.0.0.0:5000/`. Puedes cambiar el host o el puerto mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`:
 
 ```bash
 BIZON_HOST=127.0.0.1 BIZON_PORT=8000 python server.py
 ```
 
-## Endpoints
+## Pruebas rápidas
 
-- `POST /devices/register`: registra un dispositivo. Debe enviarse un JSON con los campos:
-  - `deviceId`
-  - `model`
-  - `manufacturer`
-  - `osVersion`
+Puedes probar los endpoints con `curl` u otra herramienta como Postman.
 
-- `POST /devices/status`: actualiza el estado del dispositivo. JSON esperado:
-  - `deviceId`
-  - `status`
-  - `lastUpdate`
+Registrar un dispositivo:
 
-Ambos endpoints responden un JSON de la forma:
+```bash
+curl -X POST http://localhost:5000/devices/register \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "model": "Pixel", "manufacturer": "Google", "osVersion": "13"}'
+```
+
+Actualizar el estado de un dispositivo:
+
+```bash
+curl -X POST http://localhost:5000/devices/status \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "status": "OK", "lastUpdate": "2023-01-01T00:00:00"}'
+```
+
+Ambos devolverán un JSON de la forma:
 
 ```json
 {
@@ -58,5 +73,10 @@ Ambos endpoints responden un JSON de la forma:
   "message": "..."
 }
 ```
+
+## Endpoints disponibles
+
+- `POST /devices/register` – registra un dispositivo; requiere los campos `deviceId`, `model`, `manufacturer` y `osVersion`.
+- `POST /devices/status` – actualiza el estado del dispositivo; requiere `deviceId`, `status` y `lastUpdate`.
 
 Este servidor es solo un ejemplo para propósitos de desarrollo y pruebas.

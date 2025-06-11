@@ -1,13 +1,22 @@
+"""Servidor REST de ejemplo utilizado por la aplicación BizonMDM.
+
+Este script define dos endpoints muy sencillos que permiten registrar un
+dispositivo y actualizar su estado. Todos los datos se almacenan en
+memoria, por lo que el servidor está pensado exclusivamente para pruebas
+locales.
+"""
+
 from flask import Flask, request, jsonify
 import os
 
 app = Flask(__name__)
 
-# Almacenamiento en memoria de dispositivos y estados
-registered_devices = {}
+# Diccionario en memoria para almacenar la información de los dispositivos
+registered_devices: dict[str, dict] = {}
 
 @app.route('/devices/register', methods=['POST'])
 def register_device():
+    """Registra un dispositivo a partir de un JSON enviado por la app."""
     data = request.get_json() or {}
     device_id = data.get('deviceId')
     if not device_id:
@@ -20,6 +29,7 @@ def register_device():
 
 @app.route('/devices/status', methods=['POST'])
 def update_status():
+    """Actualiza el estado del dispositivo previamente registrado."""
     data = request.get_json() or {}
     device_id = data.get('deviceId')
     if not device_id or device_id not in registered_devices:
