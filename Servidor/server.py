@@ -6,9 +6,13 @@ datos se guardan en memoria, por lo que el servidor está pensado
 exclusivamente para pruebas locales.
 """
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 import os
 import datetime
+import json
+import base64
+import io
+import qrcode
 
 app = Flask(__name__)
 
@@ -18,6 +22,33 @@ registered_devices: dict[str, dict] = {}
 device_logs: dict[str, list] = {}
 # Cola en memoria de comandos pendientes por dispositivo
 pending_commands: dict[str, list] = {}
+
+
+def _generate_provisioning_string(server_url: str, device_id: str, skip_encryption: bool = True) -> str:
+    """Devuelve la cadena en base64 utilizada para el aprovisionamiento por QR."""
+    data = {
+        "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME":
+            "com.example.mdmjive/com.example.mdmjive.receivers.MDMDeviceAdminReceiver",
+        "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION":
+            f"{server_url}/downloads/mdm.apk",
+        "android.app.extra.PROVISIONING_SKIP_ENCRYPTION": skip_encryption,
+        "serverUrl": server_url,
+        "deviceId": device_id,
+    }
+    json_data = json.dumps(data)
+    return base64.b64encode(json_data.encode("utf-8")).decode("utf-8")
+
+
+@app.route('/provisioning/qr/<device_id>', methods=['GET'])
+def get_provisioning_qr(device_id: str):
+    """Genera y devuelve un código QR para aprovisionar el dispositivo."""
+    server_url = request.url_root.rstrip('/')
+    qr_string = _generate_provisioning_string(server_url, device_id)
+    img = qrcode.make(qr_string)
+    buf = io.BytesIO()
+    img.save(buf, format='PNG')
+    buf.seek(0)
+    return send_file(buf, mimetype='image/png')
 
 @app.route('/devices/register', methods=['POST'])
 def register_device():
