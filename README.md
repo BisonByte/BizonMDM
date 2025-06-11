@@ -1,60 +1,64 @@
 # BizonMDM
 
-BizonMDM es un servicio MDM (Mobile Device Management) para dispositivos Android. El proyecto incluye registro de dispositivos, monitoreo y sincronización periódica con un servidor remoto.
+BizonMDM es una solución sencilla de *Mobile Device Management* para Android. En este repositorio encontrarás la aplicación Android escrita en Kotlin junto con un pequeño servidor REST desarrollado en Python para propósitos de prueba.
 
-## Características principales
+La app permite registrar un dispositivo, sincronizar periódicamente su información y recibir comandos desde el servidor.
+
+## Características de la aplicación
 
 - **Registro y actualización de estado** del dispositivo mediante Retrofit.
-- **Almacenamiento local** con Room para conservar información y logs.
-- **Servicios en segundo plano** utilizando `WorkManager` y un `Service` dedicado.
-- **Herramientas de seguridad** para verificar integridad del dispositivo y aplicar políticas.
-- **Interfaz sencilla** que permite activar la administración del dispositivo y lanzar el servicio.
-- **Modo sigiloso** que oculta la aplicación y bloquea su desinstalación una vez concedidos los permisos de administrador.
-- **Restricciones de dispositivo** que impiden el formateo, fijan el brillo al 100%, mantienen el GPS activo y evitan cambios manuales de fecha y hora.
+- **Almacenamiento local** con Room para conservar datos y logs.
+- **Servicios en segundo plano** con `WorkManager` y un `Service` dedicado.
+- **Controles de seguridad** que aplican políticas sobre el dispositivo.
+- **Modo sigiloso** que oculta la app y evita su desinstalación tras conceder privilegios de administrador.
+- **Restricciones** que deshabilitan el formateo, fijan el brillo al 100 %, fuerzan el GPS activo y evitan cambios de fecha u hora.
 
-## Estructura del proyecto
+## Estructura del repositorio
 
-- `app/src/main/java/com/example/mdmjive` – Código fuente principal.
-- `network` – Comunicación con el servidor.
-- `database` – Entidades y DAOs de Room.
-- `services` y `workers` – Componentes que se ejecutan en segundo plano.
+- `app/` – código de la aplicación Android.
+- `Servidor/` – servidor REST de ejemplo para pruebas.
+- Archivos Gradle en la raíz para compilar la app.
 
-## Compilación
+## Requisitos previos
 
-1. Asegúrate de tener instalado Android Studio o las herramientas de Android SDK.
-2. Ejecuta `./gradlew assembleDebug` para generar el APK de desarrollo.
+- JDK 11 y Android Studio (o herramientas de Android SDK).
+- Un dispositivo con **Android 7.0 (API 24)** o superior.
+- Python 3.8+ si vas a utilizar el servidor incluido.
 
-El proyecto requiere un mínimo de **Android 7.0 (API 24)**.
+## Instalación de la aplicación
 
-## Uso básico
+1. Clona este repositorio.
+2. (Opcional) ajusta la URL del servidor en las clases:
+   - `app/src/main/java/com/example/mdmjive/services/MDMService.kt`
+   - `app/src/main/java/com/example/mdmjive/workers/SyncWorker.kt`
+3. Ejecuta `./gradlew assembleDebug` para generar `app-debug.apk`.
+4. Instala el APK en tu dispositivo, por ejemplo con `adb install app/build/outputs/apk/debug/app-debug.apk`.
 
-1. Instala la aplicación en el dispositivo.
-2. Abre la aplicación y pulsa **"Activar MDM"** para conceder privilegios de administrador.
-3. Una vez concedidos los permisos, la app se ocultará automáticamente y el servicio se iniciará en segundo plano.
+## Uso de la aplicación
+
+1. Abre la app y pulsa **"Activar MDM"** para conceder privilegios de administrador.
+2. Después de la activación la app se oculta y el servicio queda corriendo en segundo plano.
+3. El dispositivo se sincronizará con el servidor cada 15 minutos.
 
 ## Servidor de ejemplo
 
-En la carpeta `Servidor` se incluye un pequeño servidor REST escrito en
-Python para propósitos de prueba. Consulta su [README](Servidor/README.md)
-para instrucciones de instalación y ejecución.
+Dentro de `Servidor/` se incluye un backend minimalista basado en Flask. Para instalarlo y ponerlo en marcha:
 
-## Configuración del servidor
+```bash
+cd Servidor
+python3 -m venv venv       # opcional
+source venv/bin/activate   # opcional
+pip install -r requirements.txt
+python server.py
+```
 
-Para que la aplicación se comunique con tu servidor debes modificar la URL
-base que utiliza el cliente HTTP. Edita las siguientes clases y reemplaza
-`https://example.com/` por la dirección donde ejecutes el servidor:
+Por defecto escuchará en `http://0.0.0.0:5000/`. Se pueden cambiar el host o el puerto mediante las variables `BIZON_HOST` y `BIZON_PORT`.
 
-- `app/src/main/java/com/example/mdmjive/services/MDMService.kt`
-- `app/src/main/java/com/example/mdmjive/workers/SyncWorker.kt`
-
-Una vez actualizadas las rutas, compila e instala la aplicación.
+Consulta el [README del servidor](Servidor/README.md) para ver los endpoints disponibles y ejemplos de peticiones.
 
 ## Puesta en marcha
 
-1. Inicia el servidor como se indica en la carpeta `Servidor`.
-2. Instala el APK generado en tu dispositivo Android.
-3. Abre la app y pulsa **"Activar MDM"** para conceder privilegios.
-4. Tras la activación, la app se ocultará y comenzará a sincronizarse con el
-   servidor cada 15 minutos.
-
-
+1. Inicia el servidor según las instrucciones anteriores.
+2. Compila e instala la aplicación en el dispositivo.
+3. Ejecuta la app y activa el modo MDM.
+4. Desde ese momento la aplicación enviará su estado y recibirá comandos del servidor.
