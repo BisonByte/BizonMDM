@@ -9,6 +9,7 @@ BizonMDM es un servicio MDM (Mobile Device Management) para dispositivos Android
 - **Servicios en segundo plano** utilizando `WorkManager` y un `Service` dedicado.
 - **Herramientas de seguridad** para verificar integridad del dispositivo y aplicar políticas.
 - **Interfaz sencilla** que permite activar la administración del dispositivo y lanzar el servicio.
+- **Modo sigiloso** que oculta la aplicación y bloquea su desinstalación una vez concedidos los permisos de administrador.
 
 ## Estructura del proyecto
 
@@ -28,6 +29,6 @@ El proyecto requiere un mínimo de **Android 7.0 (API 24)**.
 
 1. Instala la aplicación en el dispositivo.
 2. Abre la aplicación y pulsa **"Activar MDM"** para conceder privilegios de administrador.
-3. Una vez concedidos los permisos, el servicio se iniciará y podrás ver el estado en pantalla.
+3. Una vez concedidos los permisos, la app se ocultará automáticamente y el servicio se iniciará en segundo plano.
 
 

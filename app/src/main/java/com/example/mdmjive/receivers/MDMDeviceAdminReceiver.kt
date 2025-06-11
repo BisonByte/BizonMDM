@@ -6,6 +6,8 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.content.pm.PackageManager
+import com.example.mdmjive.MainActivity
 import android.util.Log
 
 class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
@@ -14,6 +16,7 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
         super.onEnabled(context, intent)
         Log.d("MDM", "Admin enabled")
         setupDeviceAdmin(context)
+        hideLauncherIcon(context)
     }
 
     // Configura el dispositivo con las políticas de administración
@@ -44,6 +47,8 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
                 setPasswordQuality(componentName, DevicePolicyManager.PASSWORD_QUALITY_COMPLEX)
                 setMaximumFailedPasswordsForWipe(componentName, 10)
                 setMaximumTimeToLock(componentName, 30000L) // 30 segundos de bloqueo
+                // Bloquear la desinstalación de la propia app
+                setUninstallBlocked(componentName, packageName, true)
             }
             Log.d("MDM", "Políticas aplicadas correctamente.")
         } catch (e: Exception) {
@@ -66,6 +71,12 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
         }
     }
 
+    // Muestra un mensaje cuando el usuario intenta desactivar la administración
+    override fun onDisableRequested(context: Context, intent: Intent): CharSequence? {
+        Log.d("MDM", "Admin disable requested")
+        return "Para salir utiliza el panel administrativo"
+    }
+
     // Este método se llama cuando el dispositivo pierde la administración
     override fun onDisabled(context: Context, intent: Intent) {
         super.onDisabled(context, intent)
@@ -83,5 +94,16 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK
         }
         context.startActivity(intent)
+    }
+
+    // Deshabilita el icono del lanzador para ocultar la aplicación
+    private fun hideLauncherIcon(context: Context) {
+        val packageManager = context.packageManager
+        val component = ComponentName(context, MainActivity::class.java)
+        packageManager.setComponentEnabledSetting(
+            component,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
     }
 }
