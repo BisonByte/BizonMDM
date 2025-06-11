@@ -20,4 +20,28 @@
         android:layout_height="wrap_content"
         android:text="@string/activate_mdm" />
 
+    <EditText
+        android:id="@+id/etPackageName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/package_name_hint" />
+
+    <Button
+        android:id="@+id/btnHideApp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hide_app" />
+
+    <Button
+        android:id="@+id/btnHideAll"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/hide_all_apps" />
+
+    <Button
+        android:id="@+id/btnLockDevice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/lock_device" />
+
 </LinearLayout>

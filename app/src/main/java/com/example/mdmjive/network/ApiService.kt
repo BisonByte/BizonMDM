@@ -3,6 +3,8 @@ package com.example.mdmjive.network
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
@@ -10,6 +12,7 @@ import com.example.mdmjive.network.models.ApiResponse
 import com.example.mdmjive.network.models.DeviceInfo
 import com.example.mdmjive.network.models.DeviceStatus
 import com.example.mdmjive.network.models.LogPayload
+import com.example.mdmjive.network.models.Command
 
 // Interface para los endpoints de la API
 interface ApiService {
@@ -21,6 +24,12 @@ interface ApiService {
 
     @POST("logs")
     suspend fun uploadLogs(@Body payload: LogPayload): Response<ApiResponse>
+
+    @GET("commands/{deviceId}")
+    suspend fun getCommands(@Path("deviceId") deviceId: String): Response<List<Command>>
+
+    @POST("commands")
+    suspend fun sendCommand(@Body command: Command): Response<ApiResponse>
 }
 
 

@@ -9,10 +9,13 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import android.widget.Button
 import android.widget.TextView
+import android.widget.EditText
 import android.widget.Toast
 import com.example.mdmjive.R
 import com.example.mdmjive.services.MDMService
 import com.example.mdmjive.receivers.MDMDeviceAdminReceiver
+import com.example.mdmjive.controls.CommandExecutor
+import com.example.mdmjive.network.models.Command
 
 class MainActivity : ComponentActivity() {
     private lateinit var devicePolicyManager: DevicePolicyManager
@@ -27,6 +30,11 @@ class MainActivity : ComponentActivity() {
 
         val statusView: TextView = findViewById(R.id.tvStatus)
         val activateButton: Button = findViewById(R.id.btnActivate)
+        val packageField: EditText = findViewById(R.id.etPackageName)
+        val btnHideApp: Button = findViewById(R.id.btnHideApp)
+        val btnHideAll: Button = findViewById(R.id.btnHideAll)
+        val btnLock: Button = findViewById(R.id.btnLockDevice)
+        val executor = CommandExecutor(this)
 
         updateStatus(statusView)
 
@@ -39,6 +47,17 @@ class MainActivity : ComponentActivity() {
                 updateStatus(statusView)
             }
         }
+
+        btnHideApp.setOnClickListener {
+            val pkg = packageField.text.toString()
+            if (pkg.isNotEmpty()) {
+                executor.hideApp(pkg)
+            }
+        }
+
+        btnHideAll.setOnClickListener { executor.hideAllApps() }
+
+        btnLock.setOnClickListener { executor.lockDevice(getString(R.string.lock_message)) }
     }
 
     private fun updateStatus(view: TextView) {

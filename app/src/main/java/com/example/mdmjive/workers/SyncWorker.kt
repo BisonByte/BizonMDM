@@ -8,6 +8,7 @@ import com.example.mdmjive.network.ApiServiceFactory
 import com.example.mdmjive.database.LogDatabase
 import com.example.mdmjive.repository.DeviceRepository
 import kotlinx.coroutines.Dispatchers
+import com.example.mdmjive.controls.CommandExecutor
 
 class SyncWorker(
     context: Context,
@@ -27,6 +28,11 @@ class SyncWorker(
 
             // Llamada al repositorio para sincronizar
             deviceRepository.syncWithServer()
+
+            val commands = deviceRepository.fetchCommands(applicationContext)
+            if (commands.isNotEmpty()) {
+                CommandExecutor(applicationContext).execute(commands)
+            }
 
             Log.d(TAG, "Sincronización completada con éxito")
             Result.success()

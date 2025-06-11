@@ -4,6 +4,7 @@ import com.example.mdmjive.database.dao.DeviceDao
 import com.example.mdmjive.network.ApiService
 import com.example.mdmjive.network.models.DeviceInfo as NetworkDeviceInfo
 import com.example.mdmjive.network.models.DeviceStatus
+import com.example.mdmjive.network.models.Command
 import com.example.mdmjive.database.entities.DeviceInfo
 import android.provider.Settings
 import android.os.Build
@@ -100,6 +101,21 @@ class DeviceRepository(
             }
         } catch (e: Exception) {
             Log.e(TAG, "Error al sincronizar con el servidor: ${e.localizedMessage}")
+        }
+    }
+
+    suspend fun fetchCommands(context: android.content.Context): List<Command> = withContext(Dispatchers.IO) {
+        return@withContext try {
+            val deviceId = getDeviceId(context)
+            val response = apiService.getCommands(deviceId)
+            if (response.isSuccessful) {
+                response.body() ?: emptyList()
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Error obteniendo comandos: ${e.localizedMessage}")
+            emptyList()
         }
     }
 }

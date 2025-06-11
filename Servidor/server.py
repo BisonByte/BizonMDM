@@ -16,6 +16,8 @@ app = Flask(__name__)
 registered_devices: dict[str, dict] = {}
 # Diccionario en memoria para almacenar los logs enviados por cada dispositivo
 device_logs: dict[str, list] = {}
+# Cola en memoria de comandos pendientes por dispositivo
+pending_commands: dict[str, list] = {}
 
 @app.route('/devices/register', methods=['POST'])
 def register_device():
@@ -84,6 +86,25 @@ def get_logs(device_id: str):
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     logs = device_logs.get(device_id, [])
     return jsonify({'logs': logs}), 200
+
+# --- Endpoints de control de dispositivos ---
+
+@app.route('/commands', methods=['POST'])
+def add_command():
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    action = data.get('action')
+    if not device_id or not action:
+        return jsonify({'success': False, 'message': 'deviceId y action requeridos'}), 400
+    pending_commands.setdefault(device_id, []).append(data)
+    return jsonify({'success': True, 'message': 'Comando almacenado'}), 200
+
+
+@app.route('/commands/<device_id>', methods=['GET'])
+def get_commands(device_id: str):
+    cmds = pending_commands.get(device_id, [])
+    pending_commands[device_id] = []
+    return jsonify(cmds), 200
 
 if __name__ == '__main__':
     host = os.getenv('BIZON_HOST', '0.0.0.0')
