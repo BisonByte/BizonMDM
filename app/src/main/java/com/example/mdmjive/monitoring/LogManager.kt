@@ -3,31 +3,37 @@ package com.example.mdmjive.monitoring
 import android.util.Log
 import com.example.mdmjive.database.LogDatabase
 import com.example.mdmjive.database.entities.LogEntry
+import com.example.mdmjive.network.ApiServiceFactory
+import com.example.mdmjive.network.models.LogEntryPayload
+import com.example.mdmjive.network.models.LogPayload
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.util.Date
 
 class LogManager(private val logDatabase: LogDatabase) {
 
+    private val apiService = ApiServiceFactory.create("https://example.com/")
+
     // Función para registrar un evento en los logs
-    fun logEvent(event: MDMEvent) {
+    fun logEvent(event: MDMEvent, deviceId: String = "unknown") {
         val entry = LogEntry(
-            timestamp = Date(),
+            timestamp = System.currentTimeMillis(),
             type = event.type,
             message = event.message,
-            details = event.details
+            severity = event.severity,
+            deviceId = deviceId
         )
         saveLog(entry)
     }
 
     // Función para registrar errores
-    fun logError(error: Throwable) {
+    fun logError(error: Throwable, deviceId: String = "unknown") {
         val entry = LogEntry(
-            timestamp = Date(),
+            timestamp = System.currentTimeMillis(),
             type = "ERROR",
             message = error.message ?: "Unknown error",
-            details = error.stackTraceToString()
+            severity = "HIGH",
+            deviceId = deviceId
         )
         saveLog(entry)
     }
@@ -48,13 +54,23 @@ class LogManager(private val logDatabase: LogDatabase) {
     fun uploadLogs() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Simulación de la subida de logs al servidor
-                val logsToUpload = logDatabase.logDao().getAllLogs()
-                // Aquí implementarías la lógica para subir los logs a tu servidor
-                // Por ejemplo, usando Retrofit
-                // retrofitService.uploadLogs(logsToUpload)
+                val logsToUpload = logDatabase.logDao().getAllLogsOnce()
+                if (logsToUpload.isEmpty()) return@launch
 
-                // Si la subida fue exitosa, puedes limpiar los logs de la base de datos
+                val deviceId = logsToUpload.first().deviceId
+                val payload = LogPayload(
+                    deviceId = deviceId,
+                    logs = logsToUpload.map {
+                        LogEntryPayload(
+                            timestamp = it.timestamp,
+                            type = it.type,
+                            message = it.message,
+                            severity = it.severity
+                        )
+                    }
+                )
+
+                apiService.uploadLogs(payload)
                 logDatabase.logDao().clearLogs()
             } catch (e: Exception) {
                 Log.e("LogManager", "Error subiendo logs: ${e.message}")
@@ -77,5 +93,6 @@ class LogManager(private val logDatabase: LogDatabase) {
 data class MDMEvent(
     val type: String,
     val message: String,
+    val severity: String = "INFO",
     val details: String? = null
 )

@@ -9,6 +9,9 @@ interface LogDao {
     @Query("SELECT * FROM logs ORDER BY timestamp DESC")
     fun getAllLogs(): Flow<List<LogEntry>>
 
+    @Query("SELECT * FROM logs ORDER BY timestamp DESC")
+    suspend fun getAllLogsOnce(): List<LogEntry>
+
     @Query("SELECT * FROM logs WHERE deviceId = :deviceId ORDER BY timestamp DESC")
     fun getLogsByDeviceId(deviceId: String): Flow<List<LogEntry>>
 

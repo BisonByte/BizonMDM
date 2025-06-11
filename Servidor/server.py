@@ -1,9 +1,9 @@
 """Servidor REST de ejemplo utilizado por la aplicación BizonMDM.
 
-Este script define dos endpoints muy sencillos que permiten registrar un
-dispositivo y actualizar su estado. Todos los datos se almacenan en
-memoria, por lo que el servidor está pensado exclusivamente para pruebas
-locales.
+Este script define varios endpoints muy sencillos para registrar un dispositivo,
+actualizar su estado y almacenar logs enviados por la aplicación. Todos los
+datos se guardan en memoria, por lo que el servidor está pensado
+exclusivamente para pruebas locales.
 """
 
 from flask import Flask, request, jsonify
@@ -14,6 +14,8 @@ app = Flask(__name__)
 
 # Diccionario en memoria para almacenar la información de los dispositivos
 registered_devices: dict[str, dict] = {}
+# Diccionario en memoria para almacenar los logs enviados por cada dispositivo
+device_logs: dict[str, list] = {}
 
 @app.route('/devices/register', methods=['POST'])
 def register_device():
@@ -57,6 +59,31 @@ def get_device_info(device_id: str):
         'phone': info.get('phone')
     }
     return jsonify(result), 200
+
+# --- Endpoints para manejo de logs ---
+
+@app.route('/logs', methods=['POST'])
+def upload_logs():
+    """Recibe una lista de logs enviados por un dispositivo."""
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    logs = data.get('logs', [])
+    if not device_id or device_id not in registered_devices:
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+
+    stored = device_logs.setdefault(device_id, [])
+    if isinstance(logs, list):
+        stored.extend(logs)
+    return jsonify({'success': True, 'message': 'Logs recibidos', 'count': len(logs)}), 200
+
+
+@app.route('/logs/<device_id>', methods=['GET'])
+def get_logs(device_id: str):
+    """Devuelve los logs almacenados de un dispositivo."""
+    if device_id not in registered_devices:
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    logs = device_logs.get(device_id, [])
+    return jsonify({'logs': logs}), 200
 
 if __name__ == '__main__':
     host = os.getenv('BIZON_HOST', '0.0.0.0')
