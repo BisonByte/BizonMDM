@@ -54,7 +54,7 @@ Registrar un dispositivo:
 ```bash
 curl -X POST http://localhost:5000/devices/register \
   -H 'Content-Type: application/json' \
-  -d '{"deviceId": "123", "model": "Pixel", "manufacturer": "Google", "osVersion": "13"}'
+  -d '{"deviceId": "123", "model": "Pixel", "manufacturer": "Google", "osVersion": "13", "email": "demo@example.com", "phone": "+123456789", "code": "PX-001", "serial": "ABC123", "activationLocation": "MX"}'
 ```
 
 Actualizar el estado de un dispositivo:
@@ -76,7 +76,8 @@ Ambos devolverán un JSON de la forma:
 
 ## Endpoints disponibles
 
-- `POST /devices/register` – registra un dispositivo; requiere los campos `deviceId`, `model`, `manufacturer` y `osVersion`.
+- `POST /devices/register` – registra un dispositivo. Además de `deviceId`, `model`, `manufacturer` y `osVersion`, puede incluir `email`, `phone`, `code`, `serial` y `activationLocation`.
 - `POST /devices/status` – actualiza el estado del dispositivo; requiere `deviceId`, `status` y `lastUpdate`.
+- `GET /devices/<deviceId>` – muestra la información almacenada del dispositivo, incluyendo la fecha de registro y los datos de contacto.
 
 Este servidor es solo un ejemplo para propósitos de desarrollo y pruebas.

@@ -8,6 +8,7 @@ locales.
 
 from flask import Flask, request, jsonify
 import os
+import datetime
 
 app = Flask(__name__)
 
@@ -23,7 +24,8 @@ def register_device():
         return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
     registered_devices[device_id] = {
         'info': data,
-        'status': None
+        'status': None,
+        'added': datetime.datetime.utcnow().isoformat()
     }
     return jsonify({'success': True, 'message': 'Dispositivo registrado'}), 200
 
@@ -36,6 +38,25 @@ def update_status():
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     registered_devices[device_id]['status'] = data
     return jsonify({'success': True, 'message': 'Estado actualizado'}), 200
+
+@app.route('/devices/<device_id>', methods=['GET'])
+def get_device_info(device_id: str):
+    """Devuelve la información completa almacenada de un dispositivo."""
+    device = registered_devices.get(device_id)
+    if not device:
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+
+    info = device['info']
+    result = {
+        'model': info.get('model'),
+        'code': info.get('code'),
+        'serial': info.get('serial'),
+        'activationLocation': info.get('activationLocation'),
+        'addedDate': device.get('added'),
+        'email': info.get('email'),
+        'phone': info.get('phone')
+    }
+    return jsonify(result), 200
 
 if __name__ == '__main__':
     host = os.getenv('BIZON_HOST', '0.0.0.0')
