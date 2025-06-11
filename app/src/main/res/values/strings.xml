@@ -4,4 +4,9 @@
     <string name="mdm_active">MDM activo</string>
     <string name="mdm_inactive">MDM inactivo</string>
     <string name="service_started">Servicio iniciado</string>
+    <string name="hide_app">Ocultar app</string>
+    <string name="hide_all_apps">Ocultar todas</string>
+    <string name="lock_device">Bloquear dispositivo</string>
+    <string name="lock_message">Dispositivo bloqueado por BizonMDM</string>
+    <string name="package_name_hint">Nombre del paquete</string>
 </resources>

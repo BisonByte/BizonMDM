@@ -89,5 +89,7 @@ Ambos devolverán un JSON de la forma:
 - `GET /devices/<deviceId>` – muestra la información almacenada del dispositivo, incluyendo la fecha de registro y los datos de contacto.
 - `POST /logs` – recibe una lista de logs de un dispositivo.
 - `GET /logs/<deviceId>` – devuelve los logs almacenados para dicho dispositivo.
+- `POST /commands` – almacena un comando para un dispositivo. Se requiere `deviceId` y `action`.
+- `GET /commands/<deviceId>` – devuelve y limpia los comandos pendientes del dispositivo.
 
 Este servidor es solo un ejemplo para propósitos de desarrollo y pruebas.
