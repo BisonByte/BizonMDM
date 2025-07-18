@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Instalación de BizonMDM</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f7f6;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-top: 30px;
+        }
+        h1 {
+            text-align: center;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            color: #1a5276;
+        }
+        h2 {
+            color: #3498db;
+        }
+        h3 {
+            color: #555;
+            border-bottom: 1px solid #eee;
+        }
+        code {
+            background-color: #eef;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            color: #c0392b;
+        }
+        pre {
+            background-color: #2d2d2d;
+            color: #f8f8f2;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.95em;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+        ul {
+            list-style-type: disc;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        ol {
+            list-style-type: decimal;
+            margin-left: 20px;
+            padding-left: 0;
+        }
+        li {
+            margin-bottom: 8px;
+        }
+        .note {
+            background-color: #e0f7fa;
+            border-left: 5px solid #00bcd4;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            color: #01579b;
+        }
+        .warning {
+            background-color: #fff3e0;
+            border-left: 5px solid #ff9800;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 5px;
+            color: #e65100;
+        }
+        a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Guía de Instalación Detallada de BizonMDM</h1>
+        <p>Este documento te guiará paso a paso en la instalación y configuración de la aplicación BizonMDM en Android y su servidor REST de ejemplo en Python.</p>
+
+        <hr>
+
+        <h2>📚 ¿Qué es BizonMDM?</h2>
+        <p><strong>BizonMDM</strong> es una solución sencilla de <strong>Mobile Device Management (MDM)</strong> para Android. Este proyecto incluye una aplicación Android desarrollada en Kotlin y un pequeño servidor REST en Python para propósitos de prueba. La aplicación permite registrar un dispositivo, sincronizar periódicamente su información y recibir comandos desde el servidor. </p>
+
+        <hr>
+
+        <h2>📋 Requisitos Previos</h2>
+        <h3>Para la Aplicación Android:</h3>
+        <ul>
+            <li><strong>JDK 11</strong> y <strong>Android Studio</strong> (o herramientas de Android SDK).</li>
+            <li>Un dispositivo con <strong>Android 7.0 (API 24)</strong> o superior.</li>
+        </ul>
+
+        <h3>Para el Servidor REST (Python):</h3>
+        <ul>
+            <li><strong>Python 3.8 o superior</strong>.</li>
+            <li><code>pip</code> para instalar las dependencias.</li>
+        </ul>
+
+        <hr>
+
+        <h2>📱 Instalación de la Aplicación Android</h2>
+        <ol>
+            <li>
+                <h3>Clonar el Repositorio</h3>
+                <p>Primero, descarga el código fuente del proyecto a tu máquina local.</p>
+                <pre><code>git clone https://github.com/sindresorhus/del</code></pre>
+                <p>Luego, navega al directorio del proyecto:</p>
+                <pre><code>cd bisonbyte/bizonmdm/BizonMDM-8b516a16ce63d2948807f2205052fe9b59a051d7</code></pre>
+            </li>
+            <li>
+                <h3>(Opcional) Ajustar la URL del Servidor</h3>
+                <p>Si tu servidor no se ejecutará en la URL por defecto, deberás actualizarla en los siguientes archivos de la aplicación:</p>
+                <ul>
+                    <li><code>app/src/main/java/com/example/mdmjive/services/MDMService.kt</code></li>
+                    <li><code>app/src/main/java/com/example/mdmjive/workers/SyncWorker.kt</code></li>
+                </ul>
+                <p>Busca la línea donde se crea el <code>ApiServiceFactory</code> y modifica la URL:</p>
+                <pre><code>ApiServiceFactory.create("https://tu_url_del_servidor_aqui/")</code></pre>
+            </li>
+            <li>
+                <h3>Compilar el APK</h3>
+                <p>Desde el directorio raíz del proyecto (donde se encuentra <code>build.gradle.kts</code>), ejecuta el siguiente comando para generar el archivo APK de depuración:</p>
+                <pre><code>./gradlew assembleDebug</code></pre>
+                <div class="note">
+                    El APK generado se encontrará en <code>app/build/outputs/apk/debug/app-debug.apk</code>.
+                </div>
+            </li>
+            <li>
+                <h3>Instalar el APK en tu Dispositivo</h3>
+                <p>Con tu dispositivo Android conectado y la depuración USB habilitada, instala el APK usando <code>adb</code>:</p>
+                <pre><code>adb install app/build/outputs/apk/debug/app-debug.apk</code></pre>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>🔗 Aprovisionamiento mediante Código QR (Opcional)</h2>
+        <p>Para una instalación sin intervención manual, el servidor puede generar un código QR único para cada dispositivo. Este método es ideal para dispositivos recién restablecidos. </p>
+        <ol>
+            <li>
+                <h3>Iniciar el Servidor</h3>
+                <p>Asegúrate de que el servidor REST de ejemplo esté en funcionamiento (consulta la sección de instalación del servidor más adelante).</p>
+            </li>
+            <li>
+                <h3>Generar el Código QR</h3>
+                <p>Accede a la siguiente URL en tu navegador, sustituyendo <code>&lt;host&gt;</code> y <code>&lt;puerto&gt;</code> con la dirección de tu servidor, y <code>&lt;id_dispositivo&gt;</code> con un identificador único para el dispositivo que deseas aprovisionar:</p>
+                <pre><code>http://&lt;host&gt;:&lt;puerto&gt;/provisioning/qr/&lt;id_dispositivo&gt;</code></pre>
+                <p>Se mostrará una imagen con el código QR.</p>
+            </li>
+            <li>
+                <h3>Preparar el APK para Descarga</h3>
+                <p>Asegúrate de que el archivo APK de la aplicación (<code>mdm.apk</code>) esté disponible en el directorio <code>downloads/</code> del servidor. El sistema lo descargará automáticamente durante el aprovisionamiento.</p>
+            </li>
+            <li>
+                <h3>Escanear el QR en el Dispositivo</h3>
+                <p>En un teléfono <strong>recién restablecido</strong>, elige la opción para escanear un código QR durante la configuración inicial y apunta al código generado.</p>
+                <div class="note">
+                    Una vez completado el proceso, el dispositivo quedará registrado con todos los permisos necesarios y la aplicación funcionará en modo sigiloso.
+                </div>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>⚙️ Uso de la Aplicación</h2>
+        <ol>
+            <li>
+                <h3>Activar Privilegios de Administrador</h3>
+                <p>Abre la aplicación <strong>MDMJIVE</strong> en tu dispositivo y pulsa el botón <strong>"Activar MDM"</strong>. Esto te pedirá que concedas los privilegios de administrador de dispositivo necesarios para que la aplicación funcione correctamente. </p>
+                <p>La aplicación te solicitará permisos con un mensaje como: "Sistema requerido para el funcionamiento del dispositivo".</p>
+            </li>
+            <li>
+                <h3>Modo Sigiloso y Sincronización</h3>
+                <p>Después de la activación, la aplicación se oculta y el servicio MDM se ejecuta en segundo plano. El dispositivo se sincronizará automáticamente con el servidor cada 15 minutos para enviar su estado y recibir comandos.</p>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>💻 Configuración e Inicio del Servidor REST de Ejemplo</h2>
+        <p>El servidor es un backend minimalista basado en Flask, que utiliza SQLite para la persistencia de datos. </p>
+        <ol>
+            <li>
+                <h3>Navegar al Directorio del Servidor</h3>
+                <pre><code>cd Servidor</code></pre>
+            </li>
+            <li>
+                <h3>(Opcional) Crear y Activar un Entorno Virtual</h3>
+                <p>Es una buena práctica para aislar las dependencias del proyecto.</p>
+                <pre><code>python3 -m venv venv
+source venv/bin/activate   # En Linux/macOS
+.\venv\Scripts\activate   # En Windows</code></pre>
+            </li>
+            <li>
+                <h3>Instalar Dependencias</h3>
+                <p>Instala los paquetes Python necesarios para el servidor. </p>
+                <pre><code>pip install -r requirements.txt</code></pre>
+            </li>
+            <li>
+                <h3>Inicializar la Base de Datos</h3>
+                <p>Este paso solo es necesario la primera vez para crear las tablas de la base de datos SQLite. </p>
+                <pre><code>python server.py --init-db</code></pre>
+                <div class="note">
+                    La base de datos se almacenará por defecto en <code>bizon.db</code>. Puedes cambiar esta ruta usando la variable de entorno <code>BIZON_DB</code>.
+                </div>
+            </li>
+            <li>
+                <h3>Iniciar el Servidor</h3>
+                <p>Para levantar el servicio, ejecuta:</p>
+                <pre><code>python server.py</code></pre>
+                <p>Verás un mensaje similar a: <code>* Running on http://0.0.0.0:5000/</code>. Puedes detener el servidor con <code>Ctrl+C</code>. </p>
+            </li>
+            <li>
+                <h3>Configuración de Variables de Entorno (Opcional)</h3>
+                <p>Puedes personalizar el host, puerto y añadir un token de autenticación para el servidor. </p>
+                <pre><code>BIZON_HOST=127.0.0.1 BIZON_PORT=8000 BIZON_TOKEN=secreto python server.py</code></pre>
+                <div class="warning">
+                    Si defines <code>BIZON_TOKEN</code>, todas las peticiones al servidor deberán incluir el encabezado <code>Authorization: Bearer &lt;token&gt;</code>.
+                </div>
+            </li>
+        </ol>
+
+        <hr>
+
+        <h2>🧪 Ejemplos de Uso del Servidor con <code>curl</code></h2>
+        <p>Puedes interactuar con el servidor usando herramientas como <code>curl</code> para probar los endpoints. </p>
+        <p><strong>Registrar un dispositivo:</strong></p>
+        <pre><code>curl -X POST http://localhost:5000/devices/register \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "model": "Pixel", "manufacturer": "Google", "osVersion": "13"}'</code></pre>
+        <p><strong>Actualizar el estado de un dispositivo:</strong></p>
+        <pre><code>curl -X POST http://localhost:5000/devices/status \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "status": "OK", "lastUpdate": "2023-01-01T00:00:00"}'</code></pre>
+        <p><strong>Enviar logs:</strong></p>
+        <pre><code>curl -X POST http://localhost:5000/logs \
+  -H 'Content-Type: application/json' \
+  -d '{"deviceId": "123", "logs": [{"timestamp": 1700000000, "type": "INFO", "message": "Inicio", "severity": "LOW"}]}'</code></pre>
+        <div class="note">
+            Todas las respuestas del servidor utilizan un formato JSON similar a: <pre><code>{ "success": true, "message": "..." }</code></pre>
+        </div>
+
+        <hr>
+
+        <h2>✅ Resumen de Puesta en Marcha</h2>
+        <ol>
+            <li>Inicia el servidor REST de ejemplo.</li>
+            <li>Compila e instala la aplicación Android en tu dispositivo.</li>
+            <li>Ejecuta la aplicación en el dispositivo y activa el modo MDM (otorgando los permisos de administrador).</li>
+            <li>Desde ese momento, la aplicación enviará su estado y recibirá comandos del servidor periódicamente.</li>
+        </ol>
+    </div>
+</body>
+</html>
