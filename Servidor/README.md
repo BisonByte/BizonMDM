@@ -45,11 +45,13 @@ Ver\u00e1s un mensaje como:
 Puedes detenerlo con `Ctrl+C`. El host y el puerto pueden cambiarse con las variables `BIZON_HOST` y `BIZON_PORT`:
 
 ```bash
-BIZON_HOST=127.0.0.1 BIZON_PORT=8000 BIZON_TOKEN=secreto python server.py
+BIZON_HOST=127.0.0.1 BIZON_PORT=8000 JWT_SECRET=secreto python server.py
 ```
 
-Si defines la variable `BIZON_TOKEN`, todas las peticiones deberán incluir el
-encabezado `Authorization: Bearer <token>`.
+Si defines la variable `JWT_SECRET`, todas las peticiones deberán incluir un
+token JWT válido en el encabezado `Authorization: Bearer <token>`.
+Para habilitar HTTPS establece `SSL_CERT` y `SSL_KEY` apuntando al certificado
+y a la llave privada respectivamente.
 La base de datos se almacena en el archivo indicado por `BIZON_DB` (por defecto
 `bizon.db`).
 

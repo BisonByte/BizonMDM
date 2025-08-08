@@ -59,8 +59,10 @@ def init_db() -> None:
         from alembic import command
         from alembic.config import Config
 
-        cfg = Config(os.path.join(os.path.dirname(__file__), "alembic.ini"))
+        base_dir = os.path.dirname(__file__)
+        cfg = Config(os.path.join(base_dir, "alembic.ini"))
         cfg.set_main_option("sqlalchemy.url", DB_URL)
+        cfg.set_main_option("script_location", os.path.join(base_dir, "alembic"))
         command.upgrade(cfg, "head")
     except (ModuleNotFoundError, ImportError):
         # Alembic no disponible: crea las tablas directamente

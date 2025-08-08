@@ -6,10 +6,10 @@ import sys
 # Configure database and token before importing the server
 DB_FD, DB_PATH = tempfile.mkstemp()
 os.environ['DATABASE_URL'] = f'sqlite:///{DB_PATH}'
-os.environ['BIZON_TOKEN'] = 'testtoken'
+os.environ['JWT_SECRET'] = 'testsecret'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from server import app, init_db
+from server import app, init_db, encode_jwt
 
 
 class ServerTestCase(unittest.TestCase):
@@ -24,7 +24,7 @@ class ServerTestCase(unittest.TestCase):
         if not hasattr(werkzeug, "__version__"):
             werkzeug.__version__ = "3"
         self.client = app.test_client()
-        self.token = 'testtoken'
+        self.token = encode_jwt({'sub': 'tester'}, os.environ['JWT_SECRET'])
 
     def auth_header(self):
         return {'Authorization': f'Bearer {self.token}'}
