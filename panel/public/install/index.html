@@ -21,10 +21,6 @@
     document.getElementById('installForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(e.target));
-      if (!(/^.{14,}$/.test(data.admin_pass) && /[A-Z]/.test(data.admin_pass) && /[a-z]/.test(data.admin_pass) && /\d/.test(data.admin_pass))) {
-        document.getElementById('output').textContent = 'Contraseña débil';
-        return;
-      }
       const res = await fetch('/panel/install', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
