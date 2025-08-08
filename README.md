@@ -67,10 +67,15 @@ cd Servidor
 python3 -m venv venv       # opcional
 source venv/bin/activate   # opcional
 pip install -r requirements.txt
+python server.py --init-db # solo la primera vez
 python server.py
 ```
 
-Por defecto escuchará en `http://0.0.0.0:5000/`. Se pueden cambiar el host o el puerto mediante las variables `BIZON_HOST` y `BIZON_PORT`.
+Por defecto escuchará en `http://0.0.0.0:5000/`. Se pueden cambiar el host o el puerto mediante las variables `BIZON_HOST` y `BIZON_PORT`. También puedes proteger los endpoints estableciendo `JWT_SECRET` y habilitar notificaciones push con `FCM_SERVER_KEY`.
+
+```bash
+BIZON_HOST=127.0.0.1 BIZON_PORT=8000 JWT_SECRET=secreto FCM_SERVER_KEY=tu_clave python server.py
+```
 
 Consulta el [README del servidor](Servidor/README.md) para ver los endpoints disponibles y ejemplos de peticiones.
 
