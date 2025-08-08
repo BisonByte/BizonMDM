@@ -1,9 +1,11 @@
 {
-  "name": "admin-frontend",
+  "name": "web-admin",
   "version": "1.0.0",
   "description": "Aplicación web de administración para Bizon MDM",
   "scripts": {
-    "test": "echo 'No tests'"
+    "test": "echo 'No tests'",
+    "lint": "npx eslint .",
+    "build": "echo 'Building web-admin'"
   },
   "keywords": [],
   "author": "",

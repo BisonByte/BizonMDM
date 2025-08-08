@@ -13,7 +13,7 @@ services:
     image: python:3.11-slim
     working_dir: /app
     volumes:
-      - ./Servidor:/app
+      - ../server:/app
     command: bash -c "pip install --no-cache-dir -r requirements.txt && python server.py"
     environment:
       - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/bizon

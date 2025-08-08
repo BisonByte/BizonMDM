@@ -1,22 +1,16 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
-local.properties
-__pycache__/
-*.db
-
-# Frontend
+.idea/
+.kotlin/
+*.zip
 node_modules/
 dist/
-
+build/
+.env
+__pycache__/
+*.pyc
+# Additional ignores
+*.iml
+.gradle/
+local.properties
+.DS_Store
+captures/
+.cxx/

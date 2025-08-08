@@ -20,4 +20,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "MDMJIVE"
-include(":app")
+include(":android")
