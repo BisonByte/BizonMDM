@@ -1,0 +1,11 @@
+{
+  "name": "admin-frontend",
+  "version": "1.0.0",
+  "description": "Aplicación web de administración para Bizon MDM",
+  "scripts": {
+    "test": "echo 'No tests'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
