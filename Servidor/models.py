@@ -55,6 +55,14 @@ class Command(Base):
     device = relationship("Device", back_populates="commands")
 
 
+class Admin(Base):
+    __tablename__ = "admins"
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
+    created = Column(DateTime(timezone=True), server_default=func.now())
+
+
 def init_db() -> None:
     try:
         from alembic import command
