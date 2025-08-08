@@ -1,0 +1,9 @@
+Flask
+SQLAlchemy
+alembic
+pymysql
+passlib[bcrypt]
+pyotp
+Flask-Limiter
+PyJWT
+flask-cors
