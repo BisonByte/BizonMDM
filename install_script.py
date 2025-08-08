@@ -1,7 +1,7 @@
 import os
 import hashlib
 from flask import Flask, request, redirect, send_from_directory
-from models import init_db, SessionLocal, Admin
+from Servidor.models import init_db, SessionLocal, Admin
 
 app = Flask(__name__)
 
@@ -15,7 +15,7 @@ def install():
         user = request.form['user']
         pwd = request.form['pwd']
 
-        base_dir = os.path.dirname(__file__)
+        base_dir = os.path.join(os.path.dirname(__file__), 'Servidor')
         env_path = os.path.join(base_dir, '.env')
         with open(env_path, 'w', encoding='utf-8') as fh:
             fh.write(f"DATABASE_URL={db}\nJWT_SECRET={jwt}\n")
@@ -33,7 +33,7 @@ def install():
                 session.add(Admin(username=user, password=hashed))
                 session.commit()
         return redirect('/admin')
-    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+    root_dir = os.path.dirname(__file__)
     return send_from_directory(root_dir, 'instalacion_bizonmdm.html')
 
 
