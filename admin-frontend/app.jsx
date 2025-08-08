@@ -88,12 +88,40 @@ function DeviceTable({ onSelect }) {
   );
 }
 
-function DeviceDetails({ id, onBack }) {
-  const [info, setInfo] = useState(null);
+function DeviceLogs({ id }) {
   const [logs, setLogs] = useState([]);
   useEffect(() => {
-    apiFetch(`/devices/${id}`).then(setInfo).catch(console.error);
     apiFetch(`/logs/${id}`).then(d => setLogs(d.logs || [])).catch(console.error);
+  }, [id]);
+  if (!logs.length) return <p>Sin registros</p>;
+  return (
+    <table>
+      <thead>
+        <tr>
+          <th>Fecha</th>
+          <th>Tipo</th>
+          <th>Severidad</th>
+          <th>Mensaje</th>
+        </tr>
+      </thead>
+      <tbody>
+        {logs.map((l, i) => (
+          <tr key={i}>
+            <td>{new Date((l.timestamp || 0) * 1000).toLocaleString()}</td>
+            <td>{l.type}</td>
+            <td>{l.severity}</td>
+            <td>{l.message}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+function DeviceDetails({ id, onBack }) {
+  const [info, setInfo] = useState(null);
+  useEffect(() => {
+    apiFetch(`/devices/${id}`).then(setInfo).catch(console.error);
   }, [id]);
   const sendCommand = async (action) => {
     try {
@@ -124,9 +152,7 @@ function DeviceDetails({ id, onBack }) {
         <button onClick={() => sendCommand('screenshot')}>Tomar Captura</button>
       </div>
       <h3>Historial de Logs</h3>
-      <ul>
-        {logs.map((l, i) => <li key={i}>{JSON.stringify(l)}</li>)}
-      </ul>
+      <DeviceLogs id={id} />
       <button onClick={onBack}>Volver</button>
     </div>
   );
