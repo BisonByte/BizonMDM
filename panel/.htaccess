@@ -1,8 +1,0 @@
-RewriteEngine On
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteRule ^ public/index.html [QSA,L]
-
-PassengerEnabled On
-PassengerAppRoot /home/TUUSUARIO/public_html/panel/app
-PassengerAppType wsgi
-PassengerStartupFile wsgi.py
