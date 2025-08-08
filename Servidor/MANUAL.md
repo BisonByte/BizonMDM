@@ -44,13 +44,13 @@ Esto inicializa la base de datos (archivo SQLite) la primera vez y luego levanta
  * Running on http://0.0.0.0:5000/
 ```
 
-Se pueden modificar la dirección y el puerto mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`. Si defines `BIZON_TOKEN`, todas las peticiones deberán incluir el encabezado `Authorization: Bearer <token>`.
+Se pueden modificar la dirección y el puerto mediante las variables de entorno `BIZON_HOST` y `BIZON_PORT`. Si defines `JWT_SECRET`, todas las peticiones deberán incluir un token JWT válido en el encabezado `Authorization: Bearer <token>`.
 La ruta del archivo de base de datos puede cambiarse con `BIZON_DB` (por defecto `bizon.db`).
 
 ## 5. Características y funcionamiento interno
 
 - **Persistencia de datos**: se utiliza SQLite a través de SQLAlchemy. Las tablas (dispositivos, logs y comandos) están definidas en `models.py`. La función `init_db()` crea las tablas necesarias si no existen.
-- **Seguridad opcional**: al definir `BIZON_TOKEN`, los endpoints exigen autenticación mediante el encabezado mencionado.
+- **Seguridad opcional**: al definir `JWT_SECRET`, los endpoints exigen autenticación mediante un token JWT en el encabezado mencionado.
 - **Endpoints principales**:
   - `/devices/register` para registrar un dispositivo (`POST`).
   - `/devices/status` para actualizar su estado (`POST`).

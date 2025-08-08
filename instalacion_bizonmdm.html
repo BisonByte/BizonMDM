@@ -257,10 +257,10 @@ source venv/bin/activate   # En Linux/macOS
             </li>
             <li>
                 <h4>Configuración de Variables de Entorno (Opcional)</h4>
-                <p>Puedes personalizar el host, puerto y añadir un token de autenticación para el servidor.</p>
-                <pre><code>BIZON_HOST=127.0.0.1 BIZON_PORT=8000 BIZON_TOKEN=secreto python server.py</code></pre>
+                <p>Puedes personalizar el host, puerto y añadir un token de autenticación para el servidor. También puedes habilitar notificaciones push con una clave de Firebase.</p>
+                <pre><code>BIZON_HOST=127.0.0.1 BIZON_PORT=8000 JWT_SECRET=secreto FCM_SERVER_KEY=tu_clave python server.py</code></pre>
                 <div class="warning">
-                    Si defines <code>BIZON_TOKEN</code>, todas las peticiones al servidor deberán incluir el encabezado <code>Authorization: Bearer &lt;token&gt;</code>.
+                    Si defines <code>JWT_SECRET</code>, todas las peticiones al servidor deberán incluir un token JWT válido en el encabezado <code>Authorization: Bearer &lt;token&gt;</code>.
                 </div>
             </li>
         </ol>
