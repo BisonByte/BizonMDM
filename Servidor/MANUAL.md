@@ -1,6 +1,6 @@
 # Manual completo del servidor de ejemplo
 
-Este documento detalla el funcionamiento del servidor incluido en el directorio `server/`. Se basa en Flask y sirve como backend de pruebas para la aplicación BizonMDM.
+Este documento detalla el funcionamiento del servidor incluido en el directorio `Servidor/`. Se basa en Flask y sirve como backend de pruebas para la aplicación BizonMDM.
 
 ## 1. ¿Qué contiene el servidor?
 
@@ -112,7 +112,7 @@ Todas las respuestas usan el siguiente formato JSON:
 
 ## 9. Resumen de pasos
 
-1. Clona este repositorio y entra en `server/`.
+1. Clona este repositorio y entra en `Servidor/`.
 2. (Opcional) crea un entorno virtual.
 3. Instala las dependencias con `pip install -r requirements.txt`.
 4. Inicializa la base de datos: `python server.py --init-db`.
