@@ -8,6 +8,7 @@ import com.example.mdmjive.network.models.Command
 import com.example.mdmjive.database.entities.DeviceInfo
 import android.provider.Settings
 import android.os.Build
+import android.telephony.TelephonyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.util.Log
@@ -32,11 +33,38 @@ class DeviceRepository(
 
     // Registrar dispositivo
     suspend fun registerDevice(context: android.content.Context) {
+        val telephonyManager =
+            context.getSystemService(android.content.Context.TELEPHONY_SERVICE) as TelephonyManager
+
+        val imei = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                telephonyManager.imei
+            } else {
+                @Suppress("DEPRECATION")
+                telephonyManager.deviceId
+            }
+        } catch (e: SecurityException) {
+            null
+        }
+
+        val serial = try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                Build.getSerial()
+            } else {
+                @Suppress("DEPRECATION")
+                Build.SERIAL
+            }
+        } catch (e: SecurityException) {
+            null
+        }
+
         val deviceInfo = NetworkDeviceInfo(
             deviceId = getDeviceId(context),
             model = Build.MODEL,
             manufacturer = Build.MANUFACTURER,
-            osVersion = Build.VERSION.RELEASE
+            osVersion = Build.VERSION.RELEASE,
+            imei = imei,
+            serial = serial
         )
 
         try {
