@@ -2,7 +2,7 @@
 
 Ahora almacena la información en una base de datos SQLite en lugar de
 mantener todo en memoria. Permite opcionalmente proteger los endpoints
-mediante un token especificado en ``BIZON_TOKEN``.
+mediante un token firmado mediante JWT.
 """
 
 from flask import Flask, request, jsonify, send_file
@@ -12,6 +12,8 @@ import base64
 import io
 import qrcode
 import logging
+import hmac
+import hashlib
 
 from models import Device, LogEntry, Command, SessionLocal, init_db
 
@@ -19,19 +21,54 @@ app = Flask(__name__)
 
 
 # Configuración ---------------------------------------------------------------
-BIZON_TOKEN = os.getenv("BIZON_TOKEN")
+JWT_SECRET = os.getenv("JWT_SECRET")
 logging.basicConfig(filename="server.log", level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(message)s")
 
 
+def _b64url_encode(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
+
+
+def _b64url_decode(data: str) -> bytes:
+    padding = "=" * (-len(data) % 4)
+    return base64.urlsafe_b64decode(data + padding)
+
+
+def encode_jwt(payload: dict, secret: str) -> str:
+    header = {"alg": "HS256", "typ": "JWT"}
+    header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
+    payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
+    signing_input = f"{header_b64}.{payload_b64}".encode()
+    signature = hmac.new(secret.encode(), signing_input, hashlib.sha256).digest()
+    signature_b64 = _b64url_encode(signature)
+    return f"{header_b64}.{payload_b64}.{signature_b64}"
+
+
+def decode_jwt(token: str, secret: str) -> dict:
+    header_b64, payload_b64, signature_b64 = token.split(".")
+    signing_input = f"{header_b64}.{payload_b64}".encode()
+    signature = _b64url_decode(signature_b64)
+    expected = hmac.new(secret.encode(), signing_input, hashlib.sha256).digest()
+    if not hmac.compare_digest(signature, expected):
+        raise ValueError("Invalid signature")
+    payload = json.loads(_b64url_decode(payload_b64))
+    return payload
+
+
 def require_auth(request) -> bool:
-    """Valida el encabezado Authorization si BIZON_TOKEN está definido."""
-    if not BIZON_TOKEN:
+    """Valida el encabezado Authorization mediante JWT si está configurado."""
+    if not JWT_SECRET:
         return True
     auth = request.headers.get("Authorization", "")
-    if auth.startswith("Bearer ") and auth.split(" ", 1)[1] == BIZON_TOKEN:
+    if not auth.startswith("Bearer "):
+        return False
+    token = auth.split(" ", 1)[1]
+    try:
+        decode_jwt(token, JWT_SECRET)
         return True
-    return False
+    except Exception:
+        return False
 
 
 def get_session():
@@ -216,5 +253,8 @@ if __name__ == '__main__':
     else:
         host = os.getenv('BIZON_HOST', '0.0.0.0')
         port = int(os.getenv('BIZON_PORT', '5000'))
+        ssl_cert = os.getenv('SSL_CERT')
+        ssl_key = os.getenv('SSL_KEY')
+        ssl_context = (ssl_cert, ssl_key) if ssl_cert and ssl_key else None
         init_db()
-        app.run(host=host, port=port)
+        app.run(host=host, port=port, ssl_context=ssl_context)
