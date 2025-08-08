@@ -30,6 +30,7 @@ class Device(Base):
     serial = Column(String)
     info = Column(Text)
     status = Column(Text)
+    fcm_token = Column(String)
     added = Column(DateTime(timezone=True), server_default=func.now())
 
     logs = relationship("LogEntry", back_populates="device", cascade="all, delete-orphan")

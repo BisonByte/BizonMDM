@@ -2,6 +2,7 @@ import os
 import tempfile
 import unittest
 import sys
+from unittest import mock
 
 # Configure database and token before importing the server
 DB_FD, DB_PATH = tempfile.mkstemp()
@@ -80,6 +81,28 @@ class ServerTestCase(unittest.TestCase):
         cmds = resp.get_json()
         self.assertEqual(cmds[0]['action'], 'app_uninstall')
         self.assertEqual(cmds[0]['package'], 'com.example.app')
+
+    @mock.patch('server._send_fcm_message')
+    def test_fcm_notification_sent(self, mock_send):
+        os.environ['FCM_SERVER_KEY'] = 'dummy'
+        try:
+            self.client.post(
+                '/devices/register',
+                json={'deviceId': 'd1', 'fcmToken': 'tok'},
+                headers=self.auth_header(),
+            )
+            resp = self.client.post(
+                '/api/device/reboot',
+                json={'deviceId': 'd1'},
+                headers=self.auth_header(),
+            )
+            self.assertEqual(resp.status_code, 200)
+            mock_send.assert_called_once()
+            token, payload = mock_send.call_args.args
+            self.assertEqual(token, 'tok')
+            self.assertEqual(payload['action'], 'device_reboot')
+        finally:
+            del os.environ['FCM_SERVER_KEY']
 
 if __name__ == '__main__':
     unittest.main()

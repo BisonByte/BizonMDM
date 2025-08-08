@@ -20,6 +20,7 @@ def upgrade():
         sa.Column("serial", sa.String(), nullable=True),
         sa.Column("info", sa.Text(), nullable=True),
         sa.Column("status", sa.Text(), nullable=True),
+        sa.Column("fcm_token", sa.String(), nullable=True),
         sa.Column("added", sa.DateTime(timezone=True), server_default=sa.func.now()),
     )
     op.create_table(

@@ -12,6 +12,7 @@ La app permite registrar un dispositivo, sincronizar periódicamente su informac
 - **Controles de seguridad** que aplican políticas sobre el dispositivo.
 - **Modo sigiloso** que oculta la app y evita su desinstalación tras conceder privilegios de administrador.
 - **Restricciones** que deshabilitan el formateo, fijan el brillo al 100 %, fuerzan el GPS activo y evitan cambios de fecha u hora.
+- **Notificaciones push** mediante Firebase Cloud Messaging para recibir comandos al instante.
 
 ## Estructura del repositorio
 
