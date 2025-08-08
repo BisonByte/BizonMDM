@@ -1,4 +1,6 @@
 from .base import Base
 from .audit import AuditLog
 from .admin import Admin
-__all__ = ['Base', 'Admin', 'AuditLog']
+from .jwt_blacklist import JWTBlacklist
+
+__all__ = ['Base', 'Admin', 'AuditLog', 'JWTBlacklist']
