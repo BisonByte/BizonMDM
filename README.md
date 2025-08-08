@@ -6,6 +6,7 @@ BizonMDM is a simple mobile device management solution composed of a Python back
 
 - **server**: Flask REST API that stores device information and processes commands.
 - **web-admin**: minimal web UI for managing devices through the API.
+- **panel**: Flask service for initial setup and admin authentication.
 - **android**: Android application that communicates with the server.
 
 ## Run with Docker
@@ -32,6 +33,9 @@ npm install --prefix web-admin
 npm run build --prefix web-admin
 ```
 Serve the contents of `web-admin/` with your preferred static server.
+
+### Panel
+The panel exposes an installation endpoint used during the first setup. After a successful installation it creates a flag at `panel/.installed` and sets `INSTALLED=1`. When this flag file is present or the configuration reports `INSTALLED=1`, the installer is disabled and its blueprint is not registered. For new deployments, remove `panel/.installed` and ensure `INSTALLED` is unset or `0` so that the installer routes are available.
 
 ### Android
 ```bash
