@@ -1,0 +1,26 @@
+version: "3.8"
+services:
+  db:
+    image: postgres:14
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: bizon
+    volumes:
+      - db_data:/var/lib/postgresql/data
+  server:
+    image: python:3.11-slim
+    working_dir: /app
+    volumes:
+      - ./Servidor:/app
+    command: bash -c "pip install --no-cache-dir -r requirements.txt && python server.py"
+    environment:
+      - DATABASE_URL=postgresql+psycopg2://postgres:postgres@db:5432/bizon
+      - BIZON_HOST=0.0.0.0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+volumes:
+  db_data:

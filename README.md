@@ -74,6 +74,16 @@ Por defecto escuchará en `http://0.0.0.0:5000/`. Se pueden cambiar el host o el
 
 Consulta el [README del servidor](Servidor/README.md) para ver los endpoints disponibles y ejemplos de peticiones.
 
+### Ejecución con Docker Compose
+
+Para evitar instalaciones manuales se incluye un `docker-compose.yml` en la raíz del proyecto. Con él se levanta el servidor y una base de datos PostgreSQL con un solo comando:
+
+```bash
+docker-compose up
+```
+
+La primera vez descargará las dependencias necesarias. El servidor quedará disponible en `http://localhost:5000`.
+
 ## Puesta en marcha
 
 1. Inicia el servidor según las instrucciones anteriores.
