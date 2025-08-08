@@ -1,41 +1,33 @@
 # BizonMDM
 
-BizonMDM is a simple mobile device management solution composed of a Python backend, a web administration interface and an Android client.
+Esta versión incluye un proceso de instalación simplificado para el servidor de ejemplo y el panel de administración.
 
-## Architecture
+## Instalación del servidor
 
-- **server**: Flask REST API that stores device information and processes commands.
-- **web-admin**: minimal web UI for managing devices through the API.
-- **android**: Android application that communicates with the server.
+1. Clona este repositorio.
+2. Instala las dependencias y ejecuta el script de instalación:
+   ```bash
+   pip install -r Servidor/requirements.txt
+   python install_script.py
+   ```
+3. Abre `http://localhost:5000/install` en tu navegador y completa el formulario con:
+   - Cadena de conexión de la base de datos.
+   - Clave secreta JWT.
+   - Clave de Firebase Cloud Messaging.
+   - Usuario y contraseña del administrador inicial.
+4. Al enviar el formulario se realizará automáticamente:
+   - La creación del archivo `.env` con la configuración proporcionada.
+   - El guardado de la clave de Firebase en `fcm_key.txt`.
+   - La ejecución de las migraciones de Alembic para preparar la base de datos.
+   - La creación del usuario administrador.
+5. Tras una instalación exitosa serás redirigido al panel de administración.
 
-## Run with Docker
+Para iniciar el servidor después de la instalación:
 
 ```bash
-cd infra
-docker compose up
+python Servidor/server.py
 ```
 
-This starts a PostgreSQL database and the server on port `5000`.
+## Panel de administración
 
-## Run services without Docker
-
-### Server
-```bash
-pip install -r server/requirements.txt
-cp server/.env.example server/.env
-python server/server.py
-```
-
-### Web Admin
-```bash
-npm install --prefix web-admin
-npm run build --prefix web-admin
-```
-Serve the contents of `web-admin/` with your preferred static server.
-
-### Android
-```bash
-./gradlew :android:assembleDebug
-```
-
-See [docs/DEV_SETUP.md](docs/DEV_SETUP.md) for detailed setup instructions.
+La interfaz web ubicada en `admin-frontend/` obtiene la lista de dispositivos desde la API del servidor y permite enviar acciones como "Borrar datos" o "Bloquear dispositivo". También muestra un indicador de estado que comprueba la conexión con la base de datos y la validez de la clave de Firebase mediante el endpoint `/api/status`.
