@@ -136,27 +136,49 @@ function DeviceLogs({ id }) {
   );
 }
 
-function Config() {
+function FirebaseConfigForm() {
   const [key, setKey] = useState('');
+  const [message, setMessage] = useState('');
   useEffect(() => {
-    apiFetch('/api/firebase-key').then(d => setKey(d.key || '')).catch(console.error);
+    apiFetch('/api/config/fcm').then(d => setKey(d.key || '')).catch(console.error);
   }, []);
   const save = () => {
-    apiFetch('/api/firebase-key', { method: 'POST', body: JSON.stringify({ key }) })
-      .then(() => alert('Guardado'))
-      .catch(() => alert('Error'));
+    apiFetch('/api/config/fcm', { method: 'POST', body: JSON.stringify({ key }) })
+      .then(() => setMessage('Clave de Firebase guardada correctamente'))
+      .catch(() => setMessage('Error al guardar la clave'));
   };
   const test = () => {
     apiFetch('/api/test-fcm', { method: 'POST' })
-      .then(r => alert(`Notificación enviada a ${r.sent} dispositivos`))
-      .catch(() => alert('Error'));
+      .then(r => setMessage(`Notificación enviada a ${r.sent} dispositivos`))
+      .catch(() => setMessage('Error al conectar con Firebase'));
   };
   return (
     <div>
-      <h2>Configuración de Firebase</h2>
       <input value={key} onChange={e => setKey(e.target.value)} placeholder="FCM Server Key" />
-      <button onClick={save}>Guardar</button>
-      <button onClick={test}>Probar conexión</button>
+      <div>
+        <button onClick={save}>Guardar</button>
+        <button onClick={test}>Probar conexión</button>
+      </div>
+      {message && <p>{message}</p>}
+    </div>
+  );
+}
+
+function Config() {
+  return (
+    <div>
+      <h2>Configuración de Firebase</h2>
+      <FirebaseConfigForm />
+    </div>
+  );
+}
+
+function FirstSteps() {
+  return (
+    <div>
+      <h2>Primeros pasos</h2>
+      <p>Ingresa la clave de Firebase para habilitar las notificaciones.</p>
+      <FirebaseConfigForm />
     </div>
   );
 }
@@ -246,7 +268,7 @@ function App() {
     localStorage.setItem('token', v);
   };
 
-  if (welcome) {
+  if (welcome && route !== '#/first-steps') {
     return <Welcome onDone={() => { localStorage.setItem('welcomeSeen', '1'); setWelcome(false); }} />;
   }
 
@@ -258,6 +280,7 @@ function App() {
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
   } else if (route === '#/policies') page = <PolicyEditor />;
   else if (route === '#/config') page = <Config />;
+  else if (route === '#/first-steps') page = <FirstSteps />;
   else page = <Dashboard />;
 
   return (

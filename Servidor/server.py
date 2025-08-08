@@ -23,13 +23,17 @@ app = Flask(__name__)
 
 
 # Configuración ---------------------------------------------------------------
+BASE_DIR = os.path.dirname(__file__)
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+if os.path.exists(ENV_PATH):
+    with open(ENV_PATH, 'r', encoding='utf-8') as fh:
+        for line in fh:
+            if '=' in line:
+                k, v = line.strip().split('=', 1)
+                os.environ.setdefault(k, v)
+
 JWT_SECRET = os.getenv("JWT_SECRET")
-# La clave de Firebase puede venir de variable de entorno o de un archivo
 FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY")
-FCM_KEY_FILE = os.path.join(os.path.dirname(__file__), "fcm_key.txt")
-if not FCM_SERVER_KEY and os.path.exists(FCM_KEY_FILE):
-    with open(FCM_KEY_FILE, "r", encoding="utf-8") as fh:
-        FCM_SERVER_KEY = fh.read().strip()
 FCM_URL = "https://fcm.googleapis.com/fcm/send"
 logging.basicConfig(filename="server.log", level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(message)s")
@@ -292,8 +296,8 @@ def api_status():
     return jsonify({'database': db_ok, 'firebase': firebase_ok}), 200
 
 
-@app.route('/api/firebase-key', methods=['GET', 'POST'])
-def api_firebase_key():
+@app.route('/api/config/fcm', methods=['GET', 'POST'])
+def api_config_fcm():
     if not require_auth(request):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     global FCM_SERVER_KEY
@@ -302,10 +306,16 @@ def api_firebase_key():
         key = data.get('key')
         if not key:
             return jsonify({'success': False, 'message': 'key requerido'}), 400
-        FCM_SERVER_KEY = key
-        with open(FCM_KEY_FILE, 'w', encoding='utf-8') as fh:
-            fh.write(key)
-        return jsonify({'success': True}), 200
+        FCM_SERVER_KEY = key.strip()
+        env_lines = []
+        if os.path.exists(ENV_PATH):
+            with open(ENV_PATH, 'r', encoding='utf-8') as fh:
+                env_lines = [l for l in fh.readlines() if not l.startswith('FCM_SERVER_KEY=')]
+        env_lines.append(f'FCM_SERVER_KEY={FCM_SERVER_KEY}\n')
+        with open(ENV_PATH, 'w', encoding='utf-8') as fh:
+            fh.writelines(env_lines)
+        os.environ['FCM_SERVER_KEY'] = FCM_SERVER_KEY
+        return jsonify({'success': True, 'message': 'Clave de Firebase guardada correctamente'}), 200
     return jsonify({'key': FCM_SERVER_KEY or ''}), 200
 
 
