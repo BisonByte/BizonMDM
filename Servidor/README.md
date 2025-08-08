@@ -55,6 +55,13 @@ y a la llave privada respectivamente.
 La base de datos se almacena en el archivo indicado por `BIZON_DB` (por defecto
 `bizon.db`).
 
+### Notificaciones push
+
+Si estableces la variable de entorno `FCM_SERVER_KEY` el servidor enviará
+una notificación de Firebase Cloud Messaging cada vez que se encole un
+comando para un dispositivo. La aplicación debe incluir su `fcmToken` al
+registrarse o actualizar su estado para que el servidor pueda utilizarlo.
+
 ### Generar QR de aprovisionamiento
 
 Para facilitar la instalación del MDM sin intervención manual puedes

@@ -14,6 +14,7 @@ import qrcode
 import logging
 import hmac
 import hashlib
+import urllib.request
 
 from models import Device, LogEntry, Command, SessionLocal, init_db
 
@@ -22,6 +23,8 @@ app = Flask(__name__)
 
 # Configuración ---------------------------------------------------------------
 JWT_SECRET = os.getenv("JWT_SECRET")
+FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY")
+FCM_URL = "https://fcm.googleapis.com/fcm/send"
 logging.basicConfig(filename="server.log", level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(message)s")
 
@@ -120,6 +123,7 @@ def register_device():
                 model=data.get('model'),
                 serial=data.get('serial'),
                 info=json.dumps(data),
+                fcm_token=data.get('fcmToken'),
             )
             db.add(device)
         else:
@@ -127,6 +131,8 @@ def register_device():
             device.model = data.get('model')
             device.serial = data.get('serial')
             device.info = json.dumps(data)
+            if data.get('fcmToken'):
+                device.fcm_token = data.get('fcmToken')
         db.commit()
     logging.info('registro dispositivo %s', device_id)
     return jsonify({'success': True, 'message': 'Dispositivo registrado'}), 200
@@ -145,6 +151,8 @@ def update_status():
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         device.status = json.dumps(data)
+        if data.get('fcmToken'):
+            device.fcm_token = data.get('fcmToken')
         db.commit()
     return jsonify({'success': True, 'message': 'Estado actualizado'}), 200
 
@@ -220,7 +228,26 @@ def _queue_command(device_id: str, action: str, extra: dict | None = None):
             payload.update(extra)
         db.add(Command(device_id=device.id, command=json.dumps(payload)))
         db.commit()
+        token = device.fcm_token
+    _send_fcm_message(token, payload)
     return True
+
+
+def _send_fcm_message(token: str | None, payload: dict) -> None:
+    if not token or not FCM_SERVER_KEY:
+        return
+    headers = {
+        "Authorization": f"key={FCM_SERVER_KEY}",
+        "Content-Type": "application/json",
+    }
+    body = {"to": token, "data": payload}
+    try:
+        data = json.dumps(body).encode("utf-8")
+        req = urllib.request.Request(FCM_URL, data=data, headers=headers)
+        with urllib.request.urlopen(req, timeout=5):
+            pass
+    except Exception as exc:
+        logging.warning("Error enviando FCM: %s", exc)
 
 
 @app.route('/api/device/wipe', methods=['POST'])
