@@ -11,7 +11,6 @@ def install():
     if request.method == 'POST':
         db = request.form['db']
         jwt = request.form['jwt']
-        fcm = request.form['fcm']
         user = request.form['user']
         pwd = request.form['pwd']
 
@@ -19,10 +18,6 @@ def install():
         env_path = os.path.join(base_dir, '.env')
         with open(env_path, 'w', encoding='utf-8') as fh:
             fh.write(f"DATABASE_URL={db}\nJWT_SECRET={jwt}\n")
-
-        key_path = os.path.join(base_dir, 'fcm_key.txt')
-        with open(key_path, 'w', encoding='utf-8') as fh:
-            fh.write(fcm)
 
         os.environ['DATABASE_URL'] = db
         os.environ['JWT_SECRET'] = jwt
@@ -32,7 +27,7 @@ def install():
                 hashed = hashlib.sha256(pwd.encode()).hexdigest()
                 session.add(Admin(username=user, password=hashed))
                 session.commit()
-        return redirect('/admin')
+        return redirect('/admin/#/first-steps')
     root_dir = os.path.dirname(__file__)
     return send_from_directory(root_dir, 'instalacion_bizonmdm.html')
 
