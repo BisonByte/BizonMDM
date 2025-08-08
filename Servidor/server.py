@@ -208,6 +208,100 @@ def get_logs(device_id: str):
 
 # --- Endpoints de control de dispositivos ---
 
+
+def _queue_command(device_id: str, action: str, extra: dict | None = None):
+    """Almacena un comando para el dispositivo indicado."""
+    with get_session() as db:
+        device = db.query(Device).filter_by(device_id=device_id).first()
+        if not device:
+            return False
+        payload = {'deviceId': device_id, 'action': action}
+        if extra:
+            payload.update(extra)
+        db.add(Command(device_id=device.id, command=json.dumps(payload)))
+        db.commit()
+    return True
+
+
+@app.route('/api/device/wipe', methods=['POST'])
+def api_device_wipe():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    if not device_id:
+        return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
+    if not _queue_command(device_id, 'device_wipe'):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/api/device/reboot', methods=['POST'])
+def api_device_reboot():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    if not device_id:
+        return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
+    if not _queue_command(device_id, 'device_reboot'):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/api/device/lock', methods=['POST'])
+def api_device_lock():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    if not device_id:
+        return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
+    if not _queue_command(device_id, 'device_lock'):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/api/device/screenshot', methods=['POST'])
+def api_device_screenshot():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    if not device_id:
+        return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
+    if not _queue_command(device_id, 'device_screenshot'):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/api/app/install', methods=['POST'])
+def api_app_install():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    url = data.get('url')
+    if not device_id or not url:
+        return jsonify({'success': False, 'message': 'deviceId y url requeridos'}), 400
+    if not _queue_command(device_id, 'app_install', {'url': url}):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/api/app/uninstall', methods=['POST'])
+def api_app_uninstall():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    package = data.get('package')
+    if not device_id or not package:
+        return jsonify({'success': False, 'message': 'deviceId y package requeridos'}), 400
+    if not _queue_command(device_id, 'app_uninstall', {'package': package}):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
 @app.route('/commands', methods=['POST'])
 def add_command():
     if not require_auth(request):

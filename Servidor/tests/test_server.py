@@ -40,5 +40,46 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(info['serial'], '123')
         self.assertEqual(info['imei'], '999')
 
+    def test_device_control_endpoints(self):
+        self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        actions = [
+            ('device_wipe', '/api/device/wipe'),
+            ('device_reboot', '/api/device/reboot'),
+            ('device_lock', '/api/device/lock'),
+            ('device_screenshot', '/api/device/screenshot'),
+        ]
+        for action, endpoint in actions:
+            resp = self.client.post(endpoint, json={'deviceId': 'd1'}, headers=self.auth_header())
+            self.assertEqual(resp.status_code, 200)
+            resp = self.client.get('/commands/d1', headers=self.auth_header())
+            self.assertEqual(resp.status_code, 200)
+            cmds = resp.get_json()
+            self.assertEqual(len(cmds), 1)
+            self.assertEqual(cmds[0]['action'], action)
+
+    def test_app_management_endpoints(self):
+        self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        resp = self.client.post(
+            '/api/app/install',
+            json={'deviceId': 'd1', 'url': 'http://example.com/app.apk'},
+            headers=self.auth_header(),
+        )
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get('/commands/d1', headers=self.auth_header())
+        cmds = resp.get_json()
+        self.assertEqual(cmds[0]['action'], 'app_install')
+        self.assertEqual(cmds[0]['url'], 'http://example.com/app.apk')
+
+        resp = self.client.post(
+            '/api/app/uninstall',
+            json={'deviceId': 'd1', 'package': 'com.example.app'},
+            headers=self.auth_header(),
+        )
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get('/commands/d1', headers=self.auth_header())
+        cmds = resp.get_json()
+        self.assertEqual(cmds[0]['action'], 'app_uninstall')
+        self.assertEqual(cmds[0]['package'], 'com.example.app')
+
 if __name__ == '__main__':
     unittest.main()
