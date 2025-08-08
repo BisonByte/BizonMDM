@@ -14,6 +14,21 @@ async function apiFetch(path, options = {}) {
   return res.json();
 }
 
+function ServerStatus() {
+  const [status, setStatus] = useState(null);
+  useEffect(() => {
+    apiFetch('/api/status').then(setStatus).catch(() => setStatus({}));
+  }, []);
+  const ok = status && status.database && status.firebase;
+  const color = ok ? 'green' : 'red';
+  return (
+    <span
+      title={`DB:${status?.database ? 'ok' : 'fail'} Firebase:${status?.firebase ? 'ok' : 'fail'}`}
+      style={{ display: 'inline-block', width: '10px', height: '10px', borderRadius: '50%', backgroundColor: color, marginLeft: '0.5rem' }}
+    />
+  );
+}
+
 function Dashboard() {
   const [devices, setDevices] = useState([]);
   useEffect(() => {
@@ -118,6 +133,41 @@ function DeviceLogs({ id }) {
   );
 }
 
+function Config() {
+  const [key, setKey] = useState('');
+  useEffect(() => {
+    apiFetch('/api/firebase-key').then(d => setKey(d.key || '')).catch(console.error);
+  }, []);
+  const save = () => {
+    apiFetch('/api/firebase-key', { method: 'POST', body: JSON.stringify({ key }) })
+      .then(() => alert('Guardado'))
+      .catch(() => alert('Error'));
+  };
+  const test = () => {
+    apiFetch('/api/test-fcm', { method: 'POST' })
+      .then(r => alert(`Notificación enviada a ${r.sent} dispositivos`))
+      .catch(() => alert('Error'));
+  };
+  return (
+    <div>
+      <h2>Configuración de Firebase</h2>
+      <input value={key} onChange={e => setKey(e.target.value)} placeholder="FCM Server Key" />
+      <button onClick={save}>Guardar</button>
+      <button onClick={test}>Probar conexión</button>
+    </div>
+  );
+}
+
+function Welcome({ onDone }) {
+  return (
+    <div>
+      <h2>Bienvenido a BizonMDM</h2>
+      <p>Desde aquí puedes aprovisionar dispositivos por QR, gestionar políticas y más.</p>
+      <button onClick={onDone}>Comenzar</button>
+    </div>
+  );
+}
+
 function DeviceDetails({ id, onBack }) {
   const [info, setInfo] = useState(null);
   useEffect(() => {
@@ -179,6 +229,7 @@ function PolicyEditor() {
 function App() {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
+  const [welcome, setWelcome] = useState(!localStorage.getItem('welcomeSeen'));
 
   useEffect(() => {
     const onHashChange = () => setRoute(window.location.hash || '#/dashboard');
@@ -192,6 +243,10 @@ function App() {
     localStorage.setItem('token', v);
   };
 
+  if (welcome) {
+    return <Welcome onDone={() => { localStorage.setItem('welcomeSeen', '1'); setWelcome(false); }} />;
+  }
+
   let page;
   if (route === '#/dashboard') page = <Dashboard />;
   else if (route === '#/devices') page = <DeviceTable onSelect={(id) => window.location.hash = `#/devices/${id}`} />;
@@ -199,6 +254,7 @@ function App() {
     const id = route.split('/')[2];
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
   } else if (route === '#/policies') page = <PolicyEditor />;
+  else if (route === '#/config') page = <Config />;
   else page = <Dashboard />;
 
   return (
@@ -209,7 +265,9 @@ function App() {
           <a href="#/dashboard">Dashboard</a>
           <a href="#/devices">Dispositivos</a>
           <a href="#/policies">Políticas</a>
+          <a href="#/config">Config</a>
         </nav>
+        <ServerStatus />
         <input value={token} onChange={handleTokenChange} placeholder="JWT token" style={{ marginLeft: '1rem' }} />
       </header>
       <main style={{ padding: '1rem' }}>
