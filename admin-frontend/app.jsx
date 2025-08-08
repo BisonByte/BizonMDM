@@ -17,7 +17,10 @@ async function apiFetch(path, options = {}) {
 function ServerStatus() {
   const [status, setStatus] = useState(null);
   useEffect(() => {
-    apiFetch('/api/status').then(setStatus).catch(() => setStatus({}));
+    const fetchStatus = () => apiFetch('/api/status').then(setStatus).catch(() => setStatus({}));
+    fetchStatus();
+    const id = setInterval(fetchStatus, 10000);
+    return () => clearInterval(id);
   }, []);
   const ok = status && status.database && status.firebase;
   const color = ok ? 'green' : 'red';
