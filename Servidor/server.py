@@ -156,6 +156,26 @@ def update_status():
         db.commit()
     return jsonify({'success': True, 'message': 'Estado actualizado'}), 200
 
+
+@app.route('/devices', methods=['GET'])
+def list_devices():
+    """Devuelve la lista de dispositivos registrados."""
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        devices = db.query(Device).all()
+        result = []
+        for d in devices:
+            status = json.loads(d.status or '{}')
+            result.append({
+                'deviceId': d.device_id,
+                'imei': d.imei,
+                'model': d.model,
+                'serial': d.serial,
+                'status': status,
+            })
+    return jsonify(result), 200
+
 @app.route('/devices/<device_id>', methods=['GET'])
 def get_device_info(device_id: str):
     """Devuelve la información completa almacenada de un dispositivo."""
@@ -166,6 +186,7 @@ def get_device_info(device_id: str):
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         info = json.loads(device.info or '{}')
+        status = json.loads(device.status or '{}')
         result = {
             'model': device.model or info.get('model'),
             'code': info.get('code'),
@@ -175,6 +196,7 @@ def get_device_info(device_id: str):
             'email': info.get('email'),
             'phone': info.get('phone'),
             'imei': device.imei or info.get('imei'),
+            'status': status,
         }
     return jsonify(result), 200
 
