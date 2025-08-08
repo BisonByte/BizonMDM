@@ -77,9 +77,18 @@ def register_device():
     with get_session() as db:
         device = db.query(Device).filter_by(device_id=device_id).first()
         if not device:
-            device = Device(device_id=device_id, info=json.dumps(data))
+            device = Device(
+                device_id=device_id,
+                imei=data.get('imei'),
+                model=data.get('model'),
+                serial=data.get('serial'),
+                info=json.dumps(data),
+            )
             db.add(device)
         else:
+            device.imei = data.get('imei')
+            device.model = data.get('model')
+            device.serial = data.get('serial')
             device.info = json.dumps(data)
         db.commit()
     logging.info('registro dispositivo %s', device_id)
@@ -113,13 +122,14 @@ def get_device_info(device_id: str):
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         info = json.loads(device.info or '{}')
         result = {
-            'model': info.get('model'),
+            'model': device.model or info.get('model'),
             'code': info.get('code'),
-            'serial': info.get('serial'),
+            'serial': device.serial or info.get('serial'),
             'activationLocation': info.get('activationLocation'),
             'addedDate': device.added.isoformat() if device.added else None,
             'email': info.get('email'),
-            'phone': info.get('phone')
+            'phone': info.get('phone'),
+            'imei': device.imei or info.get('imei'),
         }
     return jsonify(result), 200
 
