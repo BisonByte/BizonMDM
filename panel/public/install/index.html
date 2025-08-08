@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Install Bizon Panel</title>
+</head>
+<body>
+  <h1>Installer</h1>
+  <form id="installForm">
+    <input name="app_url" placeholder="App URL" required/>
+    <input name="db_host" placeholder="DB Host" required/>
+    <input name="db_name" placeholder="DB Name" required/>
+    <input name="db_user" placeholder="DB User" required/>
+    <input name="db_pass" placeholder="DB Pass" required type="password"/>
+    <input name="admin_email" placeholder="Admin Email" required/>
+    <input name="admin_pass" placeholder="Admin Password" required type="password"/>
+    <button type="submit">Install</button>
+  </form>
+  <pre id="output"></pre>
+  <script>
+    document.getElementById('installForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      const res = await fetch('/panel/install', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+      });
+      const out = document.getElementById('output');
+      if (res.ok) {
+        out.textContent = 'OK';
+        window.location = '/panel/login';
+      } else {
+        out.textContent = await res.text();
+      }
+    });
+  </script>
+</body>
+</html>
