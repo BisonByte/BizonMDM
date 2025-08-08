@@ -101,14 +101,27 @@
         <h1>🚀 Guía de Instalación Detallada de BizonMDM</h1>
         <p>Este documento te guiará paso a paso en la instalación y configuración de la aplicación BizonMDM en Android y su servidor REST de ejemplo en Python.</p>
 
+        <h2 id="contenido">📑 Contenidos</h2>
+        <ul>
+            <li><a href="#que-es-bizonmdm">¿Qué es BizonMDM?</a></li>
+            <li><a href="#requisitos-previos">Requisitos Previos</a></li>
+            <li><a href="#instalacion-app">Instalación de la Aplicación Android</a></li>
+            <li><a href="#provisionamiento-qr">Aprovisionamiento mediante Código QR</a></li>
+            <li><a href="#uso-aplicacion">Uso de la Aplicación</a></li>
+            <li><a href="#instalacion-servidor">Instalación y Configuración del Servidor</a></li>
+            <li><a href="#ejemplos-curl">Ejemplos de Uso del Servidor</a></li>
+            <li><a href="#resumen">Resumen de Puesta en Marcha</a></li>
+            <li><a href="#faq">Preguntas Frecuentes</a></li>
+        </ul>
+
         <hr>
 
-        <h2>📚 ¿Qué es BizonMDM?</h2>
+        <h2 id="que-es-bizonmdm">📚 ¿Qué es BizonMDM?</h2>
         <p><strong>BizonMDM</strong> es una solución sencilla de <strong>Mobile Device Management (MDM)</strong> para Android. Este proyecto incluye una aplicación Android desarrollada en Kotlin y un pequeño servidor REST en Python para propósitos de prueba. La aplicación permite registrar un dispositivo, sincronizar periódicamente su información y recibir comandos desde el servidor. </p>
 
         <hr>
 
-        <h2>📋 Requisitos Previos</h2>
+        <h2 id="requisitos-previos">📋 Requisitos Previos</h2>
         <h3>Para la Aplicación Android:</h3>
         <ul>
             <li><strong>JDK 11</strong> y <strong>Android Studio</strong> (o herramientas de Android SDK).</li>
@@ -123,14 +136,14 @@
 
         <hr>
 
-        <h2>📱 Instalación de la Aplicación Android</h2>
+        <h2 id="instalacion-app">📱 Instalación de la Aplicación Android</h2>
         <ol>
             <li>
                 <h3>Clonar el Repositorio</h3>
                 <p>Primero, descarga el código fuente del proyecto a tu máquina local.</p>
-                <pre><code>git clone https://github.com/sindresorhus/del</code></pre>
+                <pre><code>git clone https://github.com/BisonByte/BizonMDM.git</code></pre>
                 <p>Luego, navega al directorio del proyecto:</p>
-                <pre><code>cd bisonbyte/bizonmdm/BizonMDM-8b516a16ce63d2948807f2205052fe9b59a051d7</code></pre>
+                <pre><code>cd BizonMDM</code></pre>
             </li>
             <li>
                 <h3>(Opcional) Ajustar la URL del Servidor</h3>
@@ -159,7 +172,7 @@
 
         <hr>
 
-        <h2>🔗 Aprovisionamiento mediante Código QR (Opcional)</h2>
+        <h2 id="provisionamiento-qr">🔗 Aprovisionamiento mediante Código QR (Opcional)</h2>
         <p>Para una instalación sin intervención manual, el servidor puede generar un código QR único para cada dispositivo. Este método es ideal para dispositivos recién restablecidos. </p>
         <ol>
             <li>
@@ -187,7 +200,7 @@
 
         <hr>
 
-        <h2>⚙️ Uso de la Aplicación</h2>
+        <h2 id="uso-aplicacion">⚙️ Uso de la Aplicación</h2>
         <ol>
             <li>
                 <h3>Activar Privilegios de Administrador</h3>
@@ -202,42 +215,49 @@
 
         <hr>
 
-        <h2>💻 Configuración e Inicio del Servidor REST de Ejemplo</h2>
-        <p>El servidor es un backend minimalista basado en Flask, que utiliza SQLite para la persistencia de datos. </p>
+        <h2 id="instalacion-servidor">💻 Instalación y Configuración del Servidor</h2>
+        <p>El servidor es un backend minimalista basado en Flask que puedes ejecutar de dos maneras.</p>
+
+        <h3>Opción A: Docker Compose</h3>
+        <p>Para un despliegue rápido sin instalar dependencias manualmente:</p>
+        <pre><code>docker-compose up</code></pre>
+        <p>La primera vez descargará las imágenes necesarias y el servicio quedará disponible en <code>http://localhost:5000</code>.</p>
+
+        <h3>Opción B: Instalación Manual</h3>
         <ol>
             <li>
-                <h3>Navegar al Directorio del Servidor</h3>
+                <h4>Navegar al Directorio del Servidor</h4>
                 <pre><code>cd Servidor</code></pre>
             </li>
             <li>
-                <h3>(Opcional) Crear y Activar un Entorno Virtual</h3>
+                <h4>(Opcional) Crear y Activar un Entorno Virtual</h4>
                 <p>Es una buena práctica para aislar las dependencias del proyecto.</p>
                 <pre><code>python3 -m venv venv
 source venv/bin/activate   # En Linux/macOS
-.\venv\Scripts\activate   # En Windows</code></pre>
+\.\venv\Scripts\activate   # En Windows</code></pre>
             </li>
             <li>
-                <h3>Instalar Dependencias</h3>
-                <p>Instala los paquetes Python necesarios para el servidor. </p>
+                <h4>Instalar Dependencias</h4>
+                <p>Instala los paquetes Python necesarios para el servidor.</p>
                 <pre><code>pip install -r requirements.txt</code></pre>
             </li>
             <li>
-                <h3>Inicializar la Base de Datos</h3>
-                <p>Este paso solo es necesario la primera vez para crear las tablas de la base de datos SQLite. </p>
+                <h4>Inicializar la Base de Datos</h4>
+                <p>Este paso solo es necesario la primera vez para crear las tablas de la base de datos.</p>
                 <pre><code>python server.py --init-db</code></pre>
                 <div class="note">
                     La base de datos se almacenará por defecto en <code>bizon.db</code>. Puedes cambiar esta ruta usando la variable de entorno <code>BIZON_DB</code>.
                 </div>
             </li>
             <li>
-                <h3>Iniciar el Servidor</h3>
+                <h4>Iniciar el Servidor</h4>
                 <p>Para levantar el servicio, ejecuta:</p>
                 <pre><code>python server.py</code></pre>
-                <p>Verás un mensaje similar a: <code>* Running on http://0.0.0.0:5000/</code>. Puedes detener el servidor con <code>Ctrl+C</code>. </p>
+                <p>Verás un mensaje similar a: <code>* Running on http://0.0.0.0:5000/</code>. Puedes detener el servidor con <code>Ctrl+C</code>.</p>
             </li>
             <li>
-                <h3>Configuración de Variables de Entorno (Opcional)</h3>
-                <p>Puedes personalizar el host, puerto y añadir un token de autenticación para el servidor. </p>
+                <h4>Configuración de Variables de Entorno (Opcional)</h4>
+                <p>Puedes personalizar el host, puerto y añadir un token de autenticación para el servidor.</p>
                 <pre><code>BIZON_HOST=127.0.0.1 BIZON_PORT=8000 BIZON_TOKEN=secreto python server.py</code></pre>
                 <div class="warning">
                     Si defines <code>BIZON_TOKEN</code>, todas las peticiones al servidor deberán incluir el encabezado <code>Authorization: Bearer &lt;token&gt;</code>.
@@ -247,7 +267,7 @@ source venv/bin/activate   # En Linux/macOS
 
         <hr>
 
-        <h2>🧪 Ejemplos de Uso del Servidor con <code>curl</code></h2>
+        <h2 id="ejemplos-curl">🧪 Ejemplos de Uso del Servidor con <code>curl</code></h2>
         <p>Puedes interactuar con el servidor usando herramientas como <code>curl</code> para probar los endpoints. </p>
         <p><strong>Registrar un dispositivo:</strong></p>
         <pre><code>curl -X POST http://localhost:5000/devices/register \
@@ -267,13 +287,23 @@ source venv/bin/activate   # En Linux/macOS
 
         <hr>
 
-        <h2>✅ Resumen de Puesta en Marcha</h2>
+        <h2 id="resumen">✅ Resumen de Puesta en Marcha</h2>
         <ol>
             <li>Inicia el servidor REST de ejemplo.</li>
             <li>Compila e instala la aplicación Android en tu dispositivo.</li>
             <li>Ejecuta la aplicación en el dispositivo y activa el modo MDM (otorgando los permisos de administrador).</li>
             <li>Desde ese momento, la aplicación enviará su estado y recibirá comandos del servidor periódicamente.</li>
         </ol>
+
+        <hr>
+
+        <h2 id="faq">❓ Preguntas Frecuentes</h2>
+        <ul>
+            <li><strong>¿Necesito conexión a Internet?</strong> Sí, el dispositivo debe comunicarse con el servidor para sincronizarse y recibir comandos.</li>
+            <li><strong>¿Puedo cambiar la frecuencia de sincronización?</strong> De forma predeterminada es cada 15 minutos, pero puedes modificar el código de la app para ajustarla.</li>
+            <li><strong>¿Dónde se guardan los datos del servidor?</strong> Por defecto se usa SQLite o la base de datos PostgreSQL incluida en Docker Compose, aunque puedes adaptarlo a otra base.</li>
+            <li><strong>¿Cómo desinstalo BizonMDM?</strong> Debes revocar los permisos de administrador desde los ajustes del sistema antes de poder desinstalar la aplicación.</li>
+        </ul>
     </div>
 </body>
 </html>
