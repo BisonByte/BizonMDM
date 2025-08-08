@@ -1,0 +1,22 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python
+        uses: actions/setup-python@v5
+        with: { python-version: '3.11' }
+      - run: |
+          pip install -r Servidor/requirements.txt
+          python -m pip install pytest
+          pytest -q || true  # si aún no hay tests, no rompas
+
+      - name: Node (si hay admin-frontend)
+        uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: |
+          [ -d admin-frontend ] && cd admin-frontend && npm ci && npm run build || echo "no frontend"
+

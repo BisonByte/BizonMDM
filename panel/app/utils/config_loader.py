@@ -16,4 +16,9 @@ def load_config():
         for k, v in values.items():
             flat[f"{k.upper()}"] = v
     flat['INSTALLED'] = flat.get('INSTALLED', '0') == '1'
+
+    # Extra defense: consider installation flag file
+    flag_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '.installed'))
+    if os.path.exists(flag_path):
+        flat['INSTALLED'] = True
     return flat

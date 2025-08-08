@@ -14,3 +14,8 @@ local.properties
 .DS_Store
 captures/
 .cxx/
+server/.installed
+panel/.installed
+**/config.ini
+*.sqlite
+fcm_key.txt
