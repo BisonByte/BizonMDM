@@ -4,10 +4,10 @@ Esta versión incluye un proceso de instalación simplificado para el servidor d
 
 ## Instalación del servidor
 
-1. Clona este repositorio y entra en el directorio `Servidor`.
+1. Clona este repositorio.
 2. Instala las dependencias y ejecuta el script de instalación:
    ```bash
-   pip install -r requirements.txt
+   pip install -r Servidor/requirements.txt
    python install_script.py
    ```
 3. Abre `http://localhost:5000/install` en tu navegador y completa el formulario con:
@@ -25,7 +25,7 @@ Esta versión incluye un proceso de instalación simplificado para el servidor d
 Para iniciar el servidor después de la instalación:
 
 ```bash
-python server.py
+python Servidor/server.py
 ```
 
 ## Panel de administración
