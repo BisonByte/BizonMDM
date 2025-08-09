@@ -104,5 +104,37 @@ class ServerTestCase(unittest.TestCase):
         finally:
             del os.environ['FCM_SERVER_KEY']
 
+    def test_client_crud(self):
+        # create device to assign
+        self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        # create client
+        resp = self.client.post(
+            '/admin/clients',
+            json={'name': 'Acme', 'permissions': ['wipe'], 'deviceIds': ['d1']},
+            headers=self.auth_header(),
+        )
+        self.assertEqual(resp.status_code, 201)
+        cid = resp.get_json()['id']
+        # list and check assignment
+        resp = self.client.get('/admin/clients', headers=self.auth_header())
+        self.assertEqual(resp.status_code, 200)
+        clients = resp.get_json()
+        self.assertEqual(clients[0]['devices'], ['d1'])
+        # update client
+        resp = self.client.put(
+            f'/admin/clients/{cid}',
+            json={'name': 'Acme2', 'permissions': ['reboot'], 'deviceIds': []},
+            headers=self.auth_header(),
+        )
+        self.assertEqual(resp.status_code, 200)
+        resp = self.client.get(f'/admin/clients/{cid}', headers=self.auth_header())
+        data = resp.get_json()
+        self.assertEqual(data['name'], 'Acme2')
+        self.assertEqual(data['permissions'], ['reboot'])
+        self.assertEqual(data['devices'], [])
+        # delete client
+        resp = self.client.delete(f'/admin/clients/{cid}', headers=self.auth_header())
+        self.assertEqual(resp.status_code, 200)
+
 if __name__ == '__main__':
     unittest.main()

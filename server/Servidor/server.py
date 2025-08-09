@@ -16,7 +16,7 @@ import hmac
 import hashlib
 import urllib.request
 
-from models import Device, LogEntry, Command, SessionLocal, init_db
+from models import Device, LogEntry, Command, Client, SessionLocal, init_db
 from sqlalchemy import text
 from install_script import install_application
 
@@ -210,6 +210,75 @@ def get_device_info(device_id: str):
             'status': status,
         }
     return jsonify(result), 200
+
+
+# --- Endpoints de administración de clientes ---
+
+
+def _client_to_dict(client: Client) -> dict:
+    return {
+        'id': client.id,
+        'name': client.name,
+        'permissions': json.loads(client.permissions or '[]'),
+        'devices': [d.device_id for d in client.devices],
+    }
+
+
+@app.route('/admin/clients', methods=['GET', 'POST'])
+def admin_clients():
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        if request.method == 'GET':
+            clients = db.query(Client).all()
+            return jsonify([_client_to_dict(c) for c in clients]), 200
+        data = request.get_json() or {}
+        name = data.get('name')
+        if not name:
+            return jsonify({'success': False, 'message': 'name requerido'}), 400
+        perms = data.get('permissions', [])
+        device_ids = data.get('deviceIds', [])
+        client = Client(name=name, permissions=json.dumps(perms))
+        db.add(client)
+        for dev_id in device_ids:
+            dev = db.query(Device).filter_by(device_id=dev_id).first()
+            if dev:
+                dev.client = client
+        db.commit()
+        return jsonify(_client_to_dict(client)), 201
+
+
+@app.route('/admin/clients/<int:client_id>', methods=['GET', 'PUT', 'DELETE'])
+def admin_client_detail(client_id: int):
+    if not require_auth(request):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        client = db.query(Client).filter_by(id=client_id).first()
+        if not client:
+            return jsonify({'success': False, 'message': 'Cliente no encontrado'}), 404
+        if request.method == 'GET':
+            return jsonify(_client_to_dict(client)), 200
+        if request.method == 'PUT':
+            data = request.get_json() or {}
+            name = data.get('name')
+            if name:
+                client.name = name
+            if 'permissions' in data:
+                client.permissions = json.dumps(data.get('permissions', []))
+            if 'deviceIds' in data:
+                for d in client.devices:
+                    d.client = None
+                for dev_id in data.get('deviceIds', []):
+                    dev = db.query(Device).filter_by(device_id=dev_id).first()
+                    if dev:
+                        dev.client = client
+            db.commit()
+            return jsonify({'success': True}), 200
+        for d in client.devices:
+            d.client = None
+        db.delete(client)
+        db.commit()
+        return jsonify({'success': True}), 200
 
 # --- Endpoints para manejo de logs ---
 
