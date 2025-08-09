@@ -16,7 +16,7 @@ import hmac
 import hashlib
 import urllib.request
 
-from models import Device, LogEntry, Command, SessionLocal, init_db
+from models import Device, LogEntry, Command, SessionLocal, init_db, Admin
 from sqlalchemy import text
 from install_script import install_application
 
@@ -49,8 +49,12 @@ def _b64url_decode(data: str) -> bytes:
     return base64.urlsafe_b64decode(data + padding)
 
 
-def encode_jwt(payload: dict, secret: str) -> str:
+def encode_jwt(sub: str, secret: str, role: str, client_id: str | None = None) -> str:
+    """Genera un token JWT con soporte de rol y client_id."""
     header = {"alg": "HS256", "typ": "JWT"}
+    payload = {"sub": sub, "role": role}
+    if client_id is not None:
+        payload["client_id"] = client_id
     header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
     payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
     signing_input = f"{header_b64}.{payload_b64}".encode()
@@ -60,6 +64,7 @@ def encode_jwt(payload: dict, secret: str) -> str:
 
 
 def decode_jwt(token: str, secret: str) -> dict:
+    """Decodifica un token JWT y devuelve su payload."""
     header_b64, payload_b64, signature_b64 = token.split(".")
     signing_input = f"{header_b64}.{payload_b64}".encode()
     signature = _b64url_decode(signature_b64)
@@ -70,24 +75,51 @@ def decode_jwt(token: str, secret: str) -> dict:
     return payload
 
 
-def require_auth(request) -> bool:
-    """Valida el encabezado Authorization mediante JWT si está configurado."""
+def require_auth(request) -> dict | None:
+    """Valida el encabezado Authorization mediante JWT si está configurado.
+
+    Devuelve el payload con los campos ``role`` y ``client_id`` si el token es
+    válido. Si la autenticación no está habilitada, retorna un diccionario vacío.
+    En caso de fallo devuelve ``None``.
+    """
     if not JWT_SECRET:
-        return True
+        return {}
     auth = request.headers.get("Authorization", "")
     if not auth.startswith("Bearer "):
-        return False
+        return None
     token = auth.split(" ", 1)[1]
     try:
-        decode_jwt(token, JWT_SECRET)
-        return True
+        return decode_jwt(token, JWT_SECRET)
     except Exception:
-        return False
+        return None
 
 
 def get_session():
     """Obtiene una nueva sesión de base de datos."""
     return SessionLocal()
+
+
+@app.route('/login', methods=['POST'])
+def login():
+    """Endpoint de autenticación que devuelve un JWT según el usuario."""
+    if not JWT_SECRET:
+        return jsonify({'success': False, 'message': 'Auth disabled'}), 400
+    data = request.get_json() or {}
+    username = data.get('username')
+    password = data.get('password')
+    client_id = data.get('client_id')
+    with get_session() as db:
+        if username and password:
+            admin = db.query(Admin).filter_by(username=username).first()
+            if admin and admin.password == password:
+                token = encode_jwt(username, JWT_SECRET, role='admin')
+                return jsonify({'token': token}), 200
+        if client_id:
+            device = db.query(Device).filter_by(device_id=client_id).first()
+            if device:
+                token = encode_jwt(client_id, JWT_SECRET, role='client', client_id=client_id)
+                return jsonify({'token': token}), 200
+    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
 
 
 def _generate_provisioning_string(server_url: str, device_id: str, skip_encryption: bool = True) -> str:
@@ -119,7 +151,8 @@ def get_provisioning_qr(device_id: str):
 @app.route('/devices/register', methods=['POST'])
 def register_device():
     """Registra un dispositivo a partir de un JSON enviado por la app."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -151,7 +184,8 @@ def register_device():
 @app.route('/devices/status', methods=['POST'])
 def update_status():
     """Actualiza el estado del dispositivo previamente registrado."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -171,7 +205,8 @@ def update_status():
 @app.route('/devices', methods=['GET'])
 def list_devices():
     """Devuelve la lista de dispositivos registrados."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
         devices = db.query(Device).all()
@@ -190,7 +225,8 @@ def list_devices():
 @app.route('/devices/<device_id>', methods=['GET'])
 def get_device_info(device_id: str):
     """Devuelve la información completa almacenada de un dispositivo."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
         device = db.query(Device).filter_by(device_id=device_id).first()
@@ -216,7 +252,8 @@ def get_device_info(device_id: str):
 @app.route('/logs', methods=['POST'])
 def upload_logs():
     """Recibe una lista de logs enviados por un dispositivo."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -238,7 +275,8 @@ def upload_logs():
 @app.route('/logs/<device_id>', methods=['GET'])
 def get_logs(device_id: str):
     """Devuelve los logs almacenados de un dispositivo."""
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
         device = db.query(Device).filter_by(device_id=device_id).first()
@@ -299,7 +337,8 @@ def api_status():
 
 @app.route('/api/config/fcm', methods=['GET', 'POST'])
 def api_config_fcm():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     global FCM_SERVER_KEY
     if request.method == 'POST':
@@ -322,7 +361,8 @@ def api_config_fcm():
 
 @app.route('/api/test-fcm', methods=['POST'])
 def api_test_fcm():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
         devices = db.query(Device).all()
@@ -333,7 +373,8 @@ def api_test_fcm():
 
 @app.route('/api/device/wipe', methods=['POST'])
 def api_device_wipe():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -346,7 +387,8 @@ def api_device_wipe():
 
 @app.route('/api/device/reboot', methods=['POST'])
 def api_device_reboot():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -359,7 +401,8 @@ def api_device_reboot():
 
 @app.route('/api/device/lock', methods=['POST'])
 def api_device_lock():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -372,7 +415,8 @@ def api_device_lock():
 
 @app.route('/api/device/screenshot', methods=['POST'])
 def api_device_screenshot():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -385,7 +429,8 @@ def api_device_screenshot():
 
 @app.route('/api/app/install', methods=['POST'])
 def api_app_install():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -399,7 +444,8 @@ def api_app_install():
 
 @app.route('/api/app/uninstall', methods=['POST'])
 def api_app_uninstall():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -412,7 +458,8 @@ def api_app_uninstall():
 
 @app.route('/commands', methods=['POST'])
 def add_command():
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -430,7 +477,8 @@ def add_command():
 
 @app.route('/commands/<device_id>', methods=['GET'])
 def get_commands(device_id: str):
-    if not require_auth(request):
+    auth = require_auth(request)
+    if not auth:
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
         device = db.query(Device).filter_by(device_id=device_id).first()
