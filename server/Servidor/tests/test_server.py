@@ -10,7 +10,8 @@ os.environ['DATABASE_URL'] = f'sqlite:///{DB_PATH}'
 os.environ['JWT_SECRET'] = 'testsecret'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
-from server import app, init_db, encode_jwt
+from server import app, init_db, encode_jwt, decode_jwt, get_session
+from models import Admin
 
 
 class ServerTestCase(unittest.TestCase):
@@ -25,10 +26,30 @@ class ServerTestCase(unittest.TestCase):
         if not hasattr(werkzeug, "__version__"):
             werkzeug.__version__ = "3"
         self.client = app.test_client()
-        self.token = encode_jwt({'sub': 'tester'}, os.environ['JWT_SECRET'])
+        self.token = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin')
 
     def auth_header(self):
         return {'Authorization': f'Bearer {self.token}'}
+
+    def test_login(self):
+        with get_session() as db:
+            db.add(Admin(username='adm', password='pwd'))
+            db.commit()
+        resp = self.client.post('/login', json={'username': 'adm', 'password': 'pwd'})
+        self.assertEqual(resp.status_code, 200)
+        token = resp.get_json()['token']
+        payload = decode_jwt(token, os.environ['JWT_SECRET'])
+        self.assertEqual(payload['role'], 'admin')
+        self.assertNotIn('client_id', payload)
+
+        # Login as client using an existing device
+        self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        resp = self.client.post('/login', json={'client_id': 'd1'})
+        self.assertEqual(resp.status_code, 200)
+        token = resp.get_json()['token']
+        payload = decode_jwt(token, os.environ['JWT_SECRET'])
+        self.assertEqual(payload['role'], 'client')
+        self.assertEqual(payload['client_id'], 'd1')
 
     def test_register_device(self):
         data = {'deviceId': 'd1', 'model': 'Pixel', 'serial': '123', 'imei': '999'}
