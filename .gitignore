@@ -1,17 +1,20 @@
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+# Mobile app
+mobile/.gradle
+mobile/local.properties
+mobile/.idea/caches
+mobile/.idea/libraries
+mobile/.idea/modules.xml
+mobile/.idea/workspace.xml
+mobile/.idea/navEditor.xml
+mobile/.idea/assetWizardSettings.xml
+mobile/build
+mobile/captures
+mobile/.externalNativeBuild
+mobile/.cxx
+
+# General
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
 local.properties
 __pycache__/
 *.db
