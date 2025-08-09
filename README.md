@@ -21,6 +21,39 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `install_script.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 
+## Instalación rápida
+
+```bash
+cd server
+docker-compose up -d
+```
+
+Accede al panel en `http://localhost:5000`.
+
+### Variables de entorno opcionales
+
+Puedes definir variables antes de levantar los contenedores:
+
+- `DATABASE_URL`: cadena de conexión a la base de datos (por defecto `postgresql+psycopg2://postgres:postgres@db:5432/bizon`).
+- `BIZON_HOST`: dirección en la que el servidor escucha (por defecto `0.0.0.0`).
+- `BIZON_PORT`: puerto interno del servidor (por defecto `5000`).
+- `JWT_SECRET`: clave para firmar tokens JWT.
+- `FCM_SERVER_KEY`: clave de Firebase Cloud Messaging para notificaciones.
+
+### Detener o eliminar contenedores
+
+Detén los servicios con:
+
+```bash
+docker-compose down
+```
+
+Para eliminar también volúmenes y datos:
+
+```bash
+docker-compose down -v
+```
+
 ## Instalación del servidor
 
 ### Requisitos previos
