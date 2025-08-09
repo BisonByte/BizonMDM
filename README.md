@@ -11,7 +11,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
 
 ## Estructura del repositorio
 
-- `mobile/`: aplicación móvil Android.
+- `mobile/`: aplicación móvil Android. El servicio MDM se ejecuta como foreground con una notificación persistente y la URL del servidor puede configurarse mediante `BuildConfig` o preferencias.
 - `server/`: archivos relacionados con el servidor y el panel de administración.
   - `Servidor/`: API en Flask, modelos de base de datos y scripts de instalación.
   - `admin-frontend/`: interfaz web de administración construida en React.
