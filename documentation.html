@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BizonMDM Documentation</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background: #004080;
+      color: #fff;
+      padding: 1rem;
+      text-align: center;
+    }
+    nav {
+      text-align: center;
+      margin: 1rem;
+    }
+    nav button {
+      margin: 0 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      background: #004080;
+      color: #fff;
+    }
+    nav button:hover {
+      background: #0059b3;
+    }
+    main {
+      max-width: 900px;
+      margin: auto;
+      padding: 1rem;
+      line-height: 1.6;
+      background: #fff;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #004080;
+      border-bottom: 2px solid #004080;
+      padding-bottom: 0.3rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>BizonMDM</h1>
+    <p>Mobile Device Management Platform</p>
+  </header>
+  <nav>
+    <button onclick="switchLang('es')">Español</button>
+    <button onclick="switchLang('en')">English</button>
+  </nav>
+  <main>
+    <div id="content-es" class="lang">
+      <h2>Instalación en Windows</h2>
+      <ol>
+        <li>Descarga e instala <strong>Python 3</strong> y <strong>Git</strong>.</li>
+        <li>Clona el repositorio: <code>git clone https://github.com/BizonTeam/BizonMDM.git</code></li>
+        <li>Instala las dependencias del servidor: <code>pip install -r server/Servidor/requirements.txt</code></li>
+        <li>Ejecuta el script de instalación: <code>python server/install_script.py</code></li>
+        <li>Completa el formulario de instalación en <code>http://localhost:5000/install</code>.</li>
+      </ol>
+
+      <h2>Instalación en un servidor privado (VPS)</h2>
+      <ol>
+        <li>Prepara un servidor con Linux, Python 3 y Git instalados.</li>
+        <li>Clona el repositorio y entra al directorio.</li>
+        <li>Instala las dependencias con <code>pip</code> y configura variables de entorno necesarias.</li>
+        <li>Ejecuta <code>python server/install_script.py</code> y sigue las instrucciones.</li>
+        <li>Inicia el servidor con <code>python server/Servidor/server.py</code> o configura <em>systemd</em> para levantarlo automáticamente.</li>
+      </ol>
+
+      <h2>Preguntas frecuentes</h2>
+      <p><strong>¿Puedo usar otra base de datos?</strong> Sí, siempre que SQLAlchemy la soporte. Actualiza la cadena de conexión en el instalador.</p>
+      <p><strong>¿Puedo escalar la aplicación?</strong> Se recomienda usar contenedores y balanceadores de carga para despliegues grandes.</p>
+
+      <h2>Paso a paso para usar la aplicación</h2>
+      <ol>
+        <li>Compila e instala la aplicación móvil en los dispositivos Android.</li>
+        <li>Registra cada dispositivo mediante el código QR generado en el panel.</li>
+        <li>Desde el panel de administración envía acciones como bloqueo o borrado.</li>
+      </ol>
+
+      <h2>Paso a paso para configurar la aplicación con el servidor</h2>
+      <ol>
+        <li>Durante la instalación del servidor, ingresa la URL pública que usarán los dispositivos.</li>
+        <li>En la aplicación móvil, edita el archivo de configuración para apuntar a dicha URL.</li>
+        <li>Verifica la conexión realizando un inicio de sesión desde el dispositivo.</li>
+      </ol>
+
+      <h2>Paso a paso para integrar Firebase</h2>
+      <ol>
+        <li>Crea un proyecto en <a href="https://console.firebase.google.com/">Firebase Console</a>.</li>
+        <li>Genera una clave de servidor para Firebase Cloud Messaging.</li>
+        <li>Introduce la clave en el instalador del servidor o en el archivo <code>fcm_key.txt</code>.</li>
+        <li>Agrega el archivo <code>google-services.json</code> a la carpeta <code>mobile/app/</code> del proyecto Android.</li>
+        <li>Compila de nuevo la aplicación móvil para habilitar las notificaciones push.</li>
+      </ol>
+    </div>
+
+    <div id="content-en" class="lang" style="display:none">
+      <h2>Install on Windows</h2>
+      <ol>
+        <li>Download and install <strong>Python 3</strong> and <strong>Git</strong>.</li>
+        <li>Clone the repository: <code>git clone https://github.com/BizonTeam/BizonMDM.git</code></li>
+        <li>Install server dependencies: <code>pip install -r server/Servidor/requirements.txt</code></li>
+        <li>Run the installation script: <code>python server/install_script.py</code></li>
+        <li>Complete the setup form at <code>http://localhost:5000/install</code>.</li>
+      </ol>
+
+      <h2>Install on a private server (VPS)</h2>
+      <ol>
+        <li>Prepare a Linux server with Python 3 and Git installed.</li>
+        <li>Clone the repository and enter the directory.</li>
+        <li>Install dependencies with <code>pip</code> and configure required environment variables.</li>
+        <li>Run <code>python server/install_script.py</code> and follow the prompts.</li>
+        <li>Start the server with <code>python server/Servidor/server.py</code> or use <em>systemd</em> for automatic startup.</li>
+      </ol>
+
+      <h2>Frequently Asked Questions</h2>
+      <p><strong>Can I use a different database?</strong> Yes, as long as it is supported by SQLAlchemy. Update the connection string in the installer.</p>
+      <p><strong>Can the application scale?</strong> For large deployments, consider containers and load balancers.</p>
+
+      <h2>Step-by-step usage</h2>
+      <ol>
+        <li>Build and install the mobile app on Android devices.</li>
+        <li>Register each device using the QR code generated by the admin panel.</li>
+        <li>Send actions such as lock or wipe from the admin panel.</li>
+      </ol>
+
+      <h2>Step-by-step server configuration</h2>
+      <ol>
+        <li>During server setup provide the public URL that devices will use.</li>
+        <li>In the mobile app edit the configuration file to point to that URL.</li>
+        <li>Verify connectivity by logging in from the device.</li>
+      </ol>
+
+      <h2>Step-by-step Firebase integration</h2>
+      <ol>
+        <li>Create a project in <a href="https://console.firebase.google.com/">Firebase Console</a>.</li>
+        <li>Generate a server key for Firebase Cloud Messaging.</li>
+        <li>Enter the key in the server installer or the <code>fcm_key.txt</code> file.</li>
+        <li>Add the <code>google-services.json</code> file to the <code>mobile/app/</code> folder of the Android project.</li>
+        <li>Rebuild the mobile app to enable push notifications.</li>
+      </ol>
+    </div>
+  </main>
+
+  <script>
+    function switchLang(lang) {
+      document.getElementById('content-es').style.display = lang === 'es' ? 'block' : 'none';
+      document.getElementById('content-en').style.display = lang === 'en' ? 'block' : 'none';
+    }
+  </script>
+</body>
+</html>
