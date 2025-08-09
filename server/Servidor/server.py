@@ -16,7 +16,7 @@ import hmac
 import hashlib
 import urllib.request
 
-from models import Device, LogEntry, Command, SessionLocal, init_db, Admin
+from models import Device, LogEntry, Command, SessionLocal, init_db, Admin, User, Client
 from sqlalchemy import text
 from install_script import install_application
 
@@ -508,6 +508,77 @@ def get_commands(device_id: str):
             db.delete(c)
         db.commit()
     return jsonify(cmds), 200
+
+
+# --- Endpoints de administración de clientes ---
+
+
+def _require_admin(auth):
+    return auth and auth.get('role') == 'admin'
+
+
+@app.route('/admin/clients', methods=['GET', 'POST'])
+def admin_clients():
+    auth = require_auth(request)
+    if not _require_admin(auth):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    if request.method == 'GET':
+        with get_session() as db:
+            clients = db.query(Client).all()
+            result = []
+            for c in clients:
+                result.append({
+                    'id': c.id,
+                    'username': c.user.username,
+                    'permissions': json.loads(c.permissions or '[]'),
+                    'devices': [d.device_id for d in c.devices],
+                })
+        return jsonify(result), 200
+    data = request.get_json() or {}
+    username = data.get('username')
+    password = data.get('password')
+    if not username or not password:
+        return jsonify({'success': False, 'message': 'username y password requeridos'}), 400
+    permissions = data.get('permissions', [])
+    devices = data.get('devices', [])
+    with get_session() as db:
+        user = User(username=username, password_hash=password, role='client')
+        client = Client(user=user, permissions=json.dumps(permissions))
+        for device_id in devices:
+            device = db.query(Device).filter_by(device_id=device_id).first()
+            if device:
+                client.devices.append(device)
+        db.add(client)
+        db.commit()
+        return jsonify({'id': client.id}), 201
+
+
+@app.route('/admin/clients/<int:client_id>', methods=['PUT', 'DELETE'])
+def admin_client_detail(client_id: int):
+    auth = require_auth(request)
+    if not _require_admin(auth):
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        client = db.query(Client).filter_by(id=client_id).first()
+        if not client:
+            return jsonify({'success': False, 'message': 'Cliente no encontrado'}), 404
+        if request.method == 'DELETE':
+            db.delete(client)
+            if client.user:
+                db.delete(client.user)
+            db.commit()
+            return jsonify({'success': True}), 200
+        data = request.get_json() or {}
+        if 'permissions' in data:
+            client.permissions = json.dumps(data.get('permissions', []))
+        if 'devices' in data:
+            client.devices.clear()
+            for device_id in data.get('devices', []):
+                device = db.query(Device).filter_by(device_id=device_id).first()
+                if device:
+                    client.devices.append(device)
+        db.commit()
+        return jsonify({'success': True}), 200
 
 
 @app.route('/api/install', methods=['POST'])

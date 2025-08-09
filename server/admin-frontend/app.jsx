@@ -251,6 +251,108 @@ function PolicyEditor() {
   );
 }
 
+const PERMISSIONS = ['wipe', 'reboot', 'lock', 'screenshot'];
+
+function ClientManager() {
+  const [clients, setClients] = useState([]);
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [perms, setPerms] = useState([]);
+  const [assign, setAssign] = useState({});
+
+  const fetchClients = () => apiFetch('/admin/clients').then(setClients).catch(console.error);
+  useEffect(fetchClients, []);
+
+  const toggle = (perm, list, setter) => {
+    if (list.includes(perm)) setter(list.filter(p => p !== perm));
+    else setter([...list, perm]);
+  };
+
+  const createClient = (e) => {
+    e.preventDefault();
+    apiFetch('/admin/clients', {
+      method: 'POST',
+      body: JSON.stringify({ username, password, permissions: perms })
+    }).then(() => { setUsername(''); setPassword(''); setPerms([]); fetchClients(); }).catch(console.error);
+  };
+
+  const updatePerms = (id, permissions) => {
+    apiFetch(`/admin/clients/${id}`, { method: 'PUT', body: JSON.stringify({ permissions }) })
+      .then(fetchClients).catch(console.error);
+  };
+
+  const assignDevice = (id) => {
+    const deviceId = assign[id];
+    if (!deviceId) return;
+    const client = clients.find(c => c.id === id);
+    const devices = [...client.devices, deviceId];
+    apiFetch(`/admin/clients/${id}`, { method: 'PUT', body: JSON.stringify({ devices }) })
+      .then(() => { setAssign({ ...assign, [id]: '' }); fetchClients(); }).catch(console.error);
+  };
+
+  const deleteClient = (id) => {
+    apiFetch(`/admin/clients/${id}`, { method: 'DELETE' }).then(fetchClients).catch(console.error);
+  };
+
+  return (
+    <div>
+      <h2>Clientes</h2>
+      <form onSubmit={createClient} style={{ marginBottom: '1rem' }}>
+        <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Usuario" />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" />
+        <div>
+          {PERMISSIONS.map(p => (
+            <label key={p} style={{ marginRight: '0.5rem' }}>
+              <input type="checkbox" checked={perms.includes(p)} onChange={() => toggle(p, perms, setPerms)} /> {p}
+            </label>
+          ))}
+        </div>
+        <button type="submit">Crear</button>
+      </form>
+      <table>
+        <thead>
+          <tr>
+            <th>Usuario</th>
+            <th>Dispositivos</th>
+            <th>Permisos</th>
+            <th>Asignar dispositivo</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {clients.map(c => (
+            <tr key={c.id}>
+              <td>{c.username}</td>
+              <td>{c.devices.join(', ')}</td>
+              <td>
+                {PERMISSIONS.map(p => (
+                  <label key={p} style={{ marginRight: '0.5rem' }}>
+                    <input
+                      type="checkbox"
+                      checked={c.permissions.includes(p)}
+                      onChange={() => {
+                        const np = c.permissions.includes(p)
+                          ? c.permissions.filter(pr => pr !== p)
+                          : [...c.permissions, p];
+                        updatePerms(c.id, np);
+                      }}
+                    /> {p}
+                  </label>
+                ))}
+              </td>
+              <td>
+                <input value={assign[c.id] || ''} onChange={e => setAssign({ ...assign, [c.id]: e.target.value })} placeholder="deviceId" />
+                <button type="button" onClick={() => assignDevice(c.id)}>Asignar</button>
+              </td>
+              <td><button type="button" onClick={() => deleteClient(c.id)}>Eliminar</button></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function App() {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
@@ -288,6 +390,7 @@ function App() {
     const id = route.split('/')[2];
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
   } else if (route === '#/policies') page = <PolicyEditor />;
+  else if (route === '#/clients') page = <ClientManager />;
   else if (route === '#/config') page = <Config />;
   else if (route === '#/first-steps') page = <FirstSteps />;
   else page = <Dashboard />;
@@ -300,6 +403,7 @@ function App() {
           <a href="#/dashboard">Dashboard</a>
           <a href="#/devices">Dispositivos</a>
           <a href="#/policies">Políticas</a>
+          <a href="#/clients">Clientes</a>
           <a href="#/config">Config</a>
         </nav>
         <ServerStatus />

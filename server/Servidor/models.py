@@ -86,6 +86,7 @@ class Client(Base):
     __tablename__ = "clients"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    permissions = Column(Text, default="[]")
 
     user = relationship("User", back_populates="clients")
     devices = relationship("Device", secondary=client_devices, back_populates="clients")
@@ -100,8 +101,10 @@ def init_db() -> None:
         cfg = Config(os.path.join(base_dir, "alembic.ini"))
         cfg.set_main_option("sqlalchemy.url", DB_URL)
         cfg.set_main_option("script_location", os.path.join(base_dir, "alembic"))
+        Base.metadata.drop_all(engine)
         command.upgrade(cfg, "head")
         Base.metadata.create_all(engine)
     except (ModuleNotFoundError, ImportError):
         # Alembic no disponible: crea las tablas directamente
+        Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
