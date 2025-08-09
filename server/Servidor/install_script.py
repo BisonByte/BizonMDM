@@ -12,7 +12,7 @@ def install_application(db_host: str, db_name: str, db_user: str, db_pass: str, 
 
     os.environ['DATABASE_URL'] = db_url
     os.environ['JWT_SECRET'] = jwt_secret
-    init_db()
+    init_db(drop=True)
 
 
 if __name__ == '__main__':

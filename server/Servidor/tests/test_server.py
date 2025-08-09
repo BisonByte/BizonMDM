@@ -21,7 +21,7 @@ class ServerTestCase(unittest.TestCase):
         os.unlink(DB_PATH)
 
     def setUp(self):
-        init_db()
+        init_db(drop=True)
         import werkzeug
         if not hasattr(werkzeug, "__version__"):
             werkzeug.__version__ = "3"
@@ -157,6 +157,18 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(resp.status_code, 200)
         resp = self.client.get('/admin/clients', headers=self.auth_header())
         self.assertEqual(resp.get_json(), [])
+
+    def test_init_db_preserves_data_without_drop_flag(self):
+        """Calling init_db without drop should not remove existing data."""
+        with get_session() as db:
+            db.add(Admin(username='keep', password='pwd'))
+            db.commit()
+
+        init_db()
+
+        with get_session() as db:
+            admin = db.query(Admin).filter_by(username='keep').first()
+            self.assertIsNotNone(admin)
 
 if __name__ == '__main__':
     unittest.main()
