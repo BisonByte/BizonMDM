@@ -346,13 +346,12 @@ def _queue_command(device_id: str, action: str, extra: dict | None = None):
         db.add(Command(device_id=device.id, command=json.dumps(payload)))
         db.commit()
         token = device.fcm_token
-    _send_fcm_message(token, payload)
-    return True
+    return _send_fcm_message(token, payload)
 
 
-def _send_fcm_message(token: str | None, payload: dict) -> None:
+def _send_fcm_message(token: str | None, payload: dict) -> bool:
     if not token or not FCM_SERVER_KEY:
-        return
+        return True
     headers = {
         "Authorization": f"key={FCM_SERVER_KEY}",
         "Content-Type": "application/json",
@@ -361,10 +360,15 @@ def _send_fcm_message(token: str | None, payload: dict) -> None:
     try:
         data = json.dumps(body).encode("utf-8")
         req = urllib.request.Request(FCM_URL, data=data, headers=headers)
-        with urllib.request.urlopen(req, timeout=5):
-            pass
+        with urllib.request.urlopen(req, timeout=5) as resp:
+            status = resp.getcode()
+            if status != 200:
+                logging.warning("Error enviando FCM: HTTP %s", status)
+                return False
     except Exception as exc:
         logging.warning("Error enviando FCM: %s", exc)
+        return False
+    return True
 
 
 @app.route('/api/status', methods=['GET'])

@@ -121,8 +121,8 @@ def init_db(drop: bool = False) -> None:
             Base.metadata.drop_all(engine)
         command.upgrade(cfg, "head")
         Base.metadata.create_all(engine)
-    except (ModuleNotFoundError, ImportError):
-        # Alembic no disponible: crea las tablas directamente
+    except (ModuleNotFoundError, ImportError, Exception):
+        # Alembic no disponible o fallo en migraciones: crea las tablas directamente
         if should_drop:
             Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)
