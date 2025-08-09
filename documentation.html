@@ -143,14 +143,14 @@
     <ol start="2">
       <li>Instale dependencias del servidor e inicie el instalador:</li>
     </ol>
-    <pre><button class="copy" data-copy="pip install -r Servidor/requirements.txt
-python install_script.py">Copiar</button><code>pip install -r Servidor/requirements.txt
-python install_script.py</code></pre>
+    <pre><button class="copy" data-copy="pip install -r server/Servidor/requirements.txt
+python server/install_script.py">Copiar</button><code>pip install -r server/Servidor/requirements.txt
+python server/install_script.py</code></pre>
     <ol start="3">
       <li>Abra <code>http://localhost:5000/install</code> y complete el formulario con la cadena de conexión de BD, clave JWT, clave de FCM y un usuario admin inicial.</li>
       <li>Tras finalizar, arranque el servidor:</li>
     </ol>
-    <pre><button class="copy" data-copy="python Servidor/server.py">Copiar</button><code>python Servidor/server.py</code></pre>
+    <pre><button class="copy" data-copy="python server/Servidor/server.py">Copiar</button><code>python server/Servidor/server.py</code></pre>
 
     <h2 id="instalacion">Opciones de instalación</h2>
     <div class="tabs" data-tabs>
@@ -172,17 +172,17 @@ sudo apt -y install python3 python3-pip python3-venv git</code></pre>
         </ol>
         <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r Servidor/requirements.txt">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM
+pip install -r server/Servidor/requirements.txt">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM
 python3 -m venv .venv && source .venv/bin/activate
-pip install -r Servidor/requirements.txt</code></pre>
+pip install -r server/Servidor/requirements.txt</code></pre>
         <ol start="3">
           <li>Ejecute el instalador y complete <code>/install</code>:</li>
         </ol>
-        <pre><button class="copy" data-copy="python install_script.py">Copiar</button><code>python install_script.py</code></pre>
+        <pre><button class="copy" data-copy="python server/install_script.py">Copiar</button><code>python server/install_script.py</code></pre>
         <ol start="4">
           <li>Inicie el servidor en segundo plano (opción simple):</li>
         </ol>
-        <pre><button class="copy" data-copy="nohup python Servidor/server.py & disown">Copiar</button><code>nohup python Servidor/server.py & disown</code></pre>
+        <pre><button class="copy" data-copy="nohup python server/Servidor/server.py & disown">Copiar</button><code>nohup python server/Servidor/server.py & disown</code></pre>
         <p class="callout">Producción recomendado: usar <code>gunicorn</code> + <code>systemd</code> y un proxy inverso Nginx.</p>
         <details>
           <summary>Ejemplo con gunicorn + systemd</summary>
@@ -213,26 +213,26 @@ WantedBy=multi-user.target</code></pre>
         </ol>
         <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\\Scripts\\Activate.ps1
-pip install -r Servidor/requirements.txt
-python install_script.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
+pip install -r server/Servidor/requirements.txt
+python server/install_script.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\Scripts\Activate.ps1
-pip install -r Servidor/requirements.txt
-python install_script.py</code></pre>
+pip install -r server/Servidor/requirements.txt
+python server/install_script.py</code></pre>
         <p>Abra <code>http://localhost:5000/install</code>, complete el formulario y después ejecute:</p>
-        <pre><button class="copy" data-copy="python Servidor/server.py">Copiar</button><code>python Servidor/server.py</code></pre>
+        <pre><button class="copy" data-copy="python server/Servidor/server.py">Copiar</button><code>python server/Servidor/server.py</code></pre>
         <details>
           <summary>Servicio en segundo plano con NSSM (opcional)</summary>
-          <p>Instale <a href="https://nssm.cc/download" target="_blank" rel="noopener">NSSM</a> y cree un servicio apuntando a <code>python.exe</code> con el script <code>Servidor/server.py</code>.</p>
+            <p>Instale <a href="https://nssm.cc/download" target="_blank" rel="noopener">NSSM</a> y cree un servicio apuntando a <code>python.exe</code> con el script <code>server/Servidor/server.py</code>.</p>
         </details>
       </div>
       <div id="tab-docker" role="tabpanel" class="tabpanel">
         <h3 id="instalacion-docker">Instalación con Docker Compose</h3>
         <ol>
           <li>Instale Docker Desktop (Windows) o Docker Engine (Linux) con Compose.</li>
-          <li>Desde la raíz del repo:</li>
+          <li>Desde la carpeta <code>server/</code>:</li>
         </ol>
-        <pre><button class="copy" data-copy="docker compose up -d">Copiar</button><code>docker compose up -d</code></pre>
-        <p>Revise y adapte variables de entorno en <code>docker-compose.yml</code> y/o archivo <code>.env</code> según su base de datos y claves.</p>
+        <pre><button class="copy" data-copy="cd server\ndocker compose up -d">Copiar</button><code>cd server\ndocker compose up -d</code></pre>
+        <p>Revise y adapte variables de entorno en <code>server/docker-compose.yml</code> y/o archivo <code>.env</code> según su base de datos y claves.</p>
       </div>
     </div>
 
@@ -380,7 +380,7 @@ DATABASE_URL=sqlite:///bizon.db</code></pre>
     </details>
     <details>
       <summary>¿Puedo desplegar todo con Docker?</summary>
-      <p>Sí. Ajuste variables en <code>docker-compose.yml</code> y ejecute <code>docker compose up -d</code>.</p>
+        <p>Sí. Ajuste variables en <code>server/docker-compose.yml</code> y ejecute <code>cd server && docker compose up -d</code>.</p>
     </details>
     <details>
       <summary>¿La app Android funciona sin FCM?</summary>
