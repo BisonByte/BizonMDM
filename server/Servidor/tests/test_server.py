@@ -131,7 +131,7 @@ class ServerTestCase(unittest.TestCase):
 
     def test_admin_clients_crud(self):
         # Register a device to assign later
-        self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        self.client.post('/devices/register', json={'deviceId': 'd1'})
         resp = self.client.post(
             '/admin/clients',
             json={'username': 'cli', 'password': 'pwd', 'permissions': ['wipe']},
