@@ -25,6 +25,7 @@ class Device(Base):
     __tablename__ = "devices"
     id = Column(Integer, primary_key=True)
     device_id = Column(String, unique=True, nullable=False)
+    client_id = Column(String)
     imei = Column(String)
     model = Column(String)
     serial = Column(String)

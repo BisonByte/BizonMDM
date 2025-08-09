@@ -25,7 +25,7 @@ class ServerTestCase(unittest.TestCase):
         if not hasattr(werkzeug, "__version__"):
             werkzeug.__version__ = "3"
         self.client = app.test_client()
-        self.token = encode_jwt({'sub': 'tester'}, os.environ['JWT_SECRET'])
+        self.token = encode_jwt({'sub': 'tester', 'role': 'admin'}, os.environ['JWT_SECRET'])
 
     def auth_header(self):
         return {'Authorization': f'Bearer {self.token}'}
@@ -34,7 +34,7 @@ class ServerTestCase(unittest.TestCase):
         data = {'deviceId': 'd1', 'model': 'Pixel', 'serial': '123', 'imei': '999'}
         resp = self.client.post('/devices/register', json=data, headers=self.auth_header())
         self.assertEqual(resp.status_code, 200)
-        resp = self.client.get('/devices/d1', headers=self.auth_header())
+        resp = self.client.get('/admin/devices/d1', headers=self.auth_header())
         self.assertEqual(resp.status_code, 200)
         info = resp.get_json()
         self.assertEqual(info['model'], 'Pixel')
@@ -44,10 +44,10 @@ class ServerTestCase(unittest.TestCase):
     def test_device_control_endpoints(self):
         self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
         actions = [
-            ('device_wipe', '/api/device/wipe'),
-            ('device_reboot', '/api/device/reboot'),
-            ('device_lock', '/api/device/lock'),
-            ('device_screenshot', '/api/device/screenshot'),
+            ('device_wipe', '/admin/device/wipe'),
+            ('device_reboot', '/admin/device/reboot'),
+            ('device_lock', '/admin/device/lock'),
+            ('device_screenshot', '/admin/device/screenshot'),
         ]
         for action, endpoint in actions:
             resp = self.client.post(endpoint, json={'deviceId': 'd1'}, headers=self.auth_header())
@@ -61,7 +61,7 @@ class ServerTestCase(unittest.TestCase):
     def test_app_management_endpoints(self):
         self.client.post('/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
         resp = self.client.post(
-            '/api/app/install',
+            '/admin/app/install',
             json={'deviceId': 'd1', 'url': 'http://example.com/app.apk'},
             headers=self.auth_header(),
         )
@@ -72,7 +72,7 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(cmds[0]['url'], 'http://example.com/app.apk')
 
         resp = self.client.post(
-            '/api/app/uninstall',
+            '/admin/app/uninstall',
             json={'deviceId': 'd1', 'package': 'com.example.app'},
             headers=self.auth_header(),
         )
@@ -92,7 +92,7 @@ class ServerTestCase(unittest.TestCase):
                 headers=self.auth_header(),
             )
             resp = self.client.post(
-                '/api/device/reboot',
+                '/admin/device/reboot',
                 json={'deviceId': 'd1'},
                 headers=self.auth_header(),
             )
@@ -103,6 +103,23 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(payload['action'], 'device_reboot')
         finally:
             del os.environ['FCM_SERVER_KEY']
+
+    def client_header(self, cid):
+        tok = encode_jwt({'sub': cid, 'role': 'client', 'client_id': cid}, os.environ['JWT_SECRET'])
+        return {'Authorization': f'Bearer {tok}'}
+
+    def test_client_device_isolation(self):
+        self.client.post('/devices/register', json={'deviceId': 'd1', 'clientId': 'c1'}, headers=self.auth_header())
+        self.client.post('/devices/register', json={'deviceId': 'd2', 'clientId': 'c2'}, headers=self.auth_header())
+
+        resp = self.client.get('/client/devices', headers=self.client_header('c1'))
+        self.assertEqual(resp.status_code, 200)
+        devices = resp.get_json()
+        self.assertEqual(len(devices), 1)
+        self.assertEqual(devices[0]['deviceId'], 'd1')
+
+        resp = self.client.post('/client/device/wipe', json={'deviceId': 'd2'}, headers=self.client_header('c1'))
+        self.assertEqual(resp.status_code, 404)
 
 if __name__ == '__main__':
     unittest.main()
