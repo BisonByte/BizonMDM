@@ -13,6 +13,8 @@ async function apiFetch(path, options = {}) {
   if (!res.ok) throw new Error('API error');
   return res.json();
 }
+// Expose helper for other modules
+window.apiFetch = apiFetch;
 
 function ServerStatus() {
   const [status, setStatus] = useState(null);
@@ -385,12 +387,15 @@ function App() {
 
   let page;
   if (route === '#/dashboard') page = <Dashboard />;
+  else if (route === '#/dashboard/finance') page = <FinancialDashboard />;
   else if (route === '#/devices') page = <DeviceTable onSelect={(id) => window.location.hash = `#/devices/${id}`} />;
   else if (route.startsWith('#/devices/')) {
     const id = route.split('/')[2];
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
   } else if (route === '#/policies') page = <PolicyEditor />;
   else if (route === '#/clients') page = <ClientManager />;
+  else if (route === '#/admin/clients') page = <StoreUserManager />;
+  else if (route === '#/admin/logs') page = <AuditLogs />;
   else if (route === '#/config') page = <Config />;
   else if (route === '#/first-steps') page = <FirstSteps />;
   else page = <Dashboard />;
@@ -401,9 +406,12 @@ function App() {
         <h1>{tenantConfig.title || 'Bizon MDM Admin'}</h1>
         <nav>
           <a href="#/dashboard">Dashboard</a>
+          <a href="#/dashboard/finance">Finanzas</a>
           <a href="#/devices">Dispositivos</a>
           <a href="#/policies">Políticas</a>
           <a href="#/clients">Clientes</a>
+          <a href="#/admin/clients">Tiendas y usuarios</a>
+          <a href="#/admin/logs">Logs</a>
           <a href="#/config">Config</a>
         </nav>
         <ServerStatus />
