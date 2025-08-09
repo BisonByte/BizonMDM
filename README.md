@@ -21,6 +21,15 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
 
 ## Instalación del servidor
 
+### Requisitos previos
+
+- Python 3.10+ y `pip`.
+- Node.js 18+ si deseas recompilar el panel React.
+- Una base de datos SQL (PostgreSQL, MySQL/MariaDB o SQLite para pruebas).
+- Clave de servidor de Firebase Cloud Messaging.
+
+### Pasos
+
 1. Clona este repositorio.
 2. Instala las dependencias y ejecuta el script de instalación:
 
@@ -40,11 +49,19 @@ python server/install_script.py
    - La ejecución de las migraciones de Alembic para preparar la base de datos.
    - La creación del usuario administrador.
 5. Tras una instalación exitosa serás redirigido al panel de administración.
-
-Para iniciar el servidor después de la instalación:
+6. (Opcional) Compila la interfaz web si realizaste cambios en `server/admin-frontend/`:
 
 ```bash
-python server/Servidor/server.py
+cd server/admin-frontend
+npm install
+npm run build
+```
+
+7. Inicia el servidor y comprueba el estado:
+
+```bash
+python server/Servidor/server.py &
+curl http://localhost:5000/api/status
 ```
 
 ## Panel de administración
@@ -82,11 +99,26 @@ Los roles disponibles son `admin`, `operador` y `cliente`. Cada uno limita el ac
 
 Los usuarios autenticados pueden acceder a `https://mi-servidor/cliente` para gestionar sus propios dispositivos, revisar el estado y ejecutar acciones permitidas.
 
+#### Ejemplo: listar dispositivos
+
+```bash
+curl -H "Authorization: Bearer <token_cliente>" https://mi-servidor/api/devices
+```
+
+Con el identificador de un dispositivo también es posible enviar acciones:
+
+```bash
+curl -X POST https://mi-servidor/api/devices/42/lock \
+  -H "Authorization: Bearer <token_cliente>"
+```
+
 ### Consideraciones de seguridad
 
 - Obliga HTTPS para todas las peticiones.
 - Almacena las contraseñas con algoritmos de hash seguros (p. ej., bcrypt).
 - Define tiempos de expiración cortos para los tokens JWT y rotación mediante refresh.
+- Deshabilita o protege el endpoint `/install` una vez finalizada la configuración.
+- Limita los intentos de inicio de sesión para mitigar fuerza bruta.
 
 ## Licencia
 
