@@ -16,6 +16,7 @@ import com.example.mdmjive.network.models.Command
 
 // Interface para los endpoints de la API
 interface ApiService {
+    // Endpoint público para registrar el dispositivo en el servidor
     @POST("devices/register")
     suspend fun registerDevice(@Body deviceInfo: DeviceInfo): Response<ApiResponse>
 

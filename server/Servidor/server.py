@@ -173,9 +173,7 @@ def get_provisioning_qr(device_id: str):
     buf.seek(0)
     return send_file(buf, mimetype='image/png')
 
-@app.route('/admin/devices/register', methods=['POST'])
-@require_admin
-def register_device():
+def _register_device():
     """Registra un dispositivo a partir de un JSON enviado por la app."""
     data = request.get_json() or {}
     device_id = data.get('deviceId')
@@ -203,6 +201,19 @@ def register_device():
         db.commit()
     logging.info('registro dispositivo %s', device_id)
     return jsonify({'success': True, 'message': 'Dispositivo registrado'}), 200
+
+
+@app.route('/admin/devices/register', methods=['POST'])
+@require_admin
+def register_device_admin():
+    """Endpoint protegido para registrar dispositivos."""
+    return _register_device()
+
+
+@app.route('/devices/register', methods=['POST'])
+def register_device_public():
+    """Endpoint público para registrar dispositivos."""
+    return _register_device()
 
 @app.route('/client/devices/status', methods=['POST'])
 @require_client
