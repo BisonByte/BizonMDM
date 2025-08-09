@@ -9,4 +9,6 @@
     <string name="lock_device">Bloquear dispositivo</string>
     <string name="lock_message">Dispositivo bloqueado por BizonMDM</string>
     <string name="package_name_hint">Nombre del paquete</string>
+    <string name="mdm_service_channel">Servicio MDM</string>
+    <string name="mdm_service_running">Servicio MDM en ejecución</string>
 </resources>
