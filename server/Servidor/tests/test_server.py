@@ -2,12 +2,14 @@ import os
 import tempfile
 import unittest
 import sys
+import time
 from unittest import mock
 
 # Configure database and token before importing the server
 DB_FD, DB_PATH = tempfile.mkstemp()
 os.environ['DATABASE_URL'] = f'sqlite:///{DB_PATH}'
 os.environ['JWT_SECRET'] = 'testsecret'
+os.environ['SKIP_ALEMBIC'] = '1'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from server import app, init_db, encode_jwt, decode_jwt, get_session
@@ -56,6 +58,40 @@ class ServerTestCase(unittest.TestCase):
         payload = decode_jwt(token, os.environ['JWT_SECRET'])
         self.assertEqual(payload['role'], 'client')
         self.assertEqual(payload['client_id'], 'd1')
+
+    def test_expired_token(self):
+        expired = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin', expires_in=-1)
+        with self.assertRaises(ValueError):
+            decode_jwt(expired, os.environ['JWT_SECRET'])
+        resp = self.client.post(
+            '/admin/devices/register',
+            json={'deviceId': 'dX'},
+            headers={'Authorization': f'Bearer {expired}'},
+        )
+        self.assertEqual(resp.status_code, 401)
+
+    def test_token_renewal(self):
+        short = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin', expires_in=1)
+        resp = self.client.post(
+            '/admin/devices/register',
+            json={'deviceId': 'd1'},
+            headers={'Authorization': f'Bearer {short}'},
+        )
+        self.assertEqual(resp.status_code, 200)
+        time.sleep(2)
+        resp = self.client.post(
+            '/admin/devices/register',
+            json={'deviceId': 'd2'},
+            headers={'Authorization': f'Bearer {short}'},
+        )
+        self.assertEqual(resp.status_code, 401)
+        new_tok = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin')
+        resp = self.client.post(
+            '/admin/devices/register',
+            json={'deviceId': 'd3'},
+            headers={'Authorization': f'Bearer {new_tok}'},
+        )
+        self.assertEqual(resp.status_code, 200)
 
     def test_register_device(self):
         data = {'deviceId': 'd1', 'model': 'Pixel', 'serial': '123', 'imei': '999'}
@@ -161,7 +197,9 @@ class ServerTestCase(unittest.TestCase):
     def test_init_db_preserves_data_without_drop_flag(self):
         """Calling init_db without drop should not remove existing data."""
         with get_session() as db:
-            db.add(Admin(username='keep', password='pwd'))
+            admin = Admin(username='keep')
+            admin.set_password('pwd')
+            db.add(admin)
             db.commit()
 
         init_db()
