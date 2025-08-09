@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     Text,
     create_engine,
+    Table,
 )
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy.sql import func
@@ -20,6 +21,13 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 
 Base = declarative_base()
 
+
+client_devices = Table(
+    "client_devices",
+    Base.metadata,
+    Column("client_id", ForeignKey("clients.id"), primary_key=True),
+    Column("device_id", ForeignKey("devices.id"), primary_key=True),
+)
 
 class Device(Base):
     __tablename__ = "devices"
@@ -35,6 +43,7 @@ class Device(Base):
 
     logs = relationship("LogEntry", back_populates="device", cascade="all, delete-orphan")
     commands = relationship("Command", back_populates="device", cascade="all, delete-orphan")
+    clients = relationship("Client", secondary=client_devices, back_populates="devices")
 
 
 class LogEntry(Base):
@@ -63,6 +72,25 @@ class Admin(Base):
     created = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class User(Base):
+    __tablename__ = "users"
+    id = Column(Integer, primary_key=True)
+    username = Column(String, unique=True, nullable=False)
+    password_hash = Column(String, nullable=False)
+    role = Column(String, nullable=False)
+
+    clients = relationship("Client", back_populates="user", cascade="all, delete-orphan")
+
+
+class Client(Base):
+    __tablename__ = "clients"
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    user = relationship("User", back_populates="clients")
+    devices = relationship("Device", secondary=client_devices, back_populates="clients")
+
+
 def init_db() -> None:
     try:
         from alembic import command
@@ -73,6 +101,7 @@ def init_db() -> None:
         cfg.set_main_option("sqlalchemy.url", DB_URL)
         cfg.set_main_option("script_location", os.path.join(base_dir, "alembic"))
         command.upgrade(cfg, "head")
+        Base.metadata.create_all(engine)
     except (ModuleNotFoundError, ImportError):
         # Alembic no disponible: crea las tablas directamente
         Base.metadata.create_all(engine)
