@@ -1,277 +1,440 @@
-Para mejorar y ampliar su archivo `documentation.html`, he creado una versión más extensa y detallada. He incorporado información de los archivos `README.md` y `MANUAL.md` de su repositorio para hacer la sección de instalación en un VPS más completa, organizada y con instrucciones paso a paso, como usted solicitó.
-
-El nuevo `documentation.html` está estructurado en secciones claras para facilitar la navegación y ofrece explicaciones más profundas, transformándolo en un documento más parecido a un manual. A continuación, el código HTML completo y mejorado para que lo actualice en su repositorio.
-
-```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BizonMDM Documentation</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BizonMDM — Documentación completa</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f9f9f9;
-      color: #333;
+    :root{
+      --bg:#0b1020; --panel:#0f1a36; --soft:#15244d; --text:#e7ecf7; --muted:#9fb3d3; --brand:#6dd3fb; --accent:#b98dff; --ok:#7cf29a; --warn:#ffd166; --bad:#ff6b6b;
     }
-    header {
-      background: #004080;
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-    }
-    nav {
-      text-align: center;
-      margin: 1rem;
-    }
-    nav button {
-      margin: 0 0.5rem;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      background: #004080;
-      color: #fff;
-    }
-    nav button:hover {
-      background: #0059b3;
-    }
-    main {
-      max-width: 900px;
-      margin: auto;
-      padding: 1rem;
-      line-height: 1.6;
-      background: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #004080;
-      text-align: center;
-      padding-bottom: 0.3rem;
-    }
-    h2 {
-      color: #004080;
-      border-bottom: 2px solid #004080;
-      padding-bottom: 0.3rem;
-    }
-    h3 {
-      color: #004080;
-      margin-top: 1.5rem;
-    }
-    pre {
-      background: #e9e9e9;
-      padding: 1rem;
-      border-radius: 4px;
-      overflow-x: auto;
-    }
-    code {
-      font-family: "Courier New", Courier, monospace;
-    }
-    .lang {
-      display: block;
-    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;font:16px/1.5 system-ui,Segoe UI,Inter,Roboto,Arial;background:linear-gradient(180deg,var(--bg),#0b0f1f 40%,#0a0d1a);color:var(--text);}
+    a{color:var(--brand);text-decoration:none}
+    a:hover{text-decoration:underline}
+    code,pre{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace}
+    pre{background:var(--soft);padding:12px;border-radius:14px;overflow:auto;position:relative}
+    .copy{position:absolute;top:10px;right:10px;background:#0004;border:1px solid #fff2;color:#fff;padding:6px 8px;border-radius:10px;font-size:12px;cursor:pointer}
+
+    .layout{display:grid;grid-template-columns:280px 1fr;height:100%}
+    .sidebar{background:linear-gradient(180deg,var(--panel),#0d1730);padding:18px 16px;border-right:1px solid #1d2c55;position:sticky;top:0;max-height:100dvh;overflow:auto}
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:18px}
+    .brand .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--accent));box-shadow:0 0 0 3px #ffffff12}
+    .brand h1{font-size:18px;margin:0}
+    .search{position:sticky;top:0;background:inherit;padding-bottom:8px}
+    .search input{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #26407a;background:#070d20;color:var(--text)}
+    nav .group{margin:14px 0}
+    nav .group h3{font-size:12px;letter-spacing:.08em;color:var(--muted);margin:12px 8px 6px}
+    nav a{display:block;padding:8px 10px;border-radius:10px;color:var(--text)}
+    nav a:hover{background:#ffffff12}
+
+    main{padding:28px;max-width:1150px;margin:0 auto}
+    .hero{display:grid;gap:16px;background:linear-gradient(135deg,#0e1a34,#0b142a);border:1px solid #21325f;padding:22px;border-radius:18px;box-shadow:0 10px 30px #0006}
+    .hero h2{font-size:28px;margin:0}
+    .pill{display:inline-block;font-size:12px;padding:4px 10px;border:1px solid #2b457d;border-radius:999px;color:var(--muted)}
+    .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin:18px 0}
+    .card{background:linear-gradient(180deg,#0e1c3a,#0f1a34);border:1px solid #1f2e59;padding:16px;border-radius:16px}
+    .card h4{margin:0 0 8px 0}
+
+    h2[id], h3[id], h4[id]{scroll-margin-top:100px}
+
+    .tabs{margin-top:12px;background:#0c152e;border:1px solid #20305c;border-radius:14px}
+    .tablist{display:flex;flex-wrap:wrap;gap:8px;padding:8px;border-bottom:1px solid #1b2a54}
+    .tablist button{padding:8px 12px;border-radius:999px;border:1px solid #2b457d;background:#0a1430;color:var(--text);cursor:pointer}
+    .tablist button[aria-selected="true"]{background:linear-gradient(135deg,var(--brand),var(--accent));color:#0a0f1f;border-color:transparent}
+    .tabpanel{display:none;padding:16px}
+    .tabpanel.active{display:block}
+
+    .callout{border-left:4px solid var(--brand);background:#0c1734;padding:12px 14px;border-radius:8px}
+    .callout.warn{border-left-color:var(--warn)}
+    .callout.ok{border-left-color:var(--ok)}
+    .kbd{display:inline-block;border:1px solid #2b457d;background:#09132b;padding:0 6px;border-radius:6px;font-size:12px}
+
+    details{background:#0d1732;border:1px solid #233564;border-radius:12px;padding:12px;margin:10px 0}
+    details[open]{box-shadow:0 8px 30px #0004}
+    summary{cursor:pointer}
+
+    footer{margin:32px 0;color:var(--muted)}
   </style>
 </head>
 <body>
-  <header>
-    <h1>BizonMDM</h1>
-    <p>Mobile Device Management Platform</p>
-  </header>
-  <nav>
-    <button onclick="switchLang('es')">Español</button>
-    <button onclick="switchLang('en')">English</button>
-  </nav>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo"></div><h1>BizonMDM</h1></div>
+    <div class="search"><input id="filter" placeholder="Buscar en la guía…" aria-label="Buscar"/></div>
+    <nav id="toc">
+      <div class="group">
+        <h3>Inicio</h3>
+        <a href="#intro">Introducción</a>
+        <a href="#arquitectura">Arquitectura & componentes</a>
+        <a href="#requisitos">Requisitos</a>
+        <a href="#arranque-rapido">Arranque rápido</a>
+      </div>
+      <div class="group">
+        <h3>Instalación</h3>
+        <a href="#instalacion">Opciones de instalación</a>
+        <a href="#instalacion-vps">VPS (Linux)</a>
+        <a href="#instalacion-windows">Windows</a>
+        <a href="#instalacion-docker">Docker / Compose</a>
+      </div>
+      <div class="group">
+        <h3>Configuración</h3>
+        <a href="#config-servidor">Servidor (API)</a>
+        <a href="#config-admin">Panel Admin</a>
+        <a href="#config-app">App Android</a>
+        <a href="#notificaciones">Notificaciones (FCM)</a>
+        <a href="#base-datos">Base de datos</a>
+        <a href="#filebase">Almacenamiento de archivos</a>
+      </div>
+      <div class="group">
+        <h3>Operación</h3>
+        <a href="#uso-panel">Uso del panel</a>
+        <a href="#gestion-dispositivos">Gestión de dispositivos</a>
+        <a href="#seguridad">Seguridad</a>
+        <a href="#respaldo">Backups & actualización</a>
+        <a href="#solucion-fallos">Solución de problemas</a>
+      </div>
+      <div class="group">
+        <h3>Referencia</h3>
+        <a href="#api-endpoints">API endpoints clave</a>
+        <a href="#faq">Preguntas frecuentes</a>
+        <a href="#glosario">Glosario</a>
+      </div>
+    </nav>
+  </aside>
   <main>
-    <div id="content-es" class="lang">
-      <h1>Documentación Completa - BizonMDM</h1>
-      
-      <h2>Acerca de BizonMDM</h2>
-      <p>BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto diseñada para la gestión de dispositivos Android. Permite a los administradores registrar dispositivos, aplicar políticas de seguridad, enviar comandos remotos y monitorear la actividad a través de una interfaz de administración centralizada.</p>
-      
-      <h3>Tecnologías Utilizadas</h3>
-      <ul>
-        <li><strong>Aplicación móvil:</strong> Android en Kotlin y Gradle.</li>
-        <li><strong>Backend:</strong> Python 3 con Flask, SQLAlchemy y Alembic para las migraciones de bases de datos.</li>
-        <li><strong>Panel de administración:</strong> Una aplicación web de React servida por el backend.</li>
-        <li><strong>Mensajería:</strong> Firebase Cloud Messaging (FCM) para notificaciones push en tiempo real.</li>
-      </ul>
-      
-      <h2>Instalación del Servidor</h2>
-      
-      <h3>Requisitos Previos</h3>
-      <p>Antes de comenzar, asegúrate de tener instalados los siguientes componentes en tu servidor:</p>
-      <ul>
-        <li>Python 3.8 o superior.</li>
-        <li>Git para clonar el repositorio.</li>
-        <li>pip para gestionar las dependencias de Python.</li>
-      </ul>
-      
-      <h3>Instalación Paso a Paso en un Servidor Privado (VPS)</h3>
-      <p>Esta guía detallada te llevará a través de los pasos necesarios para configurar y ejecutar el servidor de BizonMDM en un entorno Linux, como un VPS.</p>
-      
-      <ol>
-        <li>
-          <h4>Clonar el Repositorio</h4>
-          <p>Usa Git para clonar el repositorio de BizonMDM en tu servidor y navega al directorio del proyecto.</p>
-          <pre><code>git clone https://github.com/BizonTeam/BizonMDM.git
-cd BizonMDM</code></pre>
-        </li>
-        <li>
-          <h4>Configuración del Entorno Virtual (Opcional pero recomendado)</h4>
-          <p>Para aislar las dependencias del proyecto y evitar conflictos con otros paquetes de tu sistema, puedes crear y activar un entorno virtual.</p>
-          <pre><code>python3 -m venv venv
-source venv/bin/activate</code></pre>
-        </li>
-        <li>
-          <h4>Instalar Dependencias</h4>
-          <p>Instala todas las bibliotecas de Python necesarias para el servidor usando el archivo <code>requirements.txt</code>.</p>
-          <pre><code>pip install -r server/Servidor/requirements.txt</code></pre>
-        </li>
-        <li>
-          <h4>Ejecutar el Script de Instalación</h4>
-          <p>Este script simplifica la configuración inicial. Te pedirá datos importantes para configurar la base de datos y la seguridad del sistema.</p>
-          <pre><code>python server/install_script.py</code></pre>
-          <p>Este comando iniciará un servidor temporal y te pedirá que completes un formulario en tu navegador en <code>http://localhost:5000/install</code>. Este formulario configurará automáticamente las variables de entorno y la base de datos.</p>
-        </li>
-        <li>
-          <h4>Configuración y Puesta en Marcha del Servidor</h4>
-          <p>Después de la instalación inicial, puedes iniciar el servidor principal.</p>
-          <pre><code>python server/Servidor/server.py</code></pre>
-          <p>El servidor se ejecutará en <code>http://0.0.0.0:5000/</code> por defecto. Puedes modificar el host y el puerto utilizando las variables de entorno <code>BIZON_HOST</code> y <code>BIZON_PORT</code>.</p>
-        </li>
-        <li>
-          <h4>Configuración Opcional de JWT y HTTPS</h4>
-          <p>Para una mayor seguridad, puedes configurar una clave secreta para JWT y habilitar HTTPS.</p>
-          <ul>
-            <li><strong>JWT:</strong> Define la variable de entorno <code>JWT_SECRET</code> para proteger todos los endpoints con un token JWT válido.</li>
-            <li><strong>HTTPS:</strong> Para habilitar HTTPS, establece las variables <code>SSL_CERT</code> y <code>SSL_KEY</code> con las rutas a tu certificado y llave privada.</li>
-          </ul>
-        </li>
-      </ol>
+    <section class="hero" id="intro">
+      <div>
+        <span class="pill">Guía oficial</span>
+        <h2>BizonMDM — Libro de instalación, configuración y uso</h2>
+        <p>Este documento es la referencia completa para desplegar y operar <strong>BizonMDM</strong>: servidor/API, panel de administración web y aplicación Android para administración de dispositivos móviles (MDM). Incluye pasos detallados para VPS (Linux), Windows y Docker.</p>
+        <div class="cards">
+          <div class="card"><h4>Repositorio</h4><p><code>BisonByte/BizonMDM</code></p><p>Áreas: <em>Servidor (Python), Admin Frontend (JS), App (Kotlin)</em></p></div>
+          <div class="card"><h4>Estado rápido</h4><ul><li>Instalador web del servidor en <code>/install</code></li><li>Migraciones con Alembic</li><li>Soporte de FCM para notificaciones</li></ul></div>
+          <div class="card"><h4>Licencia</h4><p>Consulte el archivo <code>LICENSE</code> en el repositorio.</p></div>
+        </div>
+      </div>
+    </section>
 
-      <h2>Generación de Código QR para Aprovisionamiento</h2>
-      <p>BizonMDM soporta el aprovisionamiento de dispositivos Android a través de un código QR. Esto permite una configuración rápida y sin intervención manual.</p>
-      <ol>
-        <li>
-          <h4>Preparar el APK</h4>
-          <p>Asegúrate de que el archivo <code>mdm.apk</code> esté disponible en el directorio <code>downloads/</code> del servidor.</p>
-        </li>
-        <li>
-          <h4>Generar el QR</h4>
-          <p>Accede a la siguiente URL desde tu navegador para generar un código QR único para cada dispositivo:</p>
-          <pre><code>http://&lt;host&gt;:&lt;puerto&gt;/provisioning/qr/&lt;deviceId&gt;</code></pre>
-          <p>Escanea este código desde el asistente de configuración de un dispositivo Android recién restaurado para que el sistema descargue e instale la aplicación automáticamente.</p>
-        </li>
-      </ol>
-      
-      <h2>Preguntas Frecuentes</h2>
-      <p><strong>¿Puedo usar otra base de datos?</strong> Sí, el servidor usa SQLAlchemy, por lo que puedes usar cualquier base de datos que sea compatible, como PostgreSQL o MySQL. Solo necesitas actualizar la cadena de conexión en el instalador.</p>
-      <p><strong>¿Puedo escalar la aplicación?</strong> Se recomienda usar contenedores (como Docker) y balanceadores de carga para despliegues grandes y de producción. El archivo <code>docker-compose.yml</code> en la raíz del repositorio puede servir como punto de partida.</p>
-      
-      <h2>Licencia</h2>
-      <p>Este proyecto se distribuye bajo la Licencia MIT. Para más detalles, consulte el archivo <code>LICENSE</code>.</p>
+    <h2 id="arquitectura">Arquitectura & componentes</h2>
+    <div class="callout">
+      <p>BizonMDM se compone de tres piezas principales:</p>
+      <ul>
+        <li><strong>Servidor (API)</strong> — Python (SQLAlchemy/Alembic). Expone endpoints REST como <code>/api/status</code>, maneja autenticación JWT y conexión a la base de datos.</li>
+        <li><strong>Panel Admin</strong> — UI web en <code>admin-frontend/</code> para listar dispositivos, enviar acciones (bloqueo, borrado, etc.) y ver estado del sistema.</li>
+        <li><strong>App Android</strong> — Cliente MDM (Kotlin) que se comunica con el servidor y recibe notificaciones via Firebase Cloud Messaging (FCM).</li>
+      </ul>
     </div>
 
-    <div id="content-en" class="lang" style="display:none">
-      <h1>Complete Documentation - BizonMDM</h1>
-      
-      <h2>About BizonMDM</h2>
-      <p>BizonMDM is an open-source Mobile Device Management (MDM) platform designed for Android device management. It allows administrators to register devices, apply security policies, send remote commands, and monitor activity through a centralized administration interface.</p>
-      
-      <h3>Technologies Used</h3>
-      <ul>
-        <li><strong>Mobile app:</strong> Android in Kotlin and Gradle.</li>
-        <li><strong>Backend:</strong> Python 3 with Flask, SQLAlchemy, and Alembic for database migrations.</li>
-        <li><strong>Admin panel:</strong> A React web application served by the backend.</li>
-        <li><strong>Messaging:</strong> Firebase Cloud Messaging (FCM) for real-time push notifications.</li>
-      </ul>
-      
-      <h2>Server Installation</h2>
-      
-      <h3>Prerequisites</h3>
-      <p>Before you begin, make sure you have the following components installed on your server:</p>
-      <ul>
-        <li>Python 3.8 or higher.</li>
-        <li>Git to clone the repository.</li>
-        <li>pip to manage Python dependencies.</li>
-      </ul>
-      
-      <h3>Step-by-Step Installation on a Private Server (VPS)</h3>
-      <p>This detailed guide will walk you through the necessary steps to set up and run the BizonMDM server in a Linux environment, such as a VPS.</p>
-      
-      <ol>
-        <li>
-          <h4>Clone the Repository</h4>
-          <p>Use Git to clone the BizonMDM repository to your server and navigate to the project directory.</p>
-          <pre><code>git clone https://github.com/BizonTeam/BizonMDM.git
-cd BizonMDM</code></pre>
-        </li>
-        <li>
-          <h4>Virtual Environment Setup (Optional but recommended)</h4>
-          <p>To isolate project dependencies and avoid conflicts with other packages on your system, you can create and activate a virtual environment.</p>
-          <pre><code>python3 -m venv venv
-source venv/bin/activate</code></pre>
-        </li>
-        <li>
-          <h4>Install Dependencies</h4>
-          <p>Install all necessary Python libraries for the server using the <code>requirements.txt</code> file.</p>
-          <pre><code>pip install -r server/Servidor/requirements.txt</code></pre>
-        </li>
-        <li>
-          <h4>Run the Installation Script</h4>
-          <p>This script simplifies the initial configuration. It will prompt you for important data to set up the database and system security.</p>
-          <pre><code>python server/install_script.py</code></pre>
-          <p>This command will start a temporary server and ask you to fill out a form in your browser at <code>http://localhost:5000/install</code>. This form will automatically configure environment variables and the database.</p>
-        </li>
-        <li>
-          <h4>Server Configuration and Startup</h4>
-          <p>After the initial installation, you can start the main server.</p>
-          <pre><code>python server/Servidor/server.py</code></pre>
-          <p>The server will run on <code>http://0.0.0.0:5000/</code> by default. You can change the host and port using the environment variables <code>BIZON_HOST</code> and <code>BIZON_PORT</code>.</p>
-        </li>
-        <li>
-          <h4>Optional JWT and HTTPS Configuration</h4>
-          <p>For enhanced security, you can configure a secret key for JWT and enable HTTPS.</p>
-          <ul>
-            <li><strong>JWT:</strong> Define the <code>JWT_SECRET</code> environment variable to protect all endpoints with a valid JWT token.</li>
-            <li><strong>HTTPS:</strong> To enable HTTPS, set the <code>SSL_CERT</code> and <code>SSL_KEY</code> variables with the paths to your certificate and private key, respectively.</li>
-          </ul>
-        </li>
-      </ol>
+    <h2 id="requisitos">Requisitos</h2>
+    <ul>
+      <li><strong>Servidor</strong>: Python 3.10+, pip, <em>opcional</em> Docker 24+, Docker Compose. Base de datos SQL (PostgreSQL, MySQL/MariaDB o SQLite para pruebas).</li>
+      <li><strong>Panel</strong>: navegador moderno; si desea construir el frontend, Node.js 18+ recomendado.</li>
+      <li><strong>App Android</strong>: Android Studio (Giraffe+), SDK 24+, dispositivo físico o emulador.</li>
+      <li><strong>Notificaciones</strong>: un proyecto de Firebase con clave de servidor FCM.</li>
+    </ul>
 
-      <h2>Provisioning QR Code Generation</h2>
-      <p>BizonMDM supports provisioning Android devices via a QR code. This allows for quick, hands-free setup.</p>
-      <ol>
-        <li>
-          <h4>Prepare the APK</h4>
-          <p>Ensure that the <code>mdm.apk</code> file is available in the <code>downloads/</code> directory on your server.</p>
-        </li>
-        <li>
-          <h4>Generate the QR</h4>
-          <p>Access the following URL in your browser to generate a unique QR code for each device:</p>
-          <pre><code>http://&lt;host&gt;:&lt;port&gt;/provisioning/qr/&lt;deviceId&gt;</code></pre>
-          <p>Scan this code with the setup wizard of a newly factory-reset Android device, and the system will automatically download and activate the app.</p>
-        </li>
-      </ol>
-      
-      <h2>Frequently Asked Questions</h2>
-      <p><strong>Can I use a different database?</strong> Yes, the server uses SQLAlchemy, so you can use any compatible database like PostgreSQL or MySQL. You just need to update the connection string in the installer.</p>
-      <p><strong>Can the application scale?</strong> For large-scale deployments and production use, it is recommended to use containers (like Docker) and load balancers. The <code>docker-compose.yml</code> file in the root of the repository can serve as a starting point.</p>
-      
-      <h2>License</h2>
-      <p>This project is distributed under the MIT License. For more information, please consult the <code>LICENSE</code> file.</p>
+    <h2 id="arranque-rapido">Arranque rápido (local)</h2>
+    <ol>
+      <li>Clone el repositorio:</li>
+    </ol>
+    <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM">Copiar</button><code>git clone https://github.com/BisonByte/BisonMDM && cd BizonMDM</code></pre>
+    <ol start="2">
+      <li>Instale dependencias del servidor e inicie el instalador:</li>
+    </ol>
+    <pre><button class="copy" data-copy="pip install -r Servidor/requirements.txt
+python install_script.py">Copiar</button><code>pip install -r Servidor/requirements.txt
+python install_script.py</code></pre>
+    <ol start="3">
+      <li>Abra <code>http://localhost:5000/install</code> y complete el formulario con la cadena de conexión de BD, clave JWT, clave de FCM y un usuario admin inicial.</li>
+      <li>Tras finalizar, arranque el servidor:</li>
+    </ol>
+    <pre><button class="copy" data-copy="python Servidor/server.py">Copiar</button><code>python Servidor/server.py</code></pre>
+
+    <h2 id="instalacion">Opciones de instalación</h2>
+    <div class="tabs" data-tabs>
+      <div role="tablist" class="tablist">
+        <button role="tab" aria-selected="true" aria-controls="tab-vps" id="tab-vps-btn">VPS (Linux)</button>
+        <button role="tab" aria-selected="false" aria-controls="tab-windows" id="tab-windows-btn">Windows</button>
+        <button role="tab" aria-selected="false" aria-controls="tab-docker" id="tab-docker-btn">Docker / Compose</button>
+      </div>
+      <div id="tab-vps" role="tabpanel" class="tabpanel active">
+        <h3 id="instalacion-vps">Instalación en VPS (Ubuntu/Debian)</h3>
+        <ol>
+          <li>Actualice el sistema y dependencias:</li>
+        </ol>
+        <pre><button class="copy" data-copy="sudo apt update && sudo apt -y upgrade
+sudo apt -y install python3 python3-pip python3-venv git">Copiar</button><code>sudo apt update && sudo apt -y upgrade
+sudo apt -y install python3 python3-pip python3-venv git</code></pre>
+        <ol start="2">
+          <li>Clone y configure entorno:</li>
+        </ol>
+        <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r Servidor/requirements.txt">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r Servidor/requirements.txt</code></pre>
+        <ol start="3">
+          <li>Ejecute el instalador y complete <code>/install</code>:</li>
+        </ol>
+        <pre><button class="copy" data-copy="python install_script.py">Copiar</button><code>python install_script.py</code></pre>
+        <ol start="4">
+          <li>Inicie el servidor en segundo plano (opción simple):</li>
+        </ol>
+        <pre><button class="copy" data-copy="nohup python Servidor/server.py & disown">Copiar</button><code>nohup python Servidor/server.py & disown</code></pre>
+        <p class="callout">Producción recomendado: usar <code>gunicorn</code> + <code>systemd</code> y un proxy inverso Nginx.</p>
+        <details>
+          <summary>Ejemplo con gunicorn + systemd</summary>
+<pre><code># Instalar gunicorn
+pip install gunicorn
+
+# Servicio systemd (bizonmdm.service)
+[Unit]
+Description=BizonMDM API
+After=network.target
+
+[Service]
+User=www-data
+WorkingDirectory=/opt/BizonMDM
+Environment="PATH=/opt/BizonMDM/.venv/bin"
+ExecStart=/opt/BizonMDM/.venv/bin/gunicorn -w 3 -b 0.0.0.0:5000 Servidor.server:app
+Restart=always
+
+[Install]
+WantedBy=multi-user.target</code></pre>
+        </details>
+      </div>
+      <div id="tab-windows" role="tabpanel" class="tabpanel">
+        <h3 id="instalacion-windows">Instalación en Windows 10/11</h3>
+        <ol>
+          <li>Instale <a href="https://www.python.org/downloads/" target="_blank" rel="noopener">Python 3.10+ (Add to PATH)</a> y <a href="https://git-scm.com/download/win" target="_blank" rel="noopener">Git</a>.</li>
+          <li>Abra <span class="kbd">PowerShell</span> como Administrador y ejecute:</li>
+        </ol>
+        <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
+python -m venv .venv; .venv\\Scripts\\Activate.ps1
+pip install -r Servidor/requirements.txt
+python install_script.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
+python -m venv .venv; .venv\Scripts\Activate.ps1
+pip install -r Servidor/requirements.txt
+python install_script.py</code></pre>
+        <p>Abra <code>http://localhost:5000/install</code>, complete el formulario y después ejecute:</p>
+        <pre><button class="copy" data-copy="python Servidor/server.py">Copiar</button><code>python Servidor/server.py</code></pre>
+        <details>
+          <summary>Servicio en segundo plano con NSSM (opcional)</summary>
+          <p>Instale <a href="https://nssm.cc/download" target="_blank" rel="noopener">NSSM</a> y cree un servicio apuntando a <code>python.exe</code> con el script <code>Servidor/server.py</code>.</p>
+        </details>
+      </div>
+      <div id="tab-docker" role="tabpanel" class="tabpanel">
+        <h3 id="instalacion-docker">Instalación con Docker Compose</h3>
+        <ol>
+          <li>Instale Docker Desktop (Windows) o Docker Engine (Linux) con Compose.</li>
+          <li>Desde la raíz del repo:</li>
+        </ol>
+        <pre><button class="copy" data-copy="docker compose up -d">Copiar</button><code>docker compose up -d</code></pre>
+        <p>Revise y adapte variables de entorno en <code>docker-compose.yml</code> y/o archivo <code>.env</code> según su base de datos y claves.</p>
+      </div>
     </div>
+
+    <h2 id="config-servidor">Configuración del Servidor (API)</h2>
+    <ul>
+      <li>Instalador web: <code>/install</code> crea <code>.env</code>, guarda la clave FCM y ejecuta migraciones (Alembic).</li>
+      <li>Variables principales:
+        <ul>
+          <li><code>DATABASE_URL</code> — cadena de conexión (PostgreSQL, MySQL/MariaDB o SQLite).</li>
+          <li><code>JWT_SECRET</code> — clave secreta para firmar tokens.</li>
+          <li><code>FCM_SERVER_KEY</code> — clave de servidor de Firebase Cloud Messaging.</li>
+          <li><code>ADMIN_EMAIL</code>, <code>ADMIN_PASSWORD</code> — usuario inicial.</li>
+          <li><code>API_BASE_URL</code> — URL pública si usa proxy (ej.: <code>https://mdm.midominio.com</code>).</li>
+        </ul>
+      </li>
+      <li>Comprobación de salud: <code>/api/status</code> valida DB y FCM.</li>
+    </ul>
+
+    <h2 id="config-admin">Configuración del Panel de Administración</h2>
+    <p>La UI vive en <code>admin-frontend/</code>. Puede servirse como estática detrás de Nginx o construirse si el proyecto incluye herramientas de build.</p>
+    <details>
+      <summary>Opción A — Servir como estático</summary>
+      <pre><button class="copy" data-copy="sudo apt -y install nginx
+sudo cp -r admin-frontend /var/www/bizonmdm
+# Config Nginx (bloque de servidor)
+server {
+  server_name mdm.midominio.com;
+  root /var/www/bizonmdm;
+  location / { try_files $uri $uri/ /index.html; }
+  location /api/ { proxy_pass http://127.0.0.1:5000/; }
+}
+">Copiar</button><code>sudo apt -y install nginx
+sudo cp -r admin-frontend /var/www/bizonmdm
+# Config Nginx (bloque de servidor)
+server {
+  server_name mdm.midominio.com;
+  root /var/www/bizonmdm;
+  location / { try_files $uri $uri/ /index.html; }
+  location /api/ { proxy_pass http://127.0.0.1:5000/; }
+}
+</code></pre>
+    </details>
+    <details>
+      <summary>Opción B — Construir (si hay <code>package.json</code>)</summary>
+      <pre><button class="copy" data-copy="cd admin-frontend
+npm ci || npm install
+npm run build
+# despliegue del directorio de build en su servidor web">Copiar</button><code>cd admin-frontend
+npm ci || npm install
+npm run build
+# despliegue del directorio de build en su servidor web</code></pre>
+    </details>
+
+    <h2 id="config-app">Configuración de la App Android</h2>
+    <ol>
+      <li>Abra <code>app/</code> con Android Studio.</li>
+      <li>Configure las constantes de servidor (ej.: <code>BASE_URL</code>) y FCM según el archivo de configuración del proyecto (por ejemplo, <code>BuildConfig</code> o recursos <code>strings.xml</code>).</li>
+      <li>Conecte su proyecto Firebase y asegúrese de que el <em>Sender ID</em>/clave coincidan con el servidor.</li>
+      <li>Construya e instale en el dispositivo (<code>Run ▶</code> o <code>Build APK</code>).</li>
+    </ol>
+
+    <h2 id="notificaciones">Notificaciones (Firebase Cloud Messaging)</h2>
+    <ol>
+      <li>En <a target="_blank" rel="noopener" href="https://console.firebase.google.com">Firebase Console</a> cree un proyecto o use uno existente.</li>
+      <li>Obtenga la <strong>clave del servidor</strong> (FCM) y colóquela durante el paso de <code>/install</code> o en <code>.env</code> como <code>FCM_SERVER_KEY</code>.</li>
+      <li>Desde la app Android, asegúrese de registrar el token FCM del dispositivo contra el servidor.</li>
+    </ol>
+
+    <h2 id="base-datos">Base de datos</h2>
+    <p>BizonMDM usa SQLAlchemy y migraciones con Alembic. Ejemplos de cadenas de conexión:</p>
+    <pre><button class="copy" data-copy="# PostgreSQL
+DATABASE_URL=postgresql+psycopg2://usuario:pass@localhost:5432/bizon
+# MySQL/MariaDB
+DATABASE_URL=mysql+pymysql://usuario:pass@localhost:3306/bizon
+# SQLite (pruebas)
+DATABASE_URL=sqlite:///bizon.db">Copiar</button><code># PostgreSQL
+DATABASE_URL=postgresql+psycopg2://usuario:pass@localhost:5432/bizon
+# MySQL/MariaDB
+DATABASE_URL=mysql+pymysql://usuario:pass@localhost:3306/bizon
+# SQLite (pruebas)
+DATABASE_URL=sqlite:///bizon.db</code></pre>
+
+    <h2 id="filebase">Almacenamiento de archivos (opcional)</h2>
+    <p>Si su despliegue requiere subir/servir archivos (logs, adjuntos, etc.), puede usar proveedores S3-compatibles como <a target="_blank" rel="noopener" href="https://www.filebase.com/">Filebase</a> o sistemas locales. Configure variables como <code>S3_ENDPOINT</code>, <code>S3_BUCKET</code>, <code>S3_KEY</code>, <code>S3_SECRET</code> según su elección.</p>
+    <div class="callout warn">Si en su proyecto se usa <em>Firebase Storage</em> en lugar de S3/Filebase, indique las credenciales en la sección de App Android y el servidor deberá firmar URLs según su flujo.</div>
+
+    <h2 id="uso-panel">Uso del panel</h2>
+    <ol>
+      <li>Inicie sesión con el usuario administrador creado.</li>
+      <li>Verifique el indicador de estado (DB y FCM) que consulta <code>/api/status</code>.</li>
+      <li>Registre dispositivos (alta) y asigne políticas.</li>
+      <li>Ejecute acciones: <em>Bloquear dispositivo</em>, <em>Borrar datos</em>, etc.</li>
+    </ol>
+
+    <h2 id="gestion-dispositivos">Gestión de dispositivos</h2>
+    <ul>
+      <li><strong>Alta</strong>: instale la app, inicie sesión y permita permisos requeridos (administrador del dispositivo, notificaciones, accesibilidad si aplica).</li>
+      <li><strong>Sincronización</strong>: el dispositivo reporta estado periódico y recibe órdenes vía FCM + pull de API.</li>
+      <li><strong>Baja</strong>: desinscribir desde el panel o restablecer de fábrica el dispositivo.</li>
+    </ul>
+
+    <h2 id="seguridad">Seguridad</h2>
+    <ul>
+      <li>Use HTTPS en producción con certificados válidos (Let’s Encrypt).</li>
+      <li>Guarde <code>JWT_SECRET</code> y <code>FCM_SERVER_KEY</code> en secreto.</li>
+      <li>Conceda mínimos privilegios al usuario de la base de datos.</li>
+      <li>Habilite registros y rotación de logs. Considere WAF/Fail2ban.</li>
+    </ul>
+
+    <h2 id="respaldo">Backups & actualización</h2>
+    <ol>
+      <li>Base de datos: snapshots diarios + retención (p. ej., 7/30/180 días).</li>
+      <li>Archivo <code>.env</code> y claves FCM: copie a un almacén seguro.</li>
+      <li>Actualización: cree respaldo, obtenga últimos cambios (<code>git pull</code>), aplique migraciones (<code>alembic upgrade head</code> si corresponde) y reinicie servicios.</li>
+    </ol>
+
+    <h2 id="solucion-fallos">Solución de problemas</h2>
+    <details>
+      <summary>El instalador <code>/install</code> falla al guardar <code>.env</code></summary>
+      <p>Verifique permisos de escritura en la carpeta del proyecto y ejecute el proceso con un usuario con privilegios adecuados.</p>
+    </details>
+    <details>
+      <summary><code>/api/status</code> indica error de DB</summary>
+      <p>Revise <code>DATABASE_URL</code> y que la instancia esté accesible desde el servidor. Compruebe credenciales y puertos.</p>
+    </details>
+    <details>
+      <summary>Notificaciones no llegan al dispositivo</summary>
+      <ul>
+        <li>Confirme la <code>FCM_SERVER_KEY</code>.</li>
+        <li>Verifique que la app registre y envíe el token al servidor.</li>
+        <li>Revise que el dispositivo tenga internet y no tenga restricciones de batería para la app.</li>
+      </ul>
+    </details>
+
+    <h2 id="api-endpoints">API endpoints clave</h2>
+    <ul>
+      <li><code>GET /api/status</code> — estado de DB y FCM.</li>
+      <li><em>(Más endpoints por documentar aquí según el servidor)</em></li>
+    </ul>
+
+    <h2 id="faq">Preguntas frecuentes</h2>
+    <details>
+      <summary>¿Qué base de datos recomiendan en producción?</summary>
+      <p>PostgreSQL por estabilidad y compatibilidad. MySQL/MariaDB también es soportado. SQLite solo para pruebas.</p>
+    </details>
+    <details>
+      <summary>¿Puedo desplegar todo con Docker?</summary>
+      <p>Sí. Ajuste variables en <code>docker-compose.yml</code> y ejecute <code>docker compose up -d</code>.</p>
+    </details>
+    <details>
+      <summary>¿La app Android funciona sin FCM?</summary>
+      <p>Algunas funciones que requieren <em>push</em> dependerán de FCM. Puede usar sólo <em>pull</em> periódico, con menor inmediatez.</p>
+    </details>
+
+    <h2 id="glosario">Glosario</h2>
+    <ul>
+      <li><strong>FCM</strong>: Firebase Cloud Messaging, servicio de notificaciones push.</li>
+      <li><strong>JWT</strong>: JSON Web Token para autenticación.</li>
+      <li><strong>Alembic</strong>: herramienta de migraciones de bases de datos para SQLAlchemy.</li>
+    </ul>
+
+    <footer>
+      <p>© BisonByte — Documentación de BizonMDM. Esta página está pensada para ser <strong>documentation.html</strong> en la raíz del repositorio.</p>
+    </footer>
   </main>
+</div>
 
-  <script>
-    function switchLang(lang) {
-      document.getElementById('content-es').style.display = lang === 'es' ? 'block' : 'none';
-      document.getElementById('content-en').style.display = lang === 'en' ? 'block' : 'none';
-    }
-  </script>
+<script>
+  // Copiar código
+  document.addEventListener('click', (e)=>{
+    const btn=e.target.closest('.copy');
+    if(!btn) return; 
+    navigator.clipboard.writeText(btn.getAttribute('data-copy'))
+      .then(()=>{btn.textContent='Copiado'; setTimeout(()=>btn.textContent='Copiar',1600)})
+      .catch(()=>{btn.textContent='Error'; setTimeout(()=>btn.textContent='Copiar',1600)});
+  });
+
+  // Tabs accesibles
+  const wrap=document.querySelector('[data-tabs]');
+  if(wrap){
+    const tabs=wrap.querySelectorAll('[role="tab"]');
+    const panels=wrap.querySelectorAll('[role="tabpanel"]');
+    tabs.forEach(t=>t.addEventListener('click',()=>{
+      tabs.forEach(x=>x.setAttribute('aria-selected','false'));
+      t.setAttribute('aria-selected','true');
+      panels.forEach(p=>p.classList.remove('active'));
+      const id=t.getAttribute('aria-controls');
+      document.getElementById(id).classList.add('active');
+    }));
+  }
+
+  // Filtro simple de navegación
+  const filter=document.getElementById('filter');
+  const toc=document.getElementById('toc');
+  if(filter && toc){
+    filter.addEventListener('input',()=>{
+      const q=filter.value.toLowerCase();
+      toc.querySelectorAll('a').forEach(a=>{
+        a.style.display=a.textContent.toLowerCase().includes(q)?'block':'none';
+      });
+    });
+  }
+</script>
 </body>
 </html>
-```
