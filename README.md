@@ -50,6 +50,43 @@ python server/Servidor/server.py
 
 La interfaz web ubicada en `server/admin-frontend/` obtiene la lista de dispositivos desde la API del servidor y permite enviar acciones como "Borrar datos" o "Bloquear dispositivo". También muestra un indicador de estado que comprueba la conexión con la base de datos y la validez de la clave de Firebase mediante el endpoint `/api/status`.
 
+## Gestión de usuarios y autenticación
+
+BizonMDM permite registrar usuarios que acceden al panel cliente.
+
+### Creación de usuarios
+
+```bash
+curl -X POST https://mi-servidor/api/users \
+  -H "Authorization: Bearer <token_admin>" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","password":"secreta","role":"cliente"}'
+```
+
+### Inicio de sesión
+
+```bash
+curl -X POST https://mi-servidor/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","password":"secreta"}'
+```
+
+La respuesta incluye un token JWT usado para llamadas posteriores.
+
+### Permisos y roles
+
+Los roles disponibles son `admin`, `operador` y `cliente`. Cada uno limita el acceso a los endpoints y al panel según sus privilegios.
+
+### Uso del panel cliente
+
+Los usuarios autenticados pueden acceder a `https://mi-servidor/cliente` para gestionar sus propios dispositivos, revisar el estado y ejecutar acciones permitidas.
+
+### Consideraciones de seguridad
+
+- Obliga HTTPS para todas las peticiones.
+- Almacena las contraseñas con algoritmos de hash seguros (p. ej., bcrypt).
+- Define tiempos de expiración cortos para los tokens JWT y rotación mediante refresh.
+
 ## Licencia
 
 Este proyecto se distribuye bajo los términos de la licencia MIT. Consulta el archivo `LICENSE` para más información.

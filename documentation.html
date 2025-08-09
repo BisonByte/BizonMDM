@@ -91,6 +91,7 @@
         <h3>Operación</h3>
         <a href="#uso-panel">Uso del panel</a>
         <a href="#gestion-dispositivos">Gestión de dispositivos</a>
+        <a href="#gestion-usuarios">Gestión de usuarios</a>
         <a href="#seguridad">Seguridad</a>
         <a href="#respaldo">Backups & actualización</a>
         <a href="#solucion-fallos">Solución de problemas</a>
@@ -332,6 +333,27 @@ DATABASE_URL=sqlite:///bizon.db</code></pre>
       <li><strong>Alta</strong>: instale la app, inicie sesión y permita permisos requeridos (administrador del dispositivo, notificaciones, accesibilidad si aplica).</li>
       <li><strong>Sincronización</strong>: el dispositivo reporta estado periódico y recibe órdenes vía FCM + pull de API.</li>
       <li><strong>Baja</strong>: desinscribir desde el panel o restablecer de fábrica el dispositivo.</li>
+    </ul>
+    <h2 id="gestion-usuarios">Gestión de usuarios y autenticación</h2>
+    <p>El servidor expone endpoints para crear cuentas, iniciar sesión y controlar permisos.</p>
+    <h3>Creación de usuarios</h3>
+    <pre><code>curl -X POST https://mi-servidor/api/users \
+  -H "Authorization: Bearer &lt;token_admin&gt;" \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","password":"secreta","role":"cliente"}'</code></pre>
+    <h3>Inicio de sesión</h3>
+    <pre><code>curl -X POST https://mi-servidor/api/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"jane","password":"secreta"}'</code></pre>
+    <h3>Permisos y roles</h3>
+    <p>Los roles <code>admin</code>, <code>operador</code> y <code>cliente</code> delimitan el acceso a módulos y endpoints.</p>
+    <h3>Panel cliente</h3>
+    <p>Tras autenticarse, los usuarios acceden al panel en <code>/cliente</code> para gestionar sus dispositivos.</p>
+    <h3>Consideraciones de seguridad</h3>
+    <ul>
+      <li>Requiere HTTPS y tokens JWT válidos.</li>
+      <li>Las contraseñas se guardan con hash seguro (bcrypt).</li>
+      <li>Revoca tokens comprometidos y usa expiración corta.</li>
     </ul>
 
     <h2 id="seguridad">Seguridad</h2>
