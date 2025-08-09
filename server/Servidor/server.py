@@ -15,6 +15,7 @@ import logging
 import hmac
 import hashlib
 import urllib.request
+import time
 from functools import wraps
 
 from models import Device, LogEntry, Command, SessionLocal, init_db, Admin, User, Client
@@ -50,10 +51,17 @@ def _b64url_decode(data: str) -> bytes:
     return base64.urlsafe_b64decode(data + padding)
 
 
-def encode_jwt(sub: str, secret: str, role: str, client_id: str | None = None) -> str:
-    """Genera un token JWT con soporte de rol y client_id."""
+def encode_jwt(
+    sub: str,
+    secret: str,
+    role: str,
+    client_id: str | None = None,
+    expires_in: int = 3600,
+) -> str:
+    """Genera un token JWT con soporte de rol, client_id y expiración."""
     header = {"alg": "HS256", "typ": "JWT"}
-    payload = {"sub": sub, "role": role}
+    now = int(time.time())
+    payload = {"sub": sub, "role": role, "exp": now + int(expires_in)}
     if client_id is not None:
         payload["client_id"] = client_id
     header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
@@ -73,6 +81,16 @@ def decode_jwt(token: str, secret: str) -> dict:
     if not hmac.compare_digest(signature, expected):
         raise ValueError("Invalid signature")
     payload = json.loads(_b64url_decode(payload_b64))
+    # Validaciones básicas del payload
+    if not isinstance(payload, dict):
+        raise ValueError("Invalid payload")
+    for field in ("sub", "role", "exp"):
+        if field not in payload:
+            raise ValueError("Missing claim")
+    if int(payload["exp"]) < int(time.time()):
+        raise ValueError("Token expired")
+    if payload["role"] == "client" and not payload.get("client_id"):
+        raise ValueError("Missing client_id")
     return payload
 
 

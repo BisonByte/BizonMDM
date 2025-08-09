@@ -110,6 +110,8 @@ def init_db(drop: bool = False) -> None:
     should_drop = drop or os.getenv("TESTING", "").lower() in {"1", "true", "yes"}
 
     try:
+        if os.getenv("SKIP_ALEMBIC"):
+            raise ModuleNotFoundError("Alembic skipped by environment")
         from alembic import command
         from alembic.config import Config
 
