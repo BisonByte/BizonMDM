@@ -1,5 +1,5 @@
 import os
-import hashlib
+import bcrypt
 from flask import Flask, request, redirect, send_from_directory
 from Servidor.models import init_db, SessionLocal, Admin
 
@@ -24,8 +24,9 @@ def install():
         init_db()
         with SessionLocal() as session:
             if not session.query(Admin).filter_by(username=user).first():
-                hashed = hashlib.sha256(pwd.encode()).hexdigest()
-                session.add(Admin(username=user, password=hashed))
+                admin = Admin(username=user)
+                admin.set_password(pwd)
+                session.add(admin)
                 session.commit()
         return redirect('/admin/#/first-steps')
     root_dir = os.path.dirname(__file__)

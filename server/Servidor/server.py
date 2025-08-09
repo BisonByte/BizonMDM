@@ -136,7 +136,7 @@ def login():
     with get_session() as db:
         if username and password:
             admin = db.query(Admin).filter_by(username=username).first()
-            if admin and admin.password == password:
+            if admin and admin.check_password(password):
                 token = encode_jwt(username, JWT_SECRET, role='admin')
                 return jsonify({'token': token}), 200
         if client_id:

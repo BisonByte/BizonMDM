@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import bcrypt
 from sqlalchemy import (
     Column,
     DateTime,
@@ -68,8 +69,14 @@ class Admin(Base):
     __tablename__ = "admins"
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    password_hash = Column(String, nullable=False)
     created = Column(DateTime(timezone=True), server_default=func.now())
+
+    def set_password(self, password: str) -> None:
+        self.password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    def check_password(self, password: str) -> bool:
+        return bcrypt.checkpw(password.encode(), self.password_hash.encode())
 
 
 class User(Base):

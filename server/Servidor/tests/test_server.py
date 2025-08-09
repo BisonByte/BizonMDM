@@ -37,7 +37,9 @@ class ServerTestCase(unittest.TestCase):
 
     def test_login(self):
         with get_session() as db:
-            db.add(Admin(username='adm', password='pwd'))
+            admin = Admin(username='adm')
+            admin.set_password('pwd')
+            db.add(admin)
             db.commit()
         resp = self.client.post('/login', json={'username': 'adm', 'password': 'pwd'})
         self.assertEqual(resp.status_code, 200)
