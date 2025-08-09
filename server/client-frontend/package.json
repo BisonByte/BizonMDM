@@ -1,0 +1,11 @@
+{
+  "name": "client-frontend",
+  "version": "1.0.0",
+  "description": "Aplicación web para clientes de Bizon MDM",
+  "scripts": {
+    "test": "echo 'No tests'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
