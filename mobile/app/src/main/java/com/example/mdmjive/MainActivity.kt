@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -82,7 +83,11 @@ class MainActivity : ComponentActivity() {
     private fun startMDMService() {
         try {
             val serviceIntent = Intent(this, MDMService::class.java)
-            startService(serviceIntent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(serviceIntent)
+            } else {
+                startService(serviceIntent)
+            }
             Log.d("MDM", "Servicio MDM iniciado")
         } catch (e: Exception) {
             Log.e("MDM", "Error al iniciar servicio: ${e.message}")
