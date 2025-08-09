@@ -21,7 +21,7 @@ def install():
 
         os.environ['DATABASE_URL'] = db
         os.environ['JWT_SECRET'] = jwt
-        init_db()
+        init_db(drop=True)
         with SessionLocal() as session:
             if not session.query(Admin).filter_by(username=user).first():
                 hashed = hashlib.sha256(pwd.encode()).hexdigest()

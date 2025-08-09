@@ -92,7 +92,16 @@ class Client(Base):
     devices = relationship("Device", secondary=client_devices, back_populates="clients")
 
 
-def init_db() -> None:
+def init_db(drop: bool = False) -> None:
+    """Inicializa la base de datos.
+
+    Por defecto solo aplica migraciones y crea las tablas si no existen. Si
+    ``drop`` es ``True`` o la variable de entorno ``TESTING`` está establecida
+    a un valor verdadero, se eliminan primero todas las tablas existentes.
+    """
+
+    should_drop = drop or os.getenv("TESTING", "").lower() in {"1", "true", "yes"}
+
     try:
         from alembic import command
         from alembic.config import Config
@@ -101,10 +110,12 @@ def init_db() -> None:
         cfg = Config(os.path.join(base_dir, "alembic.ini"))
         cfg.set_main_option("sqlalchemy.url", DB_URL)
         cfg.set_main_option("script_location", os.path.join(base_dir, "alembic"))
-        Base.metadata.drop_all(engine)
+        if should_drop:
+            Base.metadata.drop_all(engine)
         command.upgrade(cfg, "head")
         Base.metadata.create_all(engine)
     except (ModuleNotFoundError, ImportError):
         # Alembic no disponible: crea las tablas directamente
-        Base.metadata.drop_all(engine)
+        if should_drop:
+            Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)

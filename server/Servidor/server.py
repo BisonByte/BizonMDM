@@ -632,7 +632,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.init_db:
-        init_db()
+        init_db(drop=True)
         print('Base de datos inicializada')
     else:
         host = os.getenv('BIZON_HOST', '0.0.0.0')

@@ -34,7 +34,7 @@ def install():
             fh.write(fcm)
         os.environ['DATABASE_URL'] = db
         os.environ['JWT_SECRET'] = jwt
-        init_db()
+        init_db(drop=True)
         return redirect('/admin')
     return render_template_string(FORM)
 
