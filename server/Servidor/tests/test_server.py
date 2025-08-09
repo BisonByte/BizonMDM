@@ -145,7 +145,7 @@ class ServerTestCase(unittest.TestCase):
         self.assertEqual(cmds[0]['action'], 'app_uninstall')
         self.assertEqual(cmds[0]['package'], 'com.example.app')
 
-    @mock.patch('server._send_fcm_message')
+    @mock.patch('server._send_fcm_message', return_value=True)
     def test_fcm_notification_sent(self, mock_send):
         os.environ['FCM_SERVER_KEY'] = 'dummy'
         try:
@@ -166,6 +166,28 @@ class ServerTestCase(unittest.TestCase):
             self.assertEqual(payload['action'], 'device_reboot')
         finally:
             del os.environ['FCM_SERVER_KEY']
+
+    def test_fcm_error_response(self):
+        import server
+        server.FCM_SERVER_KEY = 'dummy'
+        mock_resp = mock.Mock()
+        mock_resp.getcode.return_value = 500
+        with mock.patch('urllib.request.urlopen') as mock_urlopen:
+            mock_urlopen.return_value.__enter__.return_value = mock_resp
+            with self.assertLogs(level='WARNING') as cm:
+                ok = server._send_fcm_message('tok', {'action': 'x'})
+        self.assertFalse(ok)
+        self.assertIn('HTTP 500', cm.output[0])
+        server.FCM_SERVER_KEY = None
+
+    def test_fcm_exception_response(self):
+        import server
+        server.FCM_SERVER_KEY = 'dummy'
+        with mock.patch('urllib.request.urlopen', side_effect=Exception('boom')):
+            with self.assertLogs(level='WARNING'):
+                ok = server._send_fcm_message('tok', {'action': 'x'})
+        self.assertFalse(ok)
+        server.FCM_SERVER_KEY = None
 
     def test_admin_clients_crud(self):
         # Register a device to assign later
