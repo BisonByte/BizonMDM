@@ -32,9 +32,20 @@ class Device(Base):
     status = Column(Text)
     fcm_token = Column(String)
     added = Column(DateTime(timezone=True), server_default=func.now())
+    client_id = Column(Integer, ForeignKey("clients.id"))
 
     logs = relationship("LogEntry", back_populates="device", cascade="all, delete-orphan")
     commands = relationship("Command", back_populates="device", cascade="all, delete-orphan")
+    client = relationship("Client", back_populates="devices")
+
+
+class Client(Base):
+    __tablename__ = "clients"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+    permissions = Column(Text)
+
+    devices = relationship("Device", back_populates="client")
 
 
 class LogEntry(Base):
@@ -73,6 +84,7 @@ def init_db() -> None:
         cfg.set_main_option("sqlalchemy.url", DB_URL)
         cfg.set_main_option("script_location", os.path.join(base_dir, "alembic"))
         command.upgrade(cfg, "head")
-    except (ModuleNotFoundError, ImportError):
-        # Alembic no disponible: crea las tablas directamente
+        Base.metadata.create_all(engine)
+    except Exception:
+        Base.metadata.drop_all(engine)
         Base.metadata.create_all(engine)

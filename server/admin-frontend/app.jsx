@@ -1,6 +1,7 @@
 const { useState, useEffect } = React;
 
 const API_BASE = '';
+const CAPABILITIES = ['wipe', 'reboot', 'lock', 'screenshot', 'app_install', 'app_uninstall'];
 
 async function apiFetch(path, options = {}) {
   const token = localStorage.getItem('token');
@@ -233,6 +234,108 @@ function DeviceDetails({ id, onBack }) {
   );
 }
 
+function ClientForm({ client, onSave, onCancel }) {
+  const [name, setName] = useState(client?.name || '');
+  const [devices, setDevices] = useState([]);
+  const [selected, setSelected] = useState(client?.devices || []);
+  const [perms, setPerms] = useState(new Set(client?.permissions || []));
+
+  useEffect(() => {
+    apiFetch('/devices').then(setDevices).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    setName(client?.name || '');
+    setSelected(client?.devices || []);
+    setPerms(new Set(client?.permissions || []));
+  }, [client]);
+
+  const toggleDevice = (id) => {
+    setSelected(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]);
+  };
+  const togglePerm = (p) => {
+    const n = new Set(perms);
+    if (n.has(p)) n.delete(p); else n.add(p);
+    setPerms(n);
+  };
+  const submit = (e) => {
+    e.preventDefault();
+    onSave({
+      id: client?.id,
+      name,
+      deviceIds: selected,
+      permissions: Array.from(perms),
+    });
+  };
+  return (
+    <form onSubmit={submit}>
+      <h2>{client?.id ? 'Editar cliente' : 'Nuevo cliente'}</h2>
+      <input value={name} onChange={e => setName(e.target.value)} placeholder="Nombre" />
+      <h3>Permisos</h3>
+      {CAPABILITIES.map(p => (
+        <label key={p} style={{ display: 'block' }}>
+          <input type="checkbox" checked={perms.has(p)} onChange={() => togglePerm(p)} /> {p}
+        </label>
+      ))}
+      <h3>Dispositivos</h3>
+      <ul>
+        {devices.map(d => (
+          <li key={d.deviceId}>
+            <label>
+              <input type="checkbox" checked={selected.includes(d.deviceId)} onChange={() => toggleDevice(d.deviceId)} /> {d.deviceId}
+            </label>
+          </li>
+        ))}
+      </ul>
+      <button type="submit">Guardar</button>
+      <button type="button" onClick={onCancel} style={{ marginLeft: '0.5rem' }}>Cancelar</button>
+    </form>
+  );
+}
+
+function ClientList() {
+  const [clients, setClients] = useState([]);
+  const [editing, setEditing] = useState(null);
+
+  const load = () => apiFetch('/admin/clients').then(setClients).catch(console.error);
+  useEffect(load, []);
+
+  const save = (data) => {
+    const method = data.id ? 'PUT' : 'POST';
+    const url = data.id ? `/admin/clients/${data.id}` : '/admin/clients';
+    apiFetch(url, { method, body: JSON.stringify(data) })
+      .then(() => { setEditing(null); load(); })
+      .catch(console.error);
+  };
+
+  const remove = (id) => {
+    if (!confirm('¿Eliminar cliente?')) return;
+    apiFetch(`/admin/clients/${id}`, { method: 'DELETE' })
+      .then(load)
+      .catch(console.error);
+  };
+
+  if (editing) {
+    return <ClientForm client={editing} onSave={save} onCancel={() => setEditing(null)} />;
+  }
+
+  return (
+    <div>
+      <h2>Clientes</h2>
+      <button onClick={() => setEditing({})}>Nuevo Cliente</button>
+      <ul>
+        {clients.map(c => (
+          <li key={c.id}>
+            {c.name} ({c.devices.length})
+            <button onClick={() => setEditing(c)} style={{ marginLeft: '0.5rem' }}>Editar</button>
+            <button onClick={() => remove(c.id)} style={{ marginLeft: '0.5rem' }}>Eliminar</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function PolicyEditor() {
   const [name, setName] = useState('');
   const handleSubmit = (e) => {
@@ -278,7 +381,8 @@ function App() {
   else if (route.startsWith('#/devices/')) {
     const id = route.split('/')[2];
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
-  } else if (route === '#/policies') page = <PolicyEditor />;
+  } else if (route === '#/clients') page = <ClientList />;
+  else if (route === '#/policies') page = <PolicyEditor />;
   else if (route === '#/config') page = <Config />;
   else if (route === '#/first-steps') page = <FirstSteps />;
   else page = <Dashboard />;
@@ -290,6 +394,7 @@ function App() {
         <nav>
           <a href="#/dashboard">Dashboard</a>
           <a href="#/devices">Dispositivos</a>
+          <a href="#/clients">Clientes</a>
           <a href="#/policies">Políticas</a>
           <a href="#/config">Config</a>
         </nav>
