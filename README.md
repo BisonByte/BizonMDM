@@ -17,6 +17,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `admin-frontend/`: interfaz web de administración construida en React.
   - `docker-compose.yml`: ejemplo de despliegue con contenedores.
   - `install_script.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
+  - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 
 ## Instalación del servidor
 

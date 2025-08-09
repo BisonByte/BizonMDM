@@ -255,6 +255,15 @@ function App() {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
   const [token, setToken] = useState(localStorage.getItem('token') || '');
   const [welcome, setWelcome] = useState(!localStorage.getItem('welcomeSeen'));
+  const [tenantConfig, setTenantConfig] = useState({});
+
+  useEffect(() => {
+    const sub = window.location.hostname.split('.')[0];
+    fetch(`/api/config/tenant/${sub}`)
+      .then(r => r.ok ? r.json() : {})
+      .then(setTenantConfig)
+      .catch(() => setTenantConfig({}));
+  }, []);
 
   useEffect(() => {
     const onHashChange = () => setRoute(window.location.hash || '#/dashboard');
@@ -286,7 +295,7 @@ function App() {
   return (
     <div>
       <header>
-        <h1>Bizon MDM Admin</h1>
+        <h1>{tenantConfig.title || 'Bizon MDM Admin'}</h1>
         <nav>
           <a href="#/dashboard">Dashboard</a>
           <a href="#/devices">Dispositivos</a>

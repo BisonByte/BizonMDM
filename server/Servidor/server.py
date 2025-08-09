@@ -320,6 +320,25 @@ def api_config_fcm():
     return jsonify({'key': FCM_SERVER_KEY or ''}), 200
 
 
+@app.route('/api/config/tenant/<tenant>', methods=['GET'])
+def api_config_tenant(tenant: str):
+    """Devuelve la configuración específica para un subdominio.
+
+    Busca un archivo JSON en el directorio ``configs`` con el nombre del
+    subdominio. Si no existe, intenta cargar ``default.json``. Si tampoco
+    está presente, devuelve un objeto vacío con estado 404.
+    """
+    config_dir = os.path.join(BASE_DIR, 'configs')
+    specific = os.path.join(config_dir, f'{tenant}.json')
+    fallback = os.path.join(config_dir, 'default.json')
+    path = specific if os.path.exists(specific) else fallback
+    if not os.path.exists(path):
+        return jsonify({}), 404
+    with open(path, 'r', encoding='utf-8') as fh:
+        data = json.load(fh)
+    return jsonify(data), 200
+
+
 @app.route('/api/test-fcm', methods=['POST'])
 def api_test_fcm():
     if not require_auth(request):
