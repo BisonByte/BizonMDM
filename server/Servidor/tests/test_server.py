@@ -4,6 +4,7 @@ import unittest
 import sys
 import time
 from unittest import mock
+import bcrypt
 
 # Configure database and token before importing the server
 DB_FD, DB_PATH = tempfile.mkstemp()
@@ -13,7 +14,7 @@ os.environ['SKIP_ALEMBIC'] = '1'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from server import app, init_db, encode_jwt, decode_jwt, get_session
-from models import Admin
+from models import Admin, User
 
 
 class ServerTestCase(unittest.TestCase):
@@ -199,6 +200,11 @@ class ServerTestCase(unittest.TestCase):
         )
         self.assertEqual(resp.status_code, 201)
         cid = resp.get_json()['id']
+        with get_session() as db:
+            user = db.query(User).filter_by(username='cli').first()
+            self.assertIsNotNone(user)
+            self.assertNotEqual(user.password_hash, 'pwd')
+            self.assertTrue(bcrypt.checkpw('pwd'.encode(), user.password_hash.encode()))
         resp = self.client.get('/admin/clients', headers=self.auth_header())
         self.assertEqual(len(resp.get_json()), 1)
         resp = self.client.put(

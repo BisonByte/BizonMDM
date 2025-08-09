@@ -17,6 +17,7 @@ import hashlib
 import urllib.request
 import time
 from functools import wraps
+import bcrypt
 
 from models import Device, LogEntry, Command, SessionLocal, init_db, Admin, User, Client
 from sqlalchemy import text
@@ -592,7 +593,8 @@ def admin_clients():
     permissions = data.get('permissions', [])
     devices = data.get('devices', [])
     with get_session() as db:
-        user = User(username=username, password_hash=password, role='client')
+        hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        user = User(username=username, password_hash=hashed, role='client')
         client = Client(user=user, permissions=json.dumps(permissions))
         for device_id in devices:
             device = db.query(Device).filter_by(device_id=device_id).first()
