@@ -13,6 +13,7 @@ import android.util.Log
 import com.example.mdmjive.network.ApiService
 import com.example.mdmjive.network.models.DeviceStatus
 import kotlinx.coroutines.runBlocking
+import com.example.mdmjive.utils.TokenManager
 
 class DeviceCertificationManager(
     private val context: Context,
@@ -32,10 +33,16 @@ class DeviceCertificationManager(
             emulator = isEmulator,
             unknownSources = hasUnknownSources
         )
-        try {
-            runBlocking { apiService.updateStatus(deviceStatus) }
-        } catch (e: Exception) {
-            Log.e("DeviceCertificationManager", "Failed to update status", e)
+        val token = TokenManager.getToken(context)
+        if (token != null) {
+            try {
+                val bearer = "Bearer $token"
+                runBlocking { apiService.updateStatus(bearer, deviceStatus) }
+            } catch (e: Exception) {
+                Log.e("DeviceCertificationManager", "Failed to update status", e)
+            }
+        } else {
+            Log.e("DeviceCertificationManager", "Token no disponible")
         }
 
         return DeviceIntegrityResult(

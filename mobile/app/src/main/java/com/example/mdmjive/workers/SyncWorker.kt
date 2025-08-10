@@ -28,7 +28,7 @@ class SyncWorker(
             Log.d(TAG, "Iniciando la sincronización del dispositivo...")
 
             // Llamada al repositorio para sincronizar
-            deviceRepository.syncWithServer()
+            deviceRepository.syncWithServer(applicationContext)
 
             val commands = deviceRepository.fetchCommands(applicationContext)
             if (commands.isNotEmpty()) {

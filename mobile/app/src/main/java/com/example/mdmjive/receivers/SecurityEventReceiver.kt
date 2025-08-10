@@ -10,6 +10,7 @@ import com.example.mdmjive.network.ApiServiceFactory
 import com.example.mdmjive.network.models.DeviceStatus
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import com.example.mdmjive.utils.TokenManager
 
 class SecurityEventReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -34,10 +35,16 @@ class SecurityEventReceiver : BroadcastReceiver() {
             wipeDetected = wipeDetected,
             bootloaderTampered = bootloaderTampered
         )
-        try {
-            runBlocking { api.updateStatus(status) }
-        } catch (e: Exception) {
-            Log.e("SecurityEventReceiver", "Failed to send status", e)
+        val token = TokenManager.getToken(context)
+        if (token != null) {
+            try {
+                val bearer = "Bearer $token"
+                runBlocking { api.updateStatus(bearer, status) }
+            } catch (e: Exception) {
+                Log.e("SecurityEventReceiver", "Failed to send status", e)
+            }
+        } else {
+            Log.e("SecurityEventReceiver", "Token no disponible")
         }
     }
 

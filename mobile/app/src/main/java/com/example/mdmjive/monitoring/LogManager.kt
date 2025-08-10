@@ -1,6 +1,8 @@
 package com.example.mdmjive.monitoring
 
 import android.util.Log
+import android.content.Context
+import com.example.mdmjive.utils.TokenManager
 import com.example.mdmjive.BuildConfig
 import com.example.mdmjive.database.LogDatabase
 import com.example.mdmjive.database.entities.LogEntry
@@ -11,7 +13,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-class LogManager(private val logDatabase: LogDatabase) {
+class LogManager(private val logDatabase: LogDatabase, private val context: Context) {
 
     private val apiService = ApiServiceFactory.create(BuildConfig.BASE_URL)
 
@@ -71,7 +73,13 @@ class LogManager(private val logDatabase: LogDatabase) {
                     }
                 )
 
-                apiService.uploadLogs(payload)
+                val token = TokenManager.getToken(context)
+                if (token == null) {
+                    Log.e("LogManager", "Token no disponible")
+                    return@launch
+                }
+                val bearer = "Bearer $token"
+                apiService.uploadLogs(bearer, payload)
                 logDatabase.logDao().clearLogs()
             } catch (e: Exception) {
                 Log.e("LogManager", "Error subiendo logs: ${e.message}")

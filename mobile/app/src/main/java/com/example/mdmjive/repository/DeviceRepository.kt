@@ -12,6 +12,7 @@ import android.telephony.TelephonyManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.util.Log
+import com.example.mdmjive.utils.TokenManager
 
 class DeviceRepository(
     private val apiService: ApiService,
@@ -90,6 +91,11 @@ class DeviceRepository(
 
     // Actualizar estado
     suspend fun updateDeviceStatus(context: android.content.Context, newStatus: String) {
+        val token = TokenManager.getToken(context)
+        if (token == null) {
+            Log.e(TAG, "Token no disponible")
+            return
+        }
         val deviceId = getDeviceId(context)
         val status = DeviceStatus(
             deviceId = deviceId,
@@ -98,7 +104,8 @@ class DeviceRepository(
         )
 
         try {
-            val response = apiService.updateStatus(status)
+            val bearer = "Bearer $token"
+            val response = apiService.updateStatus(bearer, status)
             if (response.isSuccessful) {
                 deviceDao.updateDeviceStatus(deviceId, newStatus, currentSyncTime())
                 Log.d(TAG, "Estado del dispositivo actualizado")
@@ -111,7 +118,13 @@ class DeviceRepository(
     }
 
     // Sincronizar con servidor
-    suspend fun syncWithServer() = withContext(Dispatchers.IO) {
+    suspend fun syncWithServer(context: android.content.Context) = withContext(Dispatchers.IO) {
+        val token = TokenManager.getToken(context)
+        if (token == null) {
+            Log.e(TAG, "Token no disponible")
+            return@withContext
+        }
+        val bearer = "Bearer $token"
         try {
             val localDevices = deviceDao.getAllDevices()
             localDevices.forEach { device ->
@@ -120,7 +133,7 @@ class DeviceRepository(
                     status = device.status,
                     lastSync = device.lastSync
                 )
-                val response = apiService.updateStatus(status)
+                val response = apiService.updateStatus(bearer, status)
                 if (response.isSuccessful) {
                     Log.d(TAG, "Dispositivo ${device.deviceId} sincronizado exitosamente")
                 } else {
@@ -134,7 +147,13 @@ class DeviceRepository(
 
     suspend fun fetchCommands(context: android.content.Context): List<Command> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val response = apiService.getCommands()
+            val token = TokenManager.getToken(context)
+            if (token == null) {
+                Log.e(TAG, "Token no disponible")
+                return@withContext emptyList()
+            }
+            val bearer = "Bearer $token"
+            val response = apiService.getCommands(bearer)
             if (response.isSuccessful) {
                 response.body() ?: emptyList()
             } else {
