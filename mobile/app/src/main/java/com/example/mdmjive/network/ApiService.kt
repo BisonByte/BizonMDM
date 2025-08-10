@@ -4,7 +4,6 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
-import retrofit2.http.Path
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
@@ -20,14 +19,14 @@ interface ApiService {
     @POST("devices/register")
     suspend fun registerDevice(@Body deviceInfo: DeviceInfo): Response<ApiResponse>
 
-    @POST("devices/status")
+    @POST("client/devices/status")
     suspend fun updateStatus(@Body status: DeviceStatus): Response<ApiResponse>
 
-    @POST("logs")
+    @POST("client/logs")
     suspend fun uploadLogs(@Body payload: LogPayload): Response<ApiResponse>
 
-    @GET("commands/{deviceId}")
-    suspend fun getCommands(@Path("deviceId") deviceId: String): Response<List<Command>>
+    @GET("client/commands")
+    suspend fun getCommands(): Response<List<Command>>
 
     @POST("commands")
     suspend fun sendCommand(@Body command: Command): Response<ApiResponse>

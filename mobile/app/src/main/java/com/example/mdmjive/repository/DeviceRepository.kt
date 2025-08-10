@@ -134,8 +134,7 @@ class DeviceRepository(
 
     suspend fun fetchCommands(context: android.content.Context): List<Command> = withContext(Dispatchers.IO) {
         return@withContext try {
-            val deviceId = getDeviceId(context)
-            val response = apiService.getCommands(deviceId)
+            val response = apiService.getCommands()
             if (response.isSuccessful) {
                 response.body() ?: emptyList()
             } else {
