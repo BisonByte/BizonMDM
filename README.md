@@ -57,13 +57,13 @@ docker-compose up -d
 
 Accede al panel en `http://localhost:5000`.
 
-### Variables de entorno opcionales
+### Variables de entorno
 
-Puedes definir variables antes de levantar los contenedores:
+Define variables antes de levantar los contenedores:
 
-- `DATABASE_URL`: cadena de conexión a la base de datos (por defecto `postgresql+psycopg2://postgres:postgres@db:5432/bizon`).
-- `BIZON_HOST`: dirección en la que el servidor escucha (por defecto `0.0.0.0`).
-- `BIZON_PORT`: puerto interno del servidor (por defecto `5000`).
+- `DATABASE_URL`: cadena de conexión a la base de datos. **Obligatoria**.
+- `BIZON_HOST`: dirección en la que el servidor escucha (opcional, por defecto `0.0.0.0`).
+- `BIZON_PORT`: puerto interno del servidor (opcional, por defecto `5000`).
 - `JWT_SECRET`: clave para firmar tokens JWT.
 - `FCM_SERVER_KEY`: clave de Firebase Cloud Messaging para notificaciones.
 
