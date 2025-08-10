@@ -1,14 +1,15 @@
 package com.example.mdmjive.workers
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import android.util.Log
-import com.example.mdmjive.network.ApiServiceFactory
+import com.example.mdmjive.BuildConfig
+import com.example.mdmjive.controls.CommandExecutor
 import com.example.mdmjive.database.LogDatabase
+import com.example.mdmjive.network.ApiServiceFactory
 import com.example.mdmjive.repository.DeviceRepository
 import kotlinx.coroutines.Dispatchers
-import com.example.mdmjive.controls.CommandExecutor
 
 class SyncWorker(
     context: Context,
@@ -17,7 +18,7 @@ class SyncWorker(
 
     private val TAG = "SyncWorker"
     private val deviceRepository: DeviceRepository = DeviceRepository(
-        ApiServiceFactory.create("https://example.com/"),
+        ApiServiceFactory.create(BuildConfig.BASE_URL),
         LogDatabase.getDatabase(context).deviceDao()
     )
 

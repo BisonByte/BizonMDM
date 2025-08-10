@@ -1,6 +1,7 @@
 package com.example.mdmjive.monitoring
 
 import android.util.Log
+import com.example.mdmjive.BuildConfig
 import com.example.mdmjive.database.LogDatabase
 import com.example.mdmjive.database.entities.LogEntry
 import com.example.mdmjive.network.ApiServiceFactory
@@ -12,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class LogManager(private val logDatabase: LogDatabase) {
 
-    private val apiService = ApiServiceFactory.create("https://example.com/")
+    private val apiService = ApiServiceFactory.create(BuildConfig.BASE_URL)
 
     // Función para registrar un evento en los logs
     fun logEvent(event: MDMEvent, deviceId: String = "unknown") {
