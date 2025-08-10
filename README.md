@@ -19,7 +19,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `admin/`, `alerts/`, `client/`, `device/`, `documents/`, `financing/`, `tasks/`: módulos Python que implementan la lógica del backend.
   - `admin-frontend/` y `client-frontend/`: interfaces web construidas en React.
   - `docker-compose.yml`: ejemplo de despliegue con contenedores.
-  - `install_script.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
+  - `install.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 - `docs/`: documentación adicional incluyendo `documentation.html`.
 
@@ -72,7 +72,7 @@ docker-compose down -v
 
 ```bash
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py
+python server/install.py
 ```
 
 3. Abre `http://localhost:5000/install` en tu navegador y completa el formulario con:

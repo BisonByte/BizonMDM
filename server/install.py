@@ -1,7 +1,6 @@
 import os
 import argparse
 from typing import Optional
-import bcrypt
 from flask import Flask, request, redirect, send_from_directory
 
 app = Flask(__name__)
@@ -33,6 +32,19 @@ def install():
         return redirect('/admin/#/first-steps')
     root_dir = os.path.dirname(__file__)
     return send_from_directory(root_dir, 'instalacion_bizonmdm.html')
+
+
+def install_application(
+    db_host: str, db_name: str, db_user: str, db_pass: str, jwt_secret: str
+) -> None:
+    """Configura el entorno de la aplicación y ejecuta las migraciones."""
+    db_url = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}/{db_name}"
+    env_content = f"DATABASE_URL={db_url}\nJWT_SECRET={jwt_secret}\n"
+    _write_env_file(env_content)
+    os.environ['DATABASE_URL'] = db_url
+    os.environ['JWT_SECRET'] = jwt_secret
+    from Servidor.models import init_db
+    init_db(drop=True)
 
 
 def _write_env_file(content: str) -> None:
