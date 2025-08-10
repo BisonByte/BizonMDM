@@ -50,6 +50,8 @@ function Dashboard() {
     const s = d.status || {};
     if (s.battery && s.battery < 20) alerts.push(`Batería baja en ${d.deviceId} (${s.battery}%)`);
     if (s.rootAttempt) alerts.push(`Intento de root en ${d.deviceId}`);
+    if (s.wipeDetected) alerts.push(`Wipe detectado en ${d.deviceId}`);
+    if (s.bootloaderTampered) alerts.push(`Bootloader alterado en ${d.deviceId}`);
   });
   return (
     <div>
@@ -102,6 +104,8 @@ function DeviceTable({ onSelect }) {
               <td>
                 {d.status?.battery ? `Bat ${d.status.battery}%` : ''}
                 {d.status?.rootAttempt ? ' Root' : ''}
+                {d.status?.wipeDetected ? ' Wipe' : ''}
+                {d.status?.bootloaderTampered ? ' Boot' : ''}
               </td>
             </tr>
           ))}
@@ -224,6 +228,8 @@ function DeviceDetails({ id, onBack }) {
           <p>IMEI: {info.imei}</p>
           <p>Batería: {info.status?.battery ?? 'N/A'}%</p>
           <p>Intento de root: {info.status?.rootAttempt ? 'Sí' : 'No'}</p>
+          <p>Wipe detectado: {info.status?.wipeDetected ? 'Sí' : 'No'}</p>
+          <p>Bootloader alterado: {info.status?.bootloaderTampered ? 'Sí' : 'No'}</p>
         </div>
       )}
       <div className="actions">

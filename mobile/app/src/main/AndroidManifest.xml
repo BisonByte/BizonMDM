@@ -38,6 +38,16 @@
             </intent-filter>
         </receiver>
 
+        <receiver
+            android:name=".receivers.SecurityEventReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
+                <action android:name="android.intent.action.FACTORY_RESET" />
+            </intent-filter>
+        </receiver>
+
         <!-- Servicio MDM -->
         <service
             android:name=".services.MDMService"
