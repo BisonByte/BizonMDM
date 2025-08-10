@@ -13,7 +13,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
 
 - `mobile/`: aplicación móvil Android.
   - El servicio MDM se ejecuta como foreground y muestra una notificación persistente.
-  - La URL del servidor se configura mediante `BuildConfig.BASE_URL` en `mobile/app/build.gradle.kts`.
+  - La URL del servidor se obtiene de `BuildConfig.BASE_URL`, definida a través de `gradle.properties`, variables de entorno o las `productFlavors` `dev` y `prod` en `mobile/app/build.gradle.kts`.
 - `server/`: componentes del servidor y del panel web.
   - `Servidor/`: API en Flask, modelos de base de datos y scripts de instalación.
   - `admin/`, `alerts/`, `client/`, `device/`, `documents/`, `financing/`, `tasks/`: módulos Python que implementan la lógica del backend.
@@ -22,6 +22,31 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `install.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 - `docs/`: documentación adicional incluyendo `documentation.html`.
+
+### Configurar la URL del servidor en la app móvil
+
+La aplicación obtiene la dirección del backend desde `BuildConfig.BASE_URL`. El valor puede definirse de las siguientes maneras:
+
+- **`gradle.properties`** (`mobile/gradle.properties`):
+
+  ```
+  DEV_BASE_URL=https://dev.tuservidor.com/
+  PROD_BASE_URL=https://tuservidor.com/
+  ```
+
+- **Variables de entorno**:
+
+  ```
+  export DEV_BASE_URL=https://dev.tuservidor.com/
+  export PROD_BASE_URL=https://tuservidor.com/
+  ```
+
+Compila usando el flavor deseado:
+
+```
+./gradlew assembleDevDebug    # usa DEV_BASE_URL
+./gradlew assembleProdRelease # usa PROD_BASE_URL
+```
 
 ## Instalación rápida
 
