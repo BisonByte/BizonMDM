@@ -18,7 +18,17 @@ import urllib.request
 import time
 from functools import wraps
 
-from models import Device, LogEntry, Command, SessionLocal, init_db, Admin, User, Client
+from models import (
+    Device,
+    LogEntry,
+    Command,
+    SessionLocal,
+    init_db,
+    Admin,
+    User,
+    Client,
+    Store,
+)
 from sqlalchemy import text
 from install_script import install_application
 
@@ -56,14 +66,17 @@ def encode_jwt(
     secret: str,
     role: str,
     client_id: str | None = None,
+    store_id: int | None = None,
     expires_in: int = 3600,
 ) -> str:
-    """Genera un token JWT con soporte de rol, client_id y expiración."""
+    """Genera un token JWT con soporte de rol, client_id, store_id y expiración."""
     header = {"alg": "HS256", "typ": "JWT"}
     now = int(time.time())
     payload = {"sub": sub, "role": role, "exp": now + int(expires_in)}
     if client_id is not None:
         payload["client_id"] = client_id
+    if store_id is not None:
+        payload["store_id"] = store_id
     header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
     payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
     signing_input = f"{header_b64}.{payload_b64}".encode()
@@ -91,6 +104,8 @@ def decode_jwt(token: str, secret: str) -> dict:
         raise ValueError("Token expired")
     if payload["role"] == "client" and not payload.get("client_id"):
         raise ValueError("Missing client_id")
+    if payload["role"] == "user" and not payload.get("store_id"):
+        raise ValueError("Missing store_id")
     return payload
 
 
@@ -142,6 +157,87 @@ def require_client(func):
     return wrapper
 
 
+def require_user(func):
+    """Decorator that enforces user role and exposes auth payload."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        auth = require_auth(request)
+        if not auth or auth.get('role') != 'user' or not auth.get('store_id'):
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        return func(*args, auth=auth, **kwargs)
+
+    return wrapper
+
+
+@app.route('/api/stores', methods=['GET', 'POST'])
+def api_stores():
+    auth = require_auth(request)
+    if not auth:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        if request.method == 'GET':
+            if auth.get('role') == 'admin':
+                stores = db.query(Store).all()
+            elif auth.get('role') == 'user':
+                stores = db.query(Store).filter_by(id=auth.get('store_id')).all()
+            else:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+            result = [{'id': s.id, 'name': s.name} for s in stores]
+            return jsonify(result), 200
+        if auth.get('role') != 'admin':
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        data = request.get_json() or {}
+        name = data.get('name')
+        if not name:
+            return jsonify({'success': False, 'message': 'name requerido'}), 400
+        store = Store(name=name)
+        db.add(store)
+        db.commit()
+        return jsonify({'id': store.id, 'name': store.name}), 201
+
+
+@app.route('/api/users', methods=['GET', 'POST'])
+def api_users():
+    auth = require_auth(request)
+    if not auth:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        if request.method == 'GET':
+            if auth.get('role') == 'admin':
+                users = db.query(User).all()
+            elif auth.get('role') == 'user':
+                users = db.query(User).filter_by(username=auth.get('sub')).all()
+            else:
+                return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+            result = [
+                {
+                    'id': u.id,
+                    'username': u.username,
+                    'role': u.role,
+                    'store_id': u.store_id,
+                }
+                for u in users
+            ]
+            return jsonify(result), 200
+        if auth.get('role') != 'admin':
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        data = request.get_json() or {}
+        username = data.get('username')
+        password = data.get('password')
+        role = data.get('role', 'user')
+        store_id = data.get('store_id')
+        if not username or not password or store_id is None:
+            return jsonify({'success': False, 'message': 'username, password y store_id requeridos'}), 400
+        store = db.query(Store).filter_by(id=store_id).first()
+        if not store:
+            return jsonify({'success': False, 'message': 'Store not found'}), 404
+        user = User(username=username, role=role, store_id=store_id)
+        user.set_password(password)
+        db.add(user)
+        db.commit()
+        return jsonify({'id': user.id, 'username': user.username, 'store_id': user.store_id}), 201
+
+
 @app.route('/login', methods=['POST'])
 def login():
     """Endpoint de autenticación que devuelve un JWT según el usuario."""
@@ -156,6 +252,10 @@ def login():
             admin = db.query(Admin).filter_by(username=username).first()
             if admin and admin.check_password(password):
                 token = encode_jwt(username, JWT_SECRET, role='admin')
+                return jsonify({'token': token}), 200
+            user = db.query(User).filter_by(username=username).first()
+            if user and user.check_password(password):
+                token = encode_jwt(username, JWT_SECRET, role='user', store_id=user.store_id)
                 return jsonify({'token': token}), 200
         if client_id:
             device = db.query(Device).filter_by(device_id=client_id).first()
@@ -591,9 +691,11 @@ def admin_clients():
         return jsonify({'success': False, 'message': 'username y password requeridos'}), 400
     permissions = data.get('permissions', [])
     devices = data.get('devices', [])
+    store_id = data.get('store_id')
     with get_session() as db:
-        user = User(username=username, password_hash=password, role='client')
-        client = Client(user=user, permissions=json.dumps(permissions))
+        user = User(username=username, role='client', store_id=store_id)
+        user.set_password(password)
+        client = Client(user=user, permissions=json.dumps(permissions), store_id=store_id)
         for device_id in devices:
             device = db.query(Device).filter_by(device_id=device_id).first()
             if device:
