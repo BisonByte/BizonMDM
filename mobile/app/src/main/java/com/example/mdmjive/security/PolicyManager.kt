@@ -5,10 +5,11 @@ import android.content.Context
 import android.content.ComponentName
 import android.util.Log
 import android.os.UserManager
+import com.example.mdmjive.receivers.MDMDeviceAdminReceiver
 
 class PolicyManager(private val context: Context) {
     private val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
-    private val componentName = ComponentName(context, "com.example.mdmjive.receivers.MDMDeviceAdminReceiver")
+    private val componentName = ComponentName(context, MDMDeviceAdminReceiver::class.java)
 
     fun enforcePasswordPolicy() {
         try {
