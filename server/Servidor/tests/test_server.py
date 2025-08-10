@@ -10,6 +10,7 @@ DB_FD, DB_PATH = tempfile.mkstemp()
 os.environ['DATABASE_URL'] = f'sqlite:///{DB_PATH}'
 os.environ['JWT_SECRET'] = 'testsecret'
 os.environ['SKIP_ALEMBIC'] = '1'
+os.environ['REGISTRATION_TOKEN'] = 'testreg'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from server import app, init_db, encode_jwt, decode_jwt, get_session
@@ -223,9 +224,23 @@ class ServerTestCase(unittest.TestCase):
         self.assertFalse(ok)
         server.FCM_SERVER_KEY = None
 
+    def test_register_requires_token(self):
+        resp = self.client.post('/devices/register', json={'deviceId': 'dX'})
+        self.assertEqual(resp.status_code, 401)
+        resp = self.client.post(
+            '/devices/register',
+            json={'deviceId': 'dX'},
+            headers={'X-Registration-Token': os.environ['REGISTRATION_TOKEN']},
+        )
+        self.assertEqual(resp.status_code, 200)
+
     def test_admin_clients_crud(self):
         # Register a device to assign later
-        self.client.post('/devices/register', json={'deviceId': 'd1'})
+        self.client.post(
+            '/devices/register',
+            json={'deviceId': 'd1'},
+            headers={'X-Registration-Token': os.environ['REGISTRATION_TOKEN']},
+        )
         resp = self.client.post(
             '/admin/clients',
             json={'username': 'cli', 'password': 'pwd', 'permissions': ['wipe']},
