@@ -42,7 +42,7 @@ class DeviceRepositoryTest {
 
     @Test
     fun fetchCommands_returnsCommandsFromApi() = runBlocking {
-        whenever(apiService.getCommands("test-device")).thenReturn(Response.success(listOf(Command("LOCK"))))
+        whenever(apiService.getCommands()).thenReturn(Response.success(listOf(Command("LOCK"))))
         val result = repository.fetchCommands(context)
         assertEquals(1, result.size)
         assertEquals("LOCK", result.first().action)

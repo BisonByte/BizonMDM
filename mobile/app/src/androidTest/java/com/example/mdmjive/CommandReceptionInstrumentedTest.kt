@@ -33,7 +33,7 @@ class CommandReceptionInstrumentedTest {
 
     @Test
     fun fetchCommands_returnsListFromApi() = runBlocking {
-        whenever(api.getCommands("android-device")).thenReturn(Response.success(listOf(Command("LOCK"))))
+        whenever(api.getCommands()).thenReturn(Response.success(listOf(Command("LOCK"))))
         val commands = repository.fetchCommands(context)
         assertEquals(1, commands.size)
         assertEquals("LOCK", commands[0].action)
