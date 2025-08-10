@@ -110,6 +110,27 @@ class DeviceRepository(
         }
     }
 
+    // Reporta eventos de seguridad al servidor
+    suspend fun reportSecurityEvent(
+        context: android.content.Context,
+        wipeDetected: Boolean,
+        bootloaderTampered: Boolean
+    ) {
+        val deviceId = getDeviceId(context)
+        val status = DeviceStatus(
+            deviceId = deviceId,
+            status = "ACTIVE",
+            wipeDetected = wipeDetected,
+            bootloaderTampered = bootloaderTampered,
+            lastSync = currentSyncTime()
+        )
+        try {
+            apiService.updateStatus(status)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reportando evento de seguridad: ${e.localizedMessage}")
+        }
+    }
+
     // Sincronizar con servidor
     suspend fun syncWithServer() = withContext(Dispatchers.IO) {
         try {

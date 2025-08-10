@@ -50,6 +50,8 @@ function Dashboard() {
     const s = d.status || {};
     if (s.battery && s.battery < 20) alerts.push(`Batería baja en ${d.deviceId} (${s.battery}%)`);
     if (s.rootAttempt) alerts.push(`Intento de root en ${d.deviceId}`);
+    if (s.wipeDetected) alerts.push(`Wipe detectado en ${d.deviceId}`);
+    if (s.bootloaderTampered) alerts.push(`Bootloader modificado en ${d.deviceId}`);
   });
   return (
     <div>
