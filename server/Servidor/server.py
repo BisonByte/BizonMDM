@@ -30,7 +30,6 @@ from models import (
     Store,
 )
 from sqlalchemy import text
-from install_script import install_application
 
 app = Flask(__name__)
 
@@ -779,20 +778,6 @@ def admin_client_detail(client_id: int):
         return jsonify({'success': True}), 200
 
 
-@app.route('/api/install', methods=['POST'])
-def install():
-    data = request.json
-    db_host = data.get('db_host')
-    db_name = data.get('db_name')
-    db_user = data.get('db_user')
-    db_pass = data.get('db_pass')
-    jwt_secret = data.get('jwt_secret')
-
-    try:
-        install_application(db_host, db_name, db_user, db_pass, jwt_secret)
-        return jsonify({"success": True, "message": "Instalación completada."})
-    except Exception as e:
-        return jsonify({"success": False, "message": str(e)}), 500
 
 if __name__ == '__main__':
     import argparse

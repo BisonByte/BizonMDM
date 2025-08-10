@@ -19,7 +19,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `admin/`, `alerts/`, `client/`, `device/`, `documents/`, `financing/`, `tasks/`: módulos Python que implementan la lógica del backend.
   - `admin-frontend/` y `client-frontend/`: interfaces web construidas en React.
   - `docker-compose.yml`: ejemplo de despliegue con contenedores.
-  - `install_script.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
+  - `install_script.py`: utilidad de instalación por CLI.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 - `docs/`: documentación adicional incluyendo `documentation.html`.
 
@@ -68,25 +68,15 @@ docker-compose down -v
 ### Pasos
 
 1. Clona este repositorio.
-2. Instala las dependencias y ejecuta el script de instalación:
+2. Instala las dependencias y ejecuta el instalador por línea de comandos:
 
 ```bash
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py
+python server/install_script.py --db <DATABASE_URL> --jwt <JWT_SECRET> --user <ADMIN_USER> --pwd <ADMIN_PASSWORD> [--fcm <FCM_SERVER_KEY>]
 ```
 
-3. Abre `http://localhost:5000/install` en tu navegador y completa el formulario con:
-   - Cadena de conexión de la base de datos.
-   - Clave secreta JWT.
-   - Clave de Firebase Cloud Messaging.
-   - Usuario y contraseña del administrador inicial.
-4. Al enviar el formulario se realizará automáticamente:
-   - La creación del archivo `.env` con la configuración proporcionada.
-   - El guardado de la clave de Firebase en `fcm_key.txt`.
-   - La ejecución de las migraciones de Alembic para preparar la base de datos.
-   - La creación del usuario administrador.
-5. Tras una instalación exitosa serás redirigido al panel de administración.
-6. (Opcional) Compila la interfaz web si realizaste cambios en `server/admin-frontend/`:
+3. El script crea el archivo `.env`, ejecuta las migraciones de Alembic y genera el usuario administrador. Si se proporciona `--fcm`, también guarda la clave de Firebase en `Servidor/fcm_key.txt`.
+4. (Opcional) Compila la interfaz web si realizaste cambios en `server/admin-frontend/`:
 
 ```bash
 cd server/admin-frontend
@@ -94,7 +84,7 @@ npm install
 npm run build
 ```
 
-7. Inicia el servidor y comprueba el estado:
+5. Inicia el servidor y comprueba el estado:
 
 ```bash
 python server/Servidor/server.py &

@@ -1,38 +1,6 @@
 import os
 import argparse
 from typing import Optional
-import bcrypt
-from flask import Flask, request, redirect, send_from_directory
-
-app = Flask(__name__)
-
-
-@app.route('/install', methods=['GET', 'POST'])
-def install():
-    if request.method == 'POST':
-        db = request.form['db']
-        jwt = request.form['jwt']
-        user = request.form['user']
-        pwd = request.form['pwd']
-
-        base_dir = os.path.join(os.path.dirname(__file__), 'Servidor')
-        env_path = os.path.join(base_dir, '.env')
-        with open(env_path, 'w', encoding='utf-8') as fh:
-            fh.write(f"DATABASE_URL={db}\nJWT_SECRET={jwt}\n")
-
-        os.environ['DATABASE_URL'] = db
-        os.environ['JWT_SECRET'] = jwt
-        from Servidor.models import init_db, SessionLocal, Admin
-        init_db(drop=True)
-        with SessionLocal() as session:
-            if not session.query(Admin).filter_by(username=user).first():
-                admin = Admin(username=user)
-                admin.set_password(pwd)
-                session.add(admin)
-                session.commit()
-        return redirect('/admin/#/first-steps')
-    root_dir = os.path.dirname(__file__)
-    return send_from_directory(root_dir, 'instalacion_bizonmdm.html')
 
 
 def _write_env_file(content: str) -> None:
@@ -43,11 +11,22 @@ def _write_env_file(content: str) -> None:
         fh.write(content)
 
 
-def _install_from_args(db: str, jwt: str, user: Optional[str], pwd: Optional[str]) -> None:
+def _install_from_args(
+    db: str,
+    jwt: str,
+    user: Optional[str],
+    pwd: Optional[str],
+    fcm: Optional[str],
+) -> None:
     env_content = f"DATABASE_URL={db}\nJWT_SECRET={jwt}\n"
     _write_env_file(env_content)
     os.environ['DATABASE_URL'] = db
     os.environ['JWT_SECRET'] = jwt
+    if fcm:
+        key_path = os.path.join(os.path.dirname(__file__), 'Servidor', 'fcm_key.txt')
+        with open(key_path, 'w', encoding='utf-8') as fh:
+            fh.write(fcm)
+        os.environ['FCM_SERVER_KEY'] = fcm
     from Servidor.models import init_db, SessionLocal, Admin
     init_db(drop=True)
     if user and pwd:
@@ -73,6 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('--jwt', help='Clave JWT secreta')
     parser.add_argument('--user', help='Usuario administrador inicial')
     parser.add_argument('--pwd', help='Contraseña del administrador')
+    parser.add_argument('--fcm', help='Clave de servidor FCM (opcional)')
     parser.add_argument(
         '--use-example',
         action='store_true',
@@ -84,7 +64,7 @@ if __name__ == '__main__':
         _copy_example()
         print('.env creado a partir de .env.example')
     elif args.db and args.jwt:
-        _install_from_args(args.db, args.jwt, args.user, args.pwd)
+        _install_from_args(args.db, args.jwt, args.user, args.pwd, args.fcm)
         print('Instalación completada mediante línea de comandos.')
     else:
-        app.run()
+        parser.print_help()
