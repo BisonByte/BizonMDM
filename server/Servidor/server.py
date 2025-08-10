@@ -12,11 +12,17 @@ import base64
 import io
 import qrcode
 import logging
-import hmac
-import hashlib
 import urllib.request
-import time
 from functools import wraps
+from datetime import timedelta
+
+from flask_jwt_extended import (
+    JWTManager,
+    create_access_token,
+    decode_token,
+    verify_jwt_in_request,
+    get_jwt,
+)
 
 from models import (
     Device,
@@ -51,17 +57,15 @@ if os.path.exists(ENV_PATH):
 JWT_SECRET = os.getenv("JWT_SECRET")
 FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY")
 FCM_URL = "https://fcm.googleapis.com/fcm/send"
-logging.basicConfig(filename="server.log", level=logging.INFO,
-                    format="%(asctime)s %(levelname)s %(message)s")
+logging.basicConfig(
+    filename="server.log",
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(message)s",
+)
 
-
-def _b64url_encode(data: bytes) -> str:
-    return base64.urlsafe_b64encode(data).rstrip(b"=").decode("utf-8")
-
-
-def _b64url_decode(data: str) -> bytes:
-    padding = "=" * (-len(data) % 4)
-    return base64.urlsafe_b64decode(data + padding)
+if JWT_SECRET:
+    app.config["JWT_SECRET_KEY"] = JWT_SECRET
+jwt = JWTManager(app)
 
 
 def encode_jwt(
@@ -73,38 +77,35 @@ def encode_jwt(
     expires_in: int = 3600,
 ) -> str:
     """Genera un token JWT con soporte de rol, client_id, store_id y expiración."""
-    header = {"alg": "HS256", "typ": "JWT"}
-    now = int(time.time())
-    payload = {"sub": sub, "role": role, "exp": now + int(expires_in)}
+
+    app.config["JWT_SECRET_KEY"] = secret
+    claims: dict[str, object] = {"role": role}
     if client_id is not None:
-        payload["client_id"] = client_id
+        claims["client_id"] = client_id
     if store_id is not None:
-        payload["store_id"] = store_id
-    header_b64 = _b64url_encode(json.dumps(header, separators=(",", ":")).encode())
-    payload_b64 = _b64url_encode(json.dumps(payload, separators=(",", ":")).encode())
-    signing_input = f"{header_b64}.{payload_b64}".encode()
-    signature = hmac.new(secret.encode(), signing_input, hashlib.sha256).digest()
-    signature_b64 = _b64url_encode(signature)
-    return f"{header_b64}.{payload_b64}.{signature_b64}"
+        claims["store_id"] = store_id
+    expires = timedelta(seconds=int(expires_in))
+    with app.app_context():
+        return create_access_token(
+            identity=sub, additional_claims=claims, expires_delta=expires
+        )
 
 
 def decode_jwt(token: str, secret: str) -> dict:
     """Decodifica un token JWT y devuelve su payload."""
-    header_b64, payload_b64, signature_b64 = token.split(".")
-    signing_input = f"{header_b64}.{payload_b64}".encode()
-    signature = _b64url_decode(signature_b64)
-    expected = hmac.new(secret.encode(), signing_input, hashlib.sha256).digest()
-    if not hmac.compare_digest(signature, expected):
-        raise ValueError("Invalid signature")
-    payload = json.loads(_b64url_decode(payload_b64))
-    # Validaciones básicas del payload
+
+    app.config["JWT_SECRET_KEY"] = secret
+    try:
+        with app.app_context():
+            payload = decode_token(token)
+    except Exception as exc:  # noqa: BLE001
+        raise ValueError(str(exc)) from exc
+
     if not isinstance(payload, dict):
         raise ValueError("Invalid payload")
     for field in ("sub", "role", "exp"):
         if field not in payload:
             raise ValueError("Missing claim")
-    if int(payload["exp"]) < int(time.time()):
-        raise ValueError("Token expired")
     if payload["role"] == "client":
         if not payload.get("client_id") or not payload.get("store_id"):
             raise ValueError("Missing client_id or store_id")
@@ -122,13 +123,10 @@ def require_auth(request) -> dict | None:
     """
     if not JWT_SECRET:
         return {}
-    auth = request.headers.get("Authorization", "")
-    if not auth.startswith("Bearer "):
-        return None
-    token = auth.split(" ", 1)[1]
     try:
-        return decode_jwt(token, JWT_SECRET)
-    except Exception:
+        verify_jwt_in_request()
+        return get_jwt()
+    except Exception:  # noqa: BLE001
         return None
 
 
