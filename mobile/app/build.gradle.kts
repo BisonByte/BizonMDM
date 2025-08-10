@@ -77,6 +77,9 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-messaging")
 
+    // Logging
+    implementation("com.jakewharton.timber:timber:5.0.1")
+
     // Unit testing
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:5.5.0")
