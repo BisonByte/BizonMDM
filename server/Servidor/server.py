@@ -371,6 +371,8 @@ def update_status(auth):
             'unknownSources',
             'lastSync',
             'battery',
+            'wipeDetected',
+            'bootloaderTampered',
         ):
             if field in data:
                 status[field] = data[field]

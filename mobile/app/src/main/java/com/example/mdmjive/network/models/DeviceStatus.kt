@@ -6,5 +6,7 @@ data class DeviceStatus(
     val lastSync: Long = System.currentTimeMillis(),
     val rootAttempt: Boolean = false,
     val emulator: Boolean = false,
-    val unknownSources: Boolean = false
+    val unknownSources: Boolean = false,
+    val wipeDetected: Boolean = false,
+    val bootloaderTampered: Boolean = false
 )
