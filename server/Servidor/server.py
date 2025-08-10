@@ -272,6 +272,9 @@ def api_users():
         store = db.query(Store).filter_by(id=store_id).first()
         if not store:
             return jsonify({'success': False, 'message': 'Store not found'}), 404
+        existing = db.query(User).filter_by(store_id=store_id).first()
+        if existing:
+            return jsonify({'success': False, 'message': 'Store already has a user'}), 400
         user = User(username=username, role=role, store_id=store_id)
         user.set_password(password)
         db.add(user)

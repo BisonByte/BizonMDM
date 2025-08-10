@@ -7,6 +7,8 @@ function StoreUserManager() {
   const [storeName, setStoreName] = useState('');
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [storeId, setStoreId] = useState('');
   const [perms, setPerms] = useState([]);
   const [editing, setEditing] = useState(null);
   const [editDomain, setEditDomain] = useState('');
@@ -46,11 +48,12 @@ function StoreUserManager() {
   function createUser(e) {
     e.preventDefault();
     if (!window.apiFetch) return;
-    const body = { username, permissions: perms };
+    if (!storeId || users.some(u => u.store_id === Number(storeId))) return;
+    const body = { username, password, store_id: Number(storeId), permissions: perms };
     window.apiFetch('/api/users', { method: 'POST', body: JSON.stringify(body) })
       .then(u => setUsers([...users, u]))
       .catch(() => {})
-      .finally(() => { setUsername(''); setPerms([]); });
+      .finally(() => { setUsername(''); setPassword(''); setStoreId(''); setPerms([]); });
   }
 
   const toggle = (p) => {
@@ -155,7 +158,12 @@ function StoreUserManager() {
 
       <h2>Usuarios</h2>
       <form onSubmit={createUser} style={{ marginBottom: '1rem' }}>
+        <select value={storeId} onChange={e => setStoreId(e.target.value)}>
+          <option value="">Tienda</option>
+          {stores.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+        </select>
         <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Usuario" />
+        <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" />
         <div>
           {PERMISSIONS.map(p => (
             <label key={p} style={{ marginRight: '0.5rem' }}>
@@ -163,11 +171,11 @@ function StoreUserManager() {
             </label>
           ))}
         </div>
-        <button type="submit">Crear</button>
+        <button type="submit" disabled={!storeId || users.some(u => u.store_id === Number(storeId))}>Crear</button>
       </form>
       <ul>
         {users.map(u => (
-          <li key={u.id}>{u.username} - {u.permissions.join(', ')}</li>
+          <li key={u.id}>{u.username} - tienda {u.store_id}</li>
         ))}
       </ul>
     </div>

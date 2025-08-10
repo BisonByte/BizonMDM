@@ -108,7 +108,7 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False)
-    store_id = Column(Integer, ForeignKey("stores.id"))
+    store_id = Column(Integer, ForeignKey("stores.id"), unique=True)
 
     store = relationship("Store", back_populates="users")
     clients = relationship("Client", back_populates="user", cascade="all, delete-orphan")
