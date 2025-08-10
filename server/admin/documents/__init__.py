@@ -1,0 +1,1 @@
+"""Gestión administrativa de documentos."""

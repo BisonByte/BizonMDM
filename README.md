@@ -16,6 +16,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - La URL del servidor se configura mediante `BuildConfig.BASE_URL` en `mobile/app/build.gradle.kts`.
 - `server/`: componentes del servidor y del panel web.
   - `Servidor/`: API en Flask, modelos de base de datos y scripts de instalación.
+  - `admin/`, `alerts/`, `client/`, `device/`, `documents/`, `financing/`, `tasks/`: módulos Python que implementan la lógica del backend.
   - `admin-frontend/` y `client-frontend/`: interfaces web construidas en React.
   - `docker-compose.yml`: ejemplo de despliegue con contenedores.
   - `install_script.py`: utilidad de instalación por CLI.
