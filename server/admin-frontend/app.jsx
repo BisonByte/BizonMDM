@@ -99,7 +99,10 @@ function DeviceTable({ onSelect }) {
               <td>{d.imei}</td>
               <td>{d.model}</td>
               <td>{d.serial}</td>
-              <td>{d.status?.battery ? `Bat ${d.status.battery}%` : ''}</td>
+              <td>
+                {d.status?.battery ? `Bat ${d.status.battery}%` : ''}
+                {d.status?.rootAttempt ? ' Root' : ''}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -220,6 +223,7 @@ function DeviceDetails({ id, onBack }) {
           <p>Serial: {info.serial}</p>
           <p>IMEI: {info.imei}</p>
           <p>Batería: {info.status?.battery ?? 'N/A'}%</p>
+          <p>Intento de root: {info.status?.rootAttempt ? 'Sí' : 'No'}</p>
         </div>
       )}
       <div className="actions">

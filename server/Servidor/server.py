@@ -363,7 +363,18 @@ def update_status(auth):
         )
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
-        device.status = json.dumps(data)
+        status = json.loads(device.status or '{}')
+        for field in (
+            'status',
+            'rootAttempt',
+            'emulator',
+            'unknownSources',
+            'lastSync',
+            'battery',
+        ):
+            if field in data:
+                status[field] = data[field]
+        device.status = json.dumps(status)
         if data.get('fcmToken'):
             device.fcm_token = data.get('fcmToken')
         db.commit()
