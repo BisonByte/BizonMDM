@@ -15,8 +15,11 @@ from sqlalchemy import (
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from sqlalchemy.sql import func
 
-DEFAULT_DB_URL = "postgresql+psycopg2://postgres:postgres@localhost/bizon"
-DB_URL = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
+try:
+    DB_URL = os.environ["DATABASE_URL"]
+except KeyError as exc:
+    raise RuntimeError("DATABASE_URL environment variable is required") from exc
+
 engine = create_engine(DB_URL, future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 

@@ -252,7 +252,7 @@ python server/install.py</code></pre>
       <li>Instalador web: <code>/install</code> crea <code>.env</code>, guarda la clave FCM y ejecuta migraciones (Alembic).</li>
       <li>Variables principales:
         <ul>
-          <li><code>DATABASE_URL</code> — cadena de conexión (PostgreSQL, MySQL/MariaDB o SQLite).</li>
+            <li><code>DATABASE_URL</code> — cadena de conexión (PostgreSQL, MySQL/MariaDB o SQLite). <strong>Obligatoria</strong>.</li>
           <li><code>JWT_SECRET</code> — clave secreta para firmar tokens.</li>
           <li><code>FCM_SERVER_KEY</code> — clave de servidor de Firebase Cloud Messaging.</li>
           <li><code>ADMIN_EMAIL</code>, <code>ADMIN_PASSWORD</code> — usuario inicial.</li>
