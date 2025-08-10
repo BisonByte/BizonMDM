@@ -22,18 +22,44 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `install.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
 - `docs/`: documentación adicional incluyendo `documentation.html`.
-## Instalación del servidor
 
-### Requisitos
+### Configurar la URL del servidor en la app móvil
 
-- Python 3.10+ y `pip`.
-- Node.js 18+ si deseas recompilar el panel React.
-- Una base de datos SQL (PostgreSQL, MySQL/MariaDB o SQLite para pruebas).
-- Clave de servidor de Firebase Cloud Messaging.
+La aplicación obtiene la dirección del backend desde `BuildConfig.BASE_URL`. El valor puede definirse de las siguientes maneras:
+
+- **`gradle.properties`** (`mobile/gradle.properties`):
+
+  ```
+  DEV_BASE_URL=https://dev.tuservidor.com/
+  PROD_BASE_URL=https://tuservidor.com/
+  ```
+
+- **Variables de entorno**:
+
+  ```
+  export DEV_BASE_URL=https://dev.tuservidor.com/
+  export PROD_BASE_URL=https://tuservidor.com/
+  ```
+
+Compila usando el flavor deseado:
+
+```
+./gradlew assembleDevDebug    # usa DEV_BASE_URL
+./gradlew assembleProdRelease # usa PROD_BASE_URL
+```
+
+## Instalación rápida
+
+```bash
+cd server
+docker-compose up -d
+```
+
+Accede al panel en `http://localhost:5000`.
 
 ### Variables de entorno
 
-Antes de iniciar el servicio define, como mínimo, las siguientes variables:
+Define variables antes de levantar los contenedores:
 
 - `DATABASE_URL`: cadena de conexión a la base de datos. **Obligatoria**.
 - `BIZON_HOST`: dirección en la que el servidor escucha (opcional, por defecto `0.0.0.0`).
@@ -41,78 +67,65 @@ Antes de iniciar el servicio define, como mínimo, las siguientes variables:
 - `JWT_SECRET`: clave para firmar tokens JWT.
 - `FCM_SERVER_KEY`: clave de Firebase Cloud Messaging para notificaciones.
 
-### Instalación desde código
+### Detener o eliminar contenedores
 
-Clona el repositorio e instala las dependencias:
+Detén los servicios con:
+
+```bash
+docker-compose down
+```
+
+Para eliminar también volúmenes y datos:
+
+```bash
+docker-compose down -v
+```
+
+## Instalación del servidor
+
+### Requisitos previos
+
+- Python 3.10+ y `pip`.
+- Node.js 18+ si deseas recompilar el panel React.
+- Una base de datos SQL (PostgreSQL, MySQL/MariaDB o SQLite para pruebas).
+- Clave de servidor de Firebase Cloud Messaging.
+
+### Pasos
+
+1. Clona este repositorio.
+2. Instala las dependencias y ejecuta el script de instalación:
 
 ```bash
 pip install -r server/Servidor/requirements.txt
 python server/install.py
 ```
 
-Completa el asistente en `http://localhost:5000/install` con la información de la base
-de datos, claves y usuario administrador. El proceso generará el archivo `.env`,
-guardará la clave de Firebase en `fcm_key.txt` y aplicará las migraciones de Alembic.
+3. Abre `http://localhost:5000/install` en tu navegador y completa el formulario con:
+   - Cadena de conexión de la base de datos.
+   - Clave secreta JWT.
+   - Clave de Firebase Cloud Messaging.
+   - Usuario y contraseña del administrador inicial.
+4. Al enviar el formulario se realizará automáticamente:
+   - La creación del archivo `.env` con la configuración proporcionada.
+   - El guardado de la clave de Firebase en `fcm_key.txt`.
+   - La ejecución de las migraciones de Alembic para preparar la base de datos.
+   - La creación del usuario administrador.
+5. Tras una instalación exitosa serás redirigido al panel de administración.
+6. (Opcional) Compila la interfaz web si realizaste cambios en `server/admin-frontend/`:
 
-Inicia el servidor y comprueba el estado:
+```bash
+cd server/admin-frontend
+npm install
+npm run build
+```
+
+7. Inicia el servidor y comprueba el estado:
 
 ```bash
 python server/Servidor/server.py &
 curl http://localhost:5000/api/status
 ```
 
-### Despliegue con Docker
-
-```bash
-cd server
-docker-compose up -d
-```
-
-Accede al panel en `http://localhost:5000`. Para detener o eliminar los contenedores:
-
-```bash
-docker-compose down      # detener
-docker-compose down -v   # eliminar volúmenes
-```
-
-### Notas de seguridad
-
-- No hagas público el archivo `.env` ni la clave `fcm_key.txt`.
-- Habilita HTTPS y protege el endpoint `/install` una vez finalizada la instalación.
-
-## Configuración de la aplicación móvil
-
-### Definir `BuildConfig.BASE_URL`
-
-La app obtiene la dirección del backend desde `BuildConfig.BASE_URL`.
-
-### `gradle.properties`
-
-Establece las URL para cada entorno en `mobile/gradle.properties`:
-
-```properties
-DEV_BASE_URL=https://dev.tuservidor.com/
-PROD_BASE_URL=https://tuservidor.com/
-```
-
-También puedes usar variables de entorno equivalentes:
-
-```bash
-export DEV_BASE_URL=https://dev.tuservidor.com/
-export PROD_BASE_URL=https://tuservidor.com/
-```
-
-### Compilar flavors `dev` y `prod`
-
-```bash
-./gradlew assembleDevDebug    # usa DEV_BASE_URL
-./gradlew assembleProdRelease # usa PROD_BASE_URL
-```
-
-### Notas de seguridad
-
-- Evita hardcodear URLs sensibles en el repositorio.
-- Revisa los certificados SSL en `prod` para prevenir ataques MITM.
 ## Panel de administración
 
 La interfaz web ubicada en `server/admin-frontend/` obtiene la lista de dispositivos desde la API del servidor y permite enviar acciones como "Borrar datos" o "Bloquear dispositivo". También muestra un indicador de estado que comprueba la conexión con la base de datos y la validez de la clave de Firebase mediante el endpoint `/api/status`.
