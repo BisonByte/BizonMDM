@@ -137,6 +137,45 @@ function DeviceDetails({ id, onBack }) {
   );
 }
 
+function DomainSetup() {
+  const [domain, setDomain] = useState('');
+  const [apiUser, setApiUser] = useState('');
+  const [apiPassword, setApiPassword] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    const domainRegex = /^(?!-)(?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9]\.)+[A-Za-z]{2,}$/;
+    if (!domainRegex.test(domain)) {
+      setError('Dominio inválido');
+      return;
+    }
+    try {
+      await apiFetch('/domain', {
+        method: 'POST',
+        body: JSON.stringify({ domain, apiUser, apiPassword })
+      });
+      window.location.hash = '#/dashboard';
+    } catch (err) {
+      setError('No se pudo conectar');
+    }
+  };
+
+  return (
+    <div>
+      <h2>Configurar Dominio</h2>
+      <form onSubmit={handleSubmit}>
+        <input value={domain} onChange={e => setDomain(e.target.value)} placeholder="Dominio" />
+        <input value={apiUser} onChange={e => setApiUser(e.target.value)} placeholder="Usuario API" />
+        <input type="password" value={apiPassword} onChange={e => setApiPassword(e.target.value)} placeholder="Contraseña API" />
+        <button type="submit">Guardar</button>
+      </form>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
+    </div>
+  );
+}
+
 function App() {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard');
   const [token, setToken] = useState(localStorage.getItem('clientToken') || '');
@@ -157,6 +196,7 @@ function App() {
 
   let page;
   if (route === '#/dashboard') page = <Dashboard />;
+  else if (route === '#/domain') page = <DomainSetup />;
   else if (route === '#/devices') page = <DeviceTable onSelect={(id) => window.location.hash = `#/devices/${id}`} />;
   else if (route.startsWith('#/devices/')) {
     const id = route.split('/')[2];
@@ -170,6 +210,7 @@ function App() {
         <h1 style={{ display: 'inline-block', margin: 0 }}>{clientInfo?.name || 'Bizon MDM'}</h1>
         <nav>
           <a href="#/dashboard">Dashboard</a>
+          <a href="#/domain">Dominio</a>
           <a href="#/devices">Dispositivos</a>
         </nav>
         <input value={token} onChange={handleTokenChange} placeholder="JWT token" style={{ marginLeft: '1rem' }} />
