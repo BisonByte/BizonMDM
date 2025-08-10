@@ -32,7 +32,9 @@ abstract class LogDatabase : RoomDatabase() {
                     context,
                     LogDatabase::class.java,
                     "mdm_database"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }
