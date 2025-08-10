@@ -3,6 +3,7 @@ package com.example.mdmjive.services
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
 import android.util.Log
+import com.example.mdmjive.BuildConfig
 import com.example.mdmjive.repository.DeviceRepository
 import com.example.mdmjive.network.ApiServiceFactory
 import com.example.mdmjive.database.LogDatabase
@@ -21,7 +22,7 @@ class FCMService : FirebaseMessagingService() {
         super.onMessageReceived(message)
         CoroutineScope(Dispatchers.IO).launch {
             val repository = DeviceRepository(
-                ApiServiceFactory.create("https://example.com/"),
+                ApiServiceFactory.create(BuildConfig.BASE_URL),
                 LogDatabase.getDatabase(applicationContext).deviceDao()
             )
             val commands = repository.fetchCommands(applicationContext)
