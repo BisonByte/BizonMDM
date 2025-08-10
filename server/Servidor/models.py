@@ -23,6 +23,15 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, futu
 Base = declarative_base()
 
 
+class Store(Base):
+    __tablename__ = "stores"
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    users = relationship("User", back_populates="store", cascade="all, delete-orphan")
+    clients = relationship("Client", back_populates="store", cascade="all, delete-orphan")
+
+
 client_devices = Table(
     "client_devices",
     Base.metadata,
@@ -85,17 +94,27 @@ class User(Base):
     username = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     role = Column(String, nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"))
 
+    store = relationship("Store", back_populates="users")
     clients = relationship("Client", back_populates="user", cascade="all, delete-orphan")
+
+    def set_password(self, password: str) -> None:
+        self.password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    def check_password(self, password: str) -> bool:
+        return bcrypt.checkpw(password.encode(), self.password_hash.encode())
 
 
 class Client(Base):
     __tablename__ = "clients"
     id = Column(Integer, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    store_id = Column(Integer, ForeignKey("stores.id"))
     permissions = Column(Text, default="[]")
 
     user = relationship("User", back_populates="clients")
+    store = relationship("Store", back_populates="clients")
     devices = relationship("Device", secondary=client_devices, back_populates="clients")
 
 
