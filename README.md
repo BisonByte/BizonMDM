@@ -21,7 +21,7 @@ BizonMDM es una plataforma de Mobile Device Management (MDM) de código abierto.
   - `docker-compose.yml`: ejemplo de despliegue con contenedores.
   - `install.py` e `instalacion_bizonmdm.html`: utilidades para la instalación.
   - `SUBDOMAIN_SETUP.md`: ejemplo de configuración de NGINX/Apache para servir varios subdominios.
-- `docs/`: documentación adicional incluyendo `documentation.html`.
+- `docs/`: documentación adicional incluyendo `documentation.html` y el [Manual técnico](https://docs.google.com/document/d/1rTvD54LBkILeUw0XYt5bMTrlQct1lF9NmRNHJtniKrk/edit?usp=sharing).
 
 ### Configurar la URL del servidor en la app móvil
 
