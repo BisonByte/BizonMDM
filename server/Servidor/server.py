@@ -102,8 +102,9 @@ def decode_jwt(token: str, secret: str) -> dict:
             raise ValueError("Missing claim")
     if int(payload["exp"]) < int(time.time()):
         raise ValueError("Token expired")
-    if payload["role"] == "client" and not payload.get("client_id"):
-        raise ValueError("Missing client_id")
+    if payload["role"] == "client":
+        if not payload.get("client_id") or not payload.get("store_id"):
+            raise ValueError("Missing client_id or store_id")
     if payload["role"] == "user" and not payload.get("store_id"):
         raise ValueError("Missing store_id")
     return payload
@@ -150,7 +151,12 @@ def require_client(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         auth = require_auth(request)
-        if not auth or auth.get('role') != 'client' or not auth.get('client_id'):
+        if (
+            not auth
+            or auth.get('role') != 'client'
+            or not auth.get('client_id')
+            or not auth.get('store_id')
+        ):
             return jsonify({'success': False, 'message': 'Unauthorized'}), 401
         return func(*args, auth=auth, **kwargs)
 
@@ -259,8 +265,15 @@ def login():
                 return jsonify({'token': token}), 200
         if client_id:
             device = db.query(Device).filter_by(device_id=client_id).first()
-            if device:
-                token = encode_jwt(client_id, JWT_SECRET, role='client', client_id=client_id)
+            if device and device.clients:
+                store_id = device.clients[0].store_id
+                token = encode_jwt(
+                    client_id,
+                    JWT_SECRET,
+                    role='client',
+                    client_id=client_id,
+                    store_id=store_id,
+                )
                 return jsonify({'token': token}), 200
     return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
 
@@ -342,7 +355,12 @@ def update_status(auth):
     if device_id != auth.get('client_id'):
         return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     with get_session() as db:
-        device = db.query(Device).filter_by(device_id=device_id).first()
+        device = (
+            db.query(Device)
+            .join(Device.clients)
+            .filter(Device.device_id == device_id, Client.store_id == auth.get('store_id'))
+            .first()
+        )
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         device.status = json.dumps(data)
@@ -400,7 +418,12 @@ def get_own_device(auth):
     """Devuelve la información del dispositivo asociado al cliente."""
     device_id = auth.get('client_id')
     with get_session() as db:
-        device = db.query(Device).filter_by(device_id=device_id).first()
+        device = (
+            db.query(Device)
+            .join(Device.clients)
+            .filter(Device.device_id == device_id, Client.store_id == auth.get('store_id'))
+            .first()
+        )
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         info = json.loads(device.info or '{}')
@@ -428,7 +451,12 @@ def upload_logs(auth):
     logs = data.get('logs', [])
     device_id = auth.get('client_id')
     with get_session() as db:
-        device = db.query(Device).filter_by(device_id=device_id).first()
+        device = (
+            db.query(Device)
+            .join(Device.clients)
+            .filter(Device.device_id == device_id, Client.store_id == auth.get('store_id'))
+            .first()
+        )
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         if isinstance(logs, list):
@@ -650,7 +678,12 @@ def add_command():
 def get_client_commands(auth):
     device_id = auth.get('client_id')
     with get_session() as db:
-        device = db.query(Device).filter_by(device_id=device_id).first()
+        device = (
+            db.query(Device)
+            .join(Device.clients)
+            .filter(Device.device_id == device_id, Client.store_id == auth.get('store_id'))
+            .first()
+        )
         if not device:
             return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
         cmds = [json.loads(c.command) for c in device.commands]

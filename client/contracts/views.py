@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, jsonify, request
 
 from financing.contracts.models import Contract, PaymentSchedule, SessionLocal
+from server.Servidor.models import SessionLocal as MainSession, Client
 
 
 bp = Blueprint("contracts", __name__, url_prefix="/contracts")
@@ -15,11 +16,16 @@ def register_contract():
 
     data = request.get_json() or {}
     client_id = data.get("client_id")
+    store_id = data.get("store_id")
     amount = data.get("amount")
     interest_rate = data.get("interest_rate")
     term = data.get("term")
-    if not all([client_id, amount, interest_rate, term]):
+    if not all([client_id, amount, interest_rate, term, store_id]):
         return jsonify({"success": False, "message": "Campos incompletos"}), 400
+    with MainSession() as mdb:
+        client = mdb.query(Client).filter_by(id=client_id, store_id=store_id).first()
+        if not client:
+            return jsonify({"success": False, "message": "Cliente no encontrado"}), 404
 
     with SessionLocal() as db:
         contract = Contract(
@@ -52,6 +58,13 @@ def register_contract():
 def pending_payments(client_id: int):
     """Lista los pagos pendientes de un cliente."""
 
+    store_id = request.args.get("store_id", type=int)
+    if store_id is None:
+        return jsonify({"success": False, "message": "store_id requerido"}), 400
+    with MainSession() as mdb:
+        client = mdb.query(Client).filter_by(id=client_id, store_id=store_id).first()
+        if not client:
+            return jsonify({"pending": []})
     with SessionLocal() as db:
         schedules = (
             db.query(PaymentSchedule)
