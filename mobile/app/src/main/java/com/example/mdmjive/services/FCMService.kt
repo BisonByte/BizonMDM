@@ -11,11 +11,13 @@ import com.example.mdmjive.controls.CommandExecutor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import com.example.mdmjive.utils.TokenManager
 
 class FCMService : FirebaseMessagingService() {
     override fun onNewToken(token: String) {
         super.onNewToken(token)
         Log.d("FCMService", "Nuevo token: $token")
+        TokenManager.saveToken(applicationContext, token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {

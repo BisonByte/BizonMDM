@@ -4,6 +4,7 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import android.util.Log
@@ -20,16 +21,27 @@ interface ApiService {
     suspend fun registerDevice(@Body deviceInfo: DeviceInfo): Response<ApiResponse>
 
     @POST("client/devices/status")
-    suspend fun updateStatus(@Body status: DeviceStatus): Response<ApiResponse>
+    suspend fun updateStatus(
+        @Header("Authorization") token: String,
+        @Body status: DeviceStatus
+    ): Response<ApiResponse>
 
     @POST("client/logs")
-    suspend fun uploadLogs(@Body payload: LogPayload): Response<ApiResponse>
+    suspend fun uploadLogs(
+        @Header("Authorization") token: String,
+        @Body payload: LogPayload
+    ): Response<ApiResponse>
 
     @GET("client/commands")
-    suspend fun getCommands(): Response<List<Command>>
+    suspend fun getCommands(
+        @Header("Authorization") token: String
+    ): Response<List<Command>>
 
     @POST("commands")
-    suspend fun sendCommand(@Body command: Command): Response<ApiResponse>
+    suspend fun sendCommand(
+        @Header("Authorization") token: String,
+        @Body command: Command
+    ): Response<ApiResponse>
 }
 
 
@@ -64,13 +76,15 @@ object ApiHandler {
 class DeviceOperations(private val apiService: ApiService) {
     suspend fun registerDeviceAndUpdateStatus(
         deviceInfo: DeviceInfo,
-        deviceStatus: DeviceStatus
+        deviceStatus: DeviceStatus,
+        token: String
     ): ApiResult<Boolean> {
         return try {
             when (val registerResult = ApiHandler.safeApiCall { apiService.registerDevice(deviceInfo) }) {
                 is ApiResult.Success -> {
                     if (registerResult.data.success) {
-                        when (val statusResult = ApiHandler.safeApiCall { apiService.updateStatus(deviceStatus) }) {
+                        val bearer = "Bearer $token"
+                        when (val statusResult = ApiHandler.safeApiCall { apiService.updateStatus(bearer, deviceStatus) }) {
                             is ApiResult.Success -> {
                                 ApiResult.Success(true)
                             }

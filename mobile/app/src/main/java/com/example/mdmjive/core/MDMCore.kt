@@ -18,7 +18,7 @@ class MDMCore private constructor(private val context: Context) {
         policyManager = PolicyManager(context)
         securityChecker = SecurityChecker
         deviceMonitor = DeviceMonitor(context)
-        logManager = LogManager(LogDatabase.getDatabase(context))
+        logManager = LogManager(LogDatabase.getDatabase(context), context)
     }
 
     companion object {
