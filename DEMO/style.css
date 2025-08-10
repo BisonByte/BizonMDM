@@ -123,6 +123,9 @@ body.demo {
   border-radius: 8px;
   font-weight: 500;
   transition: background 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .btn:hover {
