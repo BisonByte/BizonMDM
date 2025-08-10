@@ -30,9 +30,20 @@ class Store(Base):
     __tablename__ = "stores"
     id = Column(Integer, primary_key=True)
     name = Column(String, unique=True, nullable=False)
+    domain = Column(String)
+    api_user = Column(String)
+    api_password_hash = Column(String)
 
     users = relationship("User", back_populates="store", cascade="all, delete-orphan")
     clients = relationship("Client", back_populates="store", cascade="all, delete-orphan")
+
+    def set_api_password(self, password: str) -> None:
+        self.api_password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+    def check_api_password(self, password: str) -> bool:
+        if not self.api_password_hash:
+            return False
+        return bcrypt.checkpw(password.encode(), self.api_password_hash.encode())
 
 
 client_devices = Table(

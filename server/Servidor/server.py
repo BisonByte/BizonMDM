@@ -204,6 +204,32 @@ def api_stores():
         return jsonify({'id': store.id, 'name': store.name}), 201
 
 
+@app.route('/api/stores/<int:store_id>/domain', methods=['GET', 'POST'])
+def store_domain(store_id: int):
+    auth = require_auth(request)
+    if not auth:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    with get_session() as db:
+        store = db.query(Store).filter_by(id=store_id).first()
+        if not store:
+            return jsonify({'success': False, 'message': 'Store not found'}), 404
+        if auth.get('role') not in {'admin', 'user'}:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        if auth.get('role') == 'user' and auth.get('store_id') != store_id:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+        if request.method == 'GET':
+            return jsonify({'domain': store.domain, 'api_user': store.api_user}), 200
+        data = request.get_json() or {}
+        if 'domain' in data:
+            store.domain = data['domain']
+        if 'api_user' in data:
+            store.api_user = data['api_user']
+        if data.get('api_password'):
+            store.set_api_password(data['api_password'])
+        db.commit()
+        return jsonify({'success': True, 'domain': store.domain, 'api_user': store.api_user}), 200
+
+
 @app.route('/api/users', methods=['GET', 'POST'])
 def api_users():
     auth = require_auth(request)
