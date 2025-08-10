@@ -14,7 +14,9 @@ import qrcode
 import logging
 import urllib.request
 from functools import wraps
-from datetime import timedelta
+from datetime import timedelta, date
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from flask_jwt_extended import (
     JWTManager,
@@ -36,8 +38,6 @@ from models import (
     Store,
 )
 from sqlalchemy import text
-import sys
-sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from install import install_application
 
@@ -134,6 +134,13 @@ def require_auth(request) -> dict | None:
 def get_session():
     """Obtiene una nueva sesión de base de datos."""
     return SessionLocal()
+
+
+def get_financing_session():
+    """Obtiene una sesión de la base de datos de financiamiento."""
+    from financing.contracts.models import SessionLocal as FinancingSessionLocal
+
+    return FinancingSessionLocal()
 
 
 def require_admin(func):
@@ -738,6 +745,56 @@ def get_client_commands(auth):
     return jsonify(cmds), 200
 
 
+@app.route('/client/financing', methods=['GET'])
+@require_client
+def client_financing(auth):
+    """Devuelve contratos y próximos pagos para el cliente autenticado."""
+    client_id = int(auth.get('client_id'))
+    from financing.contracts.models import Contract as FinancingContract
+
+    with get_financing_session() as db:
+        contracts = (
+            db.query(FinancingContract)
+            .filter(FinancingContract.client_id == client_id)
+            .all()
+        )
+        result: list[dict[str, object]] = []
+        for contract in contracts:
+            schedules = contract.schedules
+            outstanding = sum(s.amount for s in schedules if not s.paid)
+            next_sched = None
+            for s in schedules:
+                if not s.paid and (next_sched is None or s.due_date < next_sched.due_date):
+                    next_sched = s
+            result.append(
+                {
+                    'id': contract.id,
+                    'amount': contract.amount,
+                    'outstanding': outstanding,
+                    'next_due_date': next_sched.due_date.isoformat() if next_sched else None,
+                    'next_due_amount': next_sched.amount if next_sched else None,
+                }
+            )
+    return jsonify(result), 200
+
+
+@app.route('/admin/contracts/summary', methods=['GET'])
+@require_admin
+def admin_contracts_summary():
+    """Devuelve estadísticas agregadas de contratos."""
+    today = date.today()
+    from financing.contracts.models import Contract as FinancingContract, PaymentSchedule
+
+    with get_financing_session() as db:
+        total = db.query(FinancingContract).count()
+        overdue = (
+            db.query(PaymentSchedule)
+            .filter(PaymentSchedule.due_date < today, PaymentSchedule.paid.is_(False))
+            .count()
+        )
+        paid = db.query(PaymentSchedule).filter(PaymentSchedule.paid.is_(True)).count()
+    return jsonify({'total': total, 'overdue': overdue, 'paid': paid}), 200
+
 # --- Endpoints de administración de clientes ---
 
 
@@ -833,8 +890,11 @@ if __name__ == '__main__':
     parser.add_argument('--init-db', action='store_true', help='Inicializar base de datos y salir')
     args = parser.parse_args()
 
+    from financing.contracts.models import init_db as init_financing_db
+
     if args.init_db:
         init_db(drop=True)
+        init_financing_db(drop=True)
         print('Base de datos inicializada')
     else:
         host = os.getenv('BIZON_HOST', '0.0.0.0')
@@ -843,4 +903,5 @@ if __name__ == '__main__':
         ssl_key = os.getenv('SSL_KEY')
         ssl_context = (ssl_cert, ssl_key) if ssl_cert and ssl_key else None
         init_db()
+        init_financing_db()
         app.run(host=host, port=port, ssl_context=ssl_context)

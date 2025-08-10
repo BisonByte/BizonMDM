@@ -186,6 +186,44 @@ function DeviceDetails({ id, onBack }) {
   );
 }
 
+function Financing() {
+  const [contracts, setContracts] = useState([]);
+  useEffect(() => {
+    apiFetch('/financing').then(setContracts).catch(console.error);
+  }, []);
+  return (
+    <div>
+      <h2>Financiamiento</h2>
+      {contracts.length ? (
+        <table>
+          <thead>
+            <tr>
+              <th>Contrato</th>
+              <th>Saldo pendiente</th>
+              <th>Próximo vencimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            {contracts.map(c => (
+              <tr key={c.id}>
+                <td>Contrato {c.id}</td>
+                <td>{c.outstanding.toFixed(2)}</td>
+                <td>
+                  {c.next_due_date
+                    ? `${c.next_due_date} (${c.next_due_amount})`
+                    : 'Completado'}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>Sin contratos</p>
+      )}
+    </div>
+  );
+}
+
 function DomainSetup() {
   const [domain, setDomain] = useState('');
   const [apiUser, setApiUser] = useState('');
@@ -247,6 +285,7 @@ function App() {
   if (route === '#/dashboard') page = <Dashboard />;
   else if (route === '#/domain') page = <DomainSetup />;
   else if (route === '#/devices') page = <DeviceTable onSelect={(id) => window.location.hash = `#/devices/${id}`} />;
+  else if (route === '#/financing') page = <Financing />;
   else if (route.startsWith('#/devices/')) {
     const id = route.split('/')[2];
     page = <DeviceDetails id={id} onBack={() => window.location.hash = '#/devices'} />;
@@ -261,6 +300,7 @@ function App() {
           <a href="#/dashboard">Dashboard</a>
           <a href="#/domain">Dominio</a>
           <a href="#/devices">Dispositivos</a>
+          <a href="#/financing">Financiamiento</a>
         </nav>
         <input value={token} onChange={handleTokenChange} placeholder="JWT token" style={{ marginLeft: '1rem' }} />
       </header>
