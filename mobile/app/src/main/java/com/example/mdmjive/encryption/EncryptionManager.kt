@@ -4,6 +4,7 @@ import android.content.Context
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import java.security.KeyStore
+import java.security.GeneralSecurityException
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
@@ -31,26 +32,38 @@ class EncryptionManager(private val context: Context) {
      * Cifra datos utilizando AES/GCM y devuelve el resultado en Base64.
      */
     fun encryptData(data: String): String {
-        val cipher = Cipher.getInstance(transformation)
-        cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
-        val iv = cipher.iv // IV generado automáticamente
-        val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
-        val combined = iv + encryptedData // Combina IV y datos cifrados
-        return Base64.encodeToString(combined, Base64.DEFAULT)
+        return try {
+            val cipher = Cipher.getInstance(transformation)
+            cipher.init(Cipher.ENCRYPT_MODE, getSecretKey())
+            val iv = cipher.iv // IV generado automáticamente
+            val encryptedData = cipher.doFinal(data.toByteArray(Charsets.UTF_8))
+            val combined = iv + encryptedData // Combina IV y datos cifrados
+            Base64.encodeToString(combined, Base64.DEFAULT)
+        } catch (e: GeneralSecurityException) {
+            throw EncryptionException("Error al cifrar los datos", e)
+        } catch (e: IllegalArgumentException) {
+            throw EncryptionException("Datos inválidos para cifrado", e)
+        }
     }
 
     /**
      * Descifra datos previamente cifrados y devueltos en Base64.
      */
     fun decryptData(encryptedData: String): String {
-        val combined = Base64.decode(encryptedData, Base64.DEFAULT)
-        val iv = combined.sliceArray(0 until ivLength)
-        val encryptedBytes = combined.sliceArray(ivLength until combined.size)
+        return try {
+            val combined = Base64.decode(encryptedData, Base64.DEFAULT)
+            val iv = combined.sliceArray(0 until ivLength)
+            val encryptedBytes = combined.sliceArray(ivLength until combined.size)
 
-        val cipher = Cipher.getInstance(transformation)
-        cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), GCMParameterSpec(128, iv))
-        val decryptedData = cipher.doFinal(encryptedBytes)
-        return String(decryptedData, Charsets.UTF_8)
+            val cipher = Cipher.getInstance(transformation)
+            cipher.init(Cipher.DECRYPT_MODE, getSecretKey(), GCMParameterSpec(128, iv))
+            val decryptedData = cipher.doFinal(encryptedBytes)
+            String(decryptedData, Charsets.UTF_8)
+        } catch (e: GeneralSecurityException) {
+            throw EncryptionException("Error al descifrar los datos", e)
+        } catch (e: IllegalArgumentException) {
+            throw EncryptionException("Datos inválidos para descifrado", e)
+        }
     }
 
     /**
@@ -75,4 +88,6 @@ class EncryptionManager(private val context: Context) {
     private fun getSecretKey(): SecretKey {
         return keyStore.getKey(keyAlias, null) as SecretKey
     }
+
+    class EncryptionException(message: String, cause: Throwable) : Exception(message, cause)
 }
