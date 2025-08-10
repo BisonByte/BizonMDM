@@ -8,10 +8,28 @@ function StoreUserManager() {
   const [users, setUsers] = useState([]);
   const [username, setUsername] = useState('');
   const [perms, setPerms] = useState([]);
+  const [editing, setEditing] = useState(null);
+  const [editDomain, setEditDomain] = useState('');
+  const [editApiUser, setEditApiUser] = useState('');
+  const [editApiPassword, setEditApiPassword] = useState('');
 
   useEffect(() => {
     if (window.apiFetch) {
-      window.apiFetch('/api/stores').then(setStores).catch(() => setStores([]));
+      window.apiFetch('/api/stores')
+        .then(async sts => {
+          const detailed = await Promise.all(
+            sts.map(async s => {
+              try {
+                const info = await window.apiFetch(`/api/stores/${s.id}/domain`);
+                return { ...s, domain: info.domain, apiUser: info.api_user, connected: info.connected !== false, logs: info.logs || [] };
+              } catch (err) {
+                return { ...s, connected: false, logs: [] };
+              }
+            })
+          );
+          setStores(detailed);
+        })
+        .catch(() => setStores([]));
       window.apiFetch('/api/users').then(setUsers).catch(() => setUsers([]));
     }
   }, []);
@@ -39,6 +57,36 @@ function StoreUserManager() {
     setPerms(perms.includes(p) ? perms.filter(x => x !== p) : [...perms, p]);
   };
 
+  function startEdit(store) {
+    setEditing(store.id);
+    setEditDomain(store.domain || '');
+    setEditApiUser(store.apiUser || '');
+    setEditApiPassword('');
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setEditDomain('');
+    setEditApiUser('');
+    setEditApiPassword('');
+  }
+
+  function saveEdit(e) {
+    e.preventDefault();
+    if (!window.apiFetch || editing == null) return;
+    const id = editing;
+    const body = { domain: editDomain, api_user: editApiUser };
+    if (editApiPassword) body.api_password = editApiPassword;
+    window.apiFetch(`/api/stores/${id}/domain`, { method: 'POST', body: JSON.stringify(body) })
+      .then(info => {
+        setStores(stores.map(s => s.id === id ? { ...s, domain: info.domain, apiUser: info.api_user, connected: info.connected !== false, logs: info.logs || [] } : s));
+        cancelEdit();
+      })
+      .catch(() => {
+        setStores(stores.map(s => s.id === id ? { ...s, connected: false } : s));
+      });
+  }
+
   return (
     <div>
       <h2>Tiendas</h2>
@@ -46,9 +94,64 @@ function StoreUserManager() {
         <input value={storeName} onChange={e => setStoreName(e.target.value)} placeholder="Nombre" />
         <button type="submit">Agregar</button>
       </form>
-      <ul>
-        {stores.map(s => <li key={s.id}>{s.name}</li>)}
-      </ul>
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Dominio</th>
+            <th>Usuario API</th>
+            <th>Estado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {stores.map(s => (
+            <React.Fragment key={s.id}>
+              <tr>
+                <td>{s.name}</td>
+                <td>{s.domain || '-'}</td>
+                <td>{s.apiUser || '-'}</td>
+                <td>{s.connected ? '✅' : <span style={{ color: 'red' }}>❌{s.logs && s.logs.length ? ` (${s.logs.length})` : ''}</span>}</td>
+                <td>
+                  {editing === s.id ? (
+                    <form onSubmit={saveEdit} style={{ display: 'inline' }}>
+                      <input value={editDomain} onChange={e => setEditDomain(e.target.value)} placeholder="Dominio" />
+                      <input value={editApiUser} onChange={e => setEditApiUser(e.target.value)} placeholder="Usuario API" />
+                      <input type="password" value={editApiPassword} onChange={e => setEditApiPassword(e.target.value)} placeholder="Contraseña" />
+                      <button type="submit">Guardar</button>
+                      <button type="button" onClick={cancelEdit}>Cancelar</button>
+                    </form>
+                  ) : (
+                    <button onClick={() => startEdit(s)}>Editar</button>
+                  )}
+                </td>
+              </tr>
+              {!s.connected && s.logs && s.logs.length > 0 && (
+                <tr>
+                  <td colSpan="5">
+                    <table style={{ width: '100%' }}>
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Mensaje</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {s.logs.map((l, i) => (
+                          <tr key={i}>
+                            <td>{l.date || l.timestamp || '-'}</td>
+                            <td>{l.message || JSON.stringify(l)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+              )}
+            </React.Fragment>
+          ))}
+        </tbody>
+      </table>
 
       <h2>Usuarios</h2>
       <form onSubmit={createUser} style={{ marginBottom: '1rem' }}>
