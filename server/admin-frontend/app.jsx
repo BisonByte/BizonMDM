@@ -425,9 +425,9 @@ function App() {
           <a href="#/config">Config</a>
         </nav>
         <ServerStatus />
-        <input value={token} onChange={handleTokenChange} placeholder="JWT token" style={{ marginLeft: '1rem' }} />
+        <input className="token-input" value={token} onChange={handleTokenChange} placeholder="JWT token" />
       </header>
-      <main style={{ padding: '1rem' }}>
+      <main>
         {page}
       </main>
     </div>
