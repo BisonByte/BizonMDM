@@ -3,24 +3,41 @@
 <head>
   <meta charset="utf-8" />
   <title>Panel del Cliente - BizonMDM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
   <div class="panel-container">
     <aside class="sidebar">
-      <h2>Cliente</h2>
+      <h2><i class="fa-solid fa-user"></i> Cliente</h2>
       <nav>
         <ul>
-          <li><a href="#">Inicio</a></li>
-          <li><a href="#">Mis Dispositivos</a></li>
-          <li><a href="#">Soporte</a></li>
+          <li><a href="#"><i class="fa-solid fa-house"></i>Inicio</a></li>
+          <li><a href="#"><i class="fa-solid fa-mobile-screen"></i>Mis Dispositivos</a></li>
+          <li><a href="#"><i class="fa-solid fa-headset"></i>Soporte</a></li>
         </ul>
       </nav>
+      <div class="sidebar-footer">&copy; 2024 BizonMDM</div>
     </aside>
     <main class="content">
-      <h1>Bienvenido</h1>
+      <div class="topbar">
+        <h1>Bienvenido</h1>
+        <div class="profile"><i class="fa-solid fa-user-circle fa-2x"></i></div>
+      </div>
       <p>Este es el panel del cliente de BizonMDM. Desde aquí puedes ver el estado de tus dispositivos y solicitar soporte.</p>
+      <section class="card-grid">
+        <article class="card">
+          <h3>Estado General</h3>
+          <p>Todos tus dispositivos están seguros.</p>
+        </article>
+        <article class="card">
+          <h3>Última Sincronización</h3>
+          <p>Hoy, 09:30 AM</p>
+        </article>
+      </section>
     </main>
   </div>
 </body>
 </html>
+

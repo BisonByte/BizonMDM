@@ -3,24 +3,45 @@
 <head>
   <meta charset="utf-8" />
   <title>Panel Administrativo - BizonMDM</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../style.css" />
 </head>
 <body>
   <div class="panel-container">
     <aside class="sidebar">
-      <h2>Admin</h2>
+      <h2><i class="fa-solid fa-gears"></i> Admin</h2>
       <nav>
         <ul>
-          <li><a href="#">Dashboard</a></li>
-          <li><a href="#">Usuarios</a></li>
-          <li><a href="#">Configuración</a></li>
+          <li><a href="#"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+          <li><a href="#"><i class="fa-solid fa-users"></i>Usuarios</a></li>
+          <li><a href="#"><i class="fa-solid fa-sliders"></i>Configuración</a></li>
         </ul>
       </nav>
+      <div class="sidebar-footer">&copy; 2024 BizonMDM</div>
     </aside>
     <main class="content">
-      <h1>Dashboard</h1>
-      <p>Bienvenido al panel administrativo de BizonMDM. Aquí puedes gestionar los dispositivos y usuarios del sistema.</p>
+      <div class="topbar">
+        <h1>Dashboard</h1>
+        <div class="profile"><i class="fa-solid fa-user-circle fa-2x"></i></div>
+      </div>
+      <p>Bienvenido al panel administrativo de BizonMDM. Usa el menú para gestionar los dispositivos y usuarios del sistema.</p>
+      <section class="card-grid">
+        <article class="card">
+          <h3>Dispositivos Activos</h3>
+          <p>256</p>
+        </article>
+        <article class="card">
+          <h3>Usuarios Registrados</h3>
+          <p>42</p>
+        </article>
+        <article class="card">
+          <h3>Peticiones de Soporte</h3>
+          <p>5</p>
+        </article>
+      </section>
     </main>
   </div>
 </body>
 </html>
+
