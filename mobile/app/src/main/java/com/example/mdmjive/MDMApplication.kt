@@ -1,3 +1,5 @@
+package com.example.mdmjive
+
 import android.app.Application
 import com.example.mdmjive.database.LogDatabase
 import timber.log.Timber
