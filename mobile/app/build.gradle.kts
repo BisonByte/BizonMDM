@@ -4,6 +4,9 @@ plugins {
     id("kotlin-kapt")  // Este es necesario para Room
 }
 
+val devBaseUrl: String = project.findProperty("DEV_BASE_URL") as String? ?: System.getenv("DEV_BASE_URL") ?: ""
+val prodBaseUrl: String = project.findProperty("PROD_BASE_URL") as String? ?: System.getenv("PROD_BASE_URL") ?: ""
+
 android {
     namespace = "com.example.mdmjive"
     compileSdk = 34
@@ -15,8 +18,6 @@ android {
         versionCode = 1
         versionName = "1.0"
 
-        buildConfigField("String", "BASE_URL", "\"https://example.com/\"")
-
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments += mapOf(
@@ -24,6 +25,19 @@ android {
                     "room.incremental" to "true"  // Habilitar la compilación incremental
                 )
             }
+        }
+    }
+
+    flavorDimensions += listOf("environment")
+
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"$devBaseUrl\"")
+        }
+        create("prod") {
+            dimension = "environment"
+            buildConfigField("String", "BASE_URL", "\"$prodBaseUrl\"")
         }
     }
 
