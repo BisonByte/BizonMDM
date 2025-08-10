@@ -1,4 +1,6 @@
 const { useState, useEffect } = React;
+const { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } = Recharts;
+const { motion } = window.framerMotion || {};
 
 const API_BASE = '/api/client';
 
@@ -16,14 +18,60 @@ async function apiFetch(path, options = {}) {
 
 function Dashboard() {
   const [devices, setDevices] = useState([]);
+  const [summary, setSummary] = useState(null);
   useEffect(() => {
     apiFetch('/devices').then(setDevices).catch(console.error);
+    apiFetch('/contracts/summary').then(setSummary).catch(() => setSummary(null));
   }, []);
-  const total = devices.length;
+  const alerts = [];
+  devices.forEach(d => {
+    const s = d.status || {};
+    if (s.battery && s.battery < 20) alerts.push('b');
+    if (s.rootAttempt) alerts.push('r');
+    if (s.wipeDetected) alerts.push('w');
+    if (s.bootloaderTampered) alerts.push('t');
+  });
+  const data = summary ? [
+    { name: 'Total', value: summary.total },
+    { name: 'Vencidos', value: summary.overdue },
+    { name: 'Pagados', value: summary.paid }
+  ] : [];
+  const cardStyle = {
+    background: '#fff',
+    padding: '1rem',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    flex: '1',
+    minWidth: '150px'
+  };
   return (
     <div>
       <h2>Dashboard</h2>
-      <p>Dispositivos registrados: {total}</p>
+      <div style={{display:'flex', gap:'1rem', marginBottom:'1rem', flexWrap:'wrap'}}>
+        <motion.div style={cardStyle} initial={{opacity:0, y:10}} animate={{opacity:1, y:0}}>
+          <h3>Dispositivos Activos</h3>
+          <p>{devices.length}</p>
+        </motion.div>
+        <motion.div style={cardStyle} initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay:0.1}}>
+          <h3>Alertas</h3>
+          <p>{alerts.length}</p>
+        </motion.div>
+        <motion.div style={cardStyle} initial={{opacity:0, y:10}} animate={{opacity:1, y:0}} transition={{delay:0.2}}>
+          <h3>Pagos Vencidos</h3>
+          <p>{summary?.overdue || 0}</p>
+        </motion.div>
+      </div>
+      {summary && (
+        <motion.div initial={{opacity:0}} animate={{opacity:1}}>
+          <BarChart width={400} height={250} data={data}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="name" />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar dataKey="value" fill="#8884d8" isAnimationActive={true} />
+          </BarChart>
+        </motion.div>
+      )}
     </div>
   );
 }
