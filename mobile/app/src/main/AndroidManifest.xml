@@ -18,7 +18,9 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@android:style/Theme.NoDisplay">
+        android:theme="@style/Theme.AppCompat.Light">
+
+        <!-- Para ocultar la app tras la activación, controlar la visibilidad mediante políticas o hideLauncherIcon -->
 
         <!-- Receptor de administración -->
         <receiver
