@@ -55,6 +55,7 @@ if os.path.exists(ENV_PATH):
                 os.environ.setdefault(k, v)
 
 JWT_SECRET = os.getenv("JWT_SECRET")
+REGISTRATION_TOKEN = os.getenv("REGISTRATION_TOKEN")
 FCM_SERVER_KEY = os.getenv("FCM_SERVER_KEY")
 FCM_URL = "https://fcm.googleapis.com/fcm/send"
 logging.basicConfig(
@@ -345,6 +346,10 @@ def register_device_admin():
 @app.route('/devices/register', methods=['POST'])
 def register_device_public():
     """Endpoint público para registrar dispositivos."""
+    if REGISTRATION_TOKEN:
+        token = request.headers.get('X-Registration-Token')
+        if token != REGISTRATION_TOKEN:
+            return jsonify({'success': False, 'message': 'Unauthorized'}), 401
     return _register_device()
 
 @app.route('/client/devices/status', methods=['POST'])

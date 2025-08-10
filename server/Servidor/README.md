@@ -127,6 +127,24 @@ Todos los endpoints responden con un JSON similar a:
 - `GET /commands/<deviceId>` – obtiene y limpia los comandos para el dispositivo.
 - `GET /provisioning/qr/<deviceId>` – genera el código QR de aprovisionamiento.
 
+## Registro seguro de dispositivos
+
+Para evitar altas no autorizadas define la variable de entorno `REGISTRATION_TOKEN`.
+Mientras esté configurada, el endpoint público `/devices/register` exigirá el
+encabezado `X-Registration-Token` con dicho valor. Genera un token temporal y
+compártelo por un canal seguro. Como alternativa, utiliza el endpoint
+`/admin/devices/register` junto con un token JWT de administrador.
+
+Ejemplo:
+
+```bash
+export REGISTRATION_TOKEN=secreto-temporal
+curl -X POST http://localhost:5000/devices/register \
+  -H 'Content-Type: application/json' \
+  -H 'X-Registration-Token: secreto-temporal' \
+  -d '{"deviceId": "123"}'
+```
+
 Este servidor es un ejemplo para desarrollo y pruebas.
 
 Para una guía más detallada consulta [MANUAL.md](MANUAL.md).
