@@ -112,7 +112,7 @@
         <p>Este documento es la referencia completa para desplegar y operar <strong>BizonMDM</strong>: servidor/API, panel de administración web y aplicación Android para administración de dispositivos móviles (MDM). Incluye pasos detallados para VPS (Linux), Windows y Docker.</p>
         <div class="cards">
           <div class="card"><h4>Repositorio</h4><p><code>BisonByte/BizonMDM</code></p><p>Áreas: <em>Servidor (Python), Admin Frontend (JS), App (Kotlin)</em></p></div>
-          <div class="card"><h4>Estado rápido</h4><ul><li>Instalación por CLI con <code>server/install_script.py</code></li><li>Migraciones con Alembic</li><li>Soporte de FCM para notificaciones</li></ul></div>
+          <div class="card"><h4>Estado rápido</h4><ul><li>Instalador web del servidor en <code>/install</code></li><li>Migraciones con Alembic</li><li>Soporte de FCM para notificaciones</li></ul></div>
           <div class="card"><h4>Licencia</h4><p>Consulte el archivo <code>LICENSE</code> en el repositorio.</p></div>
         </div>
       </div>
@@ -142,22 +142,23 @@
     </ol>
     <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM && cd BizonMDM">Copiar</button><code>git clone https://github.com/BisonByte/BisonMDM && cd BizonMDM</code></pre>
     <ol start="2">
-      <li>Instale las dependencias del servidor y ejecute el instalador por CLI:</li>
+      <li>Instale dependencias del servidor e inicie el instalador:</li>
     </ol>
     <pre><button class="copy" data-copy="pip install -r server/Servidor/requirements.txt
-python server/install_script.py --db <DATABASE_URL> --jwt <JWT_SECRET> --user <ADMIN_USER> --pwd <ADMIN_PASSWORD> [--fcm <FCM_SERVER_KEY>]">Copiar</button><code>pip install -r server/Servidor/requirements.txt
-python server/install_script.py --db &lt;DATABASE_URL&gt; --jwt &lt;JWT_SECRET&gt; --user &lt;ADMIN_USER&gt; --pwd &lt;ADMIN_PASSWORD&gt; [--fcm &lt;FCM_SERVER_KEY&gt;]</code></pre>
+python server/install_script.py">Copiar</button><code>pip install -r server/Servidor/requirements.txt
+python server/install_script.py</code></pre>
     <ol start="3">
-      <li>Arranque el servidor:</li>
+      <li>Abra <code>http://localhost:5000/install</code> y complete el formulario con la cadena de conexión de BD, clave JWT, clave de FCM y un usuario admin inicial.</li>
+      <li>Tras finalizar, arranque el servidor:</li>
     </ol>
     <pre><button class="copy" data-copy="python server/Servidor/server.py">Copiar</button><code>python server/Servidor/server.py</code></pre>
-    <ol start="4">
+    <ol start="5">
       <li>(Opcional) Construya el panel de administración si modificó la interfaz:</li>
     </ol>
     <pre><button class="copy" data-copy="cd server/admin-frontend\nnpm install\nnpm run build">Copiar</button><code>cd server/admin-frontend
 npm install
 npm run build</code></pre>
-    <ol start="5">
+    <ol start="6">
       <li>Verifique el estado de la API:</li>
     </ol>
     <pre><button class="copy" data-copy="curl http://localhost:5000/api/status">Copiar</button><code>curl http://localhost:5000/api/status</code></pre>
@@ -186,9 +187,9 @@ pip install -r server/Servidor/requirements.txt">Copiar</button><code>git clone 
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r server/Servidor/requirements.txt</code></pre>
         <ol start="3">
-          <li>Ejecute el instalador por CLI con las credenciales de su entorno:</li>
+          <li>Ejecute el instalador y complete <code>/install</code>:</li>
         </ol>
-        <pre><button class="copy" data-copy="python server/install_script.py --db <DATABASE_URL> --jwt <JWT_SECRET> --user <ADMIN_USER> --pwd <ADMIN_PASSWORD> [--fcm <FCM_SERVER_KEY>]">Copiar</button><code>python server/install_script.py --db &lt;DATABASE_URL&gt; --jwt &lt;JWT_SECRET&gt; --user &lt;ADMIN_USER&gt; --pwd &lt;ADMIN_PASSWORD&gt; [--fcm &lt;FCM_SERVER_KEY&gt;]</code></pre>
+        <pre><button class="copy" data-copy="python server/install_script.py">Copiar</button><code>python server/install_script.py</code></pre>
         <ol start="4">
           <li>Inicie el servidor en segundo plano (opción simple):</li>
         </ol>
@@ -224,11 +225,11 @@ WantedBy=multi-user.target</code></pre>
         <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\\Scripts\\Activate.ps1
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py --db <DATABASE_URL> --jwt <JWT_SECRET> --user <ADMIN_USER> --pwd <ADMIN_PASSWORD> [--fcm <FCM_SERVER_KEY>]">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
+python server/install_script.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\Scripts\Activate.ps1
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py --db &lt;DATABASE_URL&gt; --jwt &lt;JWT_SECRET&gt; --user &lt;ADMIN_USER&gt; --pwd &lt;ADMIN_PASSWORD&gt; [--fcm &lt;FCM_SERVER_KEY&gt;]</code></pre>
-        <p>Después de configurar el entorno, ejecute:</p>
+python server/install_script.py</code></pre>
+        <p>Abra <code>http://localhost:5000/install</code>, complete el formulario y después ejecute:</p>
         <pre><button class="copy" data-copy="python server/Servidor/server.py">Copiar</button><code>python server/Servidor/server.py</code></pre>
         <details>
           <summary>Servicio en segundo plano con NSSM (opcional)</summary>
@@ -248,7 +249,7 @@ python server/install_script.py --db &lt;DATABASE_URL&gt; --jwt &lt;JWT_SECRET&g
 
     <h2 id="config-servidor">Configuración del Servidor (API)</h2>
     <ul>
-      <li>Instalación por CLI con <code>server/install_script.py</code> crea <code>.env</code>, guarda la clave FCM y ejecuta migraciones (Alembic).</li>
+      <li>Instalador web: <code>/install</code> crea <code>.env</code>, guarda la clave FCM y ejecuta migraciones (Alembic).</li>
       <li>Variables principales:
         <ul>
           <li><code>DATABASE_URL</code> — cadena de conexión (PostgreSQL, MySQL/MariaDB o SQLite).</li>
@@ -308,7 +309,7 @@ npm run build
     <h2 id="notificaciones">Notificaciones (Firebase Cloud Messaging)</h2>
     <ol>
       <li>En <a target="_blank" rel="noopener" href="https://console.firebase.google.com">Firebase Console</a> cree un proyecto o use uno existente.</li>
-      <li>Obtenga la <strong>clave del servidor</strong> (FCM) y proporciónela al ejecutar <code>server/install_script.py</code> con <code>--fcm</code> o configúrela en <code>.env</code> como <code>FCM_SERVER_KEY</code>.</li>
+      <li>Obtenga la <strong>clave del servidor</strong> (FCM) y colóquela durante el paso de <code>/install</code> o en <code>.env</code> como <code>FCM_SERVER_KEY</code>.</li>
       <li>Desde la app Android, asegúrese de registrar el token FCM del dispositivo contra el servidor.</li>
     </ol>
 
@@ -369,7 +370,7 @@ DATABASE_URL=sqlite:///bizon.db</code></pre>
       <li>Requiere HTTPS y tokens JWT válidos.</li>
       <li>Las contraseñas se guardan con hash seguro (bcrypt).</li>
       <li>Revoca tokens comprometidos y usa expiración corta.</li>
-      <li>Elimina o restringe el script de instalación tras la configuración.</li>
+      <li>Deshabilita el instalador <code>/install</code> tras la configuración.</li>
       <li>Limita intentos de inicio de sesión para mitigar fuerza bruta.</li>
     </ul>
 
@@ -390,7 +391,7 @@ DATABASE_URL=sqlite:///bizon.db</code></pre>
 
     <h2 id="solucion-fallos">Solución de problemas</h2>
     <details>
-      <summary>El script <code>server/install_script.py</code> falla al guardar <code>.env</code></summary>
+      <summary>El instalador <code>/install</code> falla al guardar <code>.env</code></summary>
       <p>Verifique permisos de escritura en la carpeta del proyecto y ejecute el proceso con un usuario con privilegios adecuados.</p>
     </details>
     <details>
