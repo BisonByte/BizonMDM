@@ -13,7 +13,7 @@ os.environ['SKIP_ALEMBIC'] = '1'
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 from server import app, init_db, encode_jwt, decode_jwt, get_session
-from models import Admin
+from models import Admin, Device, Client, User, Store
 
 
 class ServerTestCase(unittest.TestCase):
@@ -29,12 +29,43 @@ class ServerTestCase(unittest.TestCase):
             werkzeug.__version__ = "3"
         self.client = app.test_client()
         self.token = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin')
+        with get_session() as db:
+            store = Store(name='S1')
+            db.add(store)
+            db.commit()
+            self.store_id = store.id
 
     def auth_header(self):
         return {'Authorization': f'Bearer {self.token}'}
 
     def client_header(self, device_id='d1'):
-        token = encode_jwt(device_id, os.environ['JWT_SECRET'], role='client', client_id=device_id)
+        with get_session() as db:
+            store = db.query(Store).first()
+            device = db.query(Device).filter_by(device_id=device_id).first()
+            if not device:
+                device = Device(device_id=device_id)
+                db.add(device)
+                db.flush()
+            client = (
+                db.query(Client)
+                .join(Client.devices)
+                .filter(Device.device_id == device_id)
+                .first()
+            )
+            if not client:
+                user = User(username=f'u_{device_id}', role='client', store_id=store.id)
+                user.set_password('pwd')
+                client = Client(user=user, store_id=store.id)
+                client.devices.append(device)
+                db.add(client)
+            db.commit()
+            token = encode_jwt(
+                device_id,
+                os.environ['JWT_SECRET'],
+                role='client',
+                client_id=device_id,
+                store_id=store.id,
+            )
         return {'Authorization': f'Bearer {token}'}
 
     def test_login(self):
@@ -52,12 +83,15 @@ class ServerTestCase(unittest.TestCase):
 
         # Login as client using an existing device
         self.client.post('/admin/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
+        # ensure client association and token creation side-effect
+        self.client_header('d1')
         resp = self.client.post('/login', json={'client_id': 'd1'})
         self.assertEqual(resp.status_code, 200)
         token = resp.get_json()['token']
         payload = decode_jwt(token, os.environ['JWT_SECRET'])
         self.assertEqual(payload['role'], 'client')
         self.assertEqual(payload['client_id'], 'd1')
+        self.assertEqual(payload['store_id'], self.store_id)
 
     def test_expired_token(self):
         expired = encode_jwt('tester', os.environ['JWT_SECRET'], role='admin', expires_in=-1)
