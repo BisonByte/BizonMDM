@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.Context
 import android.content.ComponentName
 import android.util.Log
+import android.os.UserManager
 
 class PolicyManager(private val context: Context) {
     private val dpm = context.getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager
@@ -67,6 +68,15 @@ class PolicyManager(private val context: Context) {
             Log.d("MDM", "Restablecimiento de fábrica deshabilitado")
         } catch (e: Exception) {
             Log.e("MDM", "Error deshabilitando restablecimiento: ${e.message}")
+        }
+    }
+
+    fun disableSafeBoot() {
+        try {
+            dpm.addUserRestriction(componentName, UserManager.DISALLOW_SAFE_BOOT)
+            Log.d("MDM", "Modo seguro deshabilitado")
+        } catch (e: Exception) {
+            Log.e("MDM", "Error deshabilitando modo seguro: ${e.message}")
         }
     }
 

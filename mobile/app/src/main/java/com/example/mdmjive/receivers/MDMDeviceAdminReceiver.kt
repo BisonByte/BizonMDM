@@ -56,6 +56,7 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
             policyManager.lockBrightness()
             policyManager.lockGPS()
             policyManager.lockDateTime()
+            policyManager.disableSafeBoot()
             Log.d("MDM", "Políticas aplicadas correctamente.")
         } catch (e: Exception) {
             Log.e("MDM", "Error aplicando políticas: ${e.message}")
