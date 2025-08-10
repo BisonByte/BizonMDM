@@ -182,10 +182,6 @@ curl -X POST https://mi-servidor/api/devices/42/lock \
 - Deshabilita o protege el endpoint `/install` una vez finalizada la configuración.
 - Limita los intentos de inicio de sesión para mitigar fuerza bruta.
 
-## Documentación adicional
-
-- [Manual técnico completo](docs/manual_tecnico.pdf)
-
 ## Licencia
 
 Este proyecto se distribuye bajo los términos de la licencia MIT. Consulta el archivo `LICENSE` para más información.
