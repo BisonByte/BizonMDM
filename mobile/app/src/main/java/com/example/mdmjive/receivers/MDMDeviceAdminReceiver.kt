@@ -2,11 +2,13 @@ package com.example.mdmjive.receivers
 
 import android.app.admin.DeviceAdminReceiver
 import android.app.admin.DevicePolicyManager
+import android.app.admin.FactoryResetProtectionPolicy
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.content.pm.PackageManager
+import android.accounts.AccountManager
 import com.example.mdmjive.MainActivity
 import android.util.Log
 import com.example.mdmjive.security.PolicyManager
@@ -51,11 +53,28 @@ class MDMDeviceAdminReceiver : DeviceAdminReceiver() {
                 // Bloquear la desinstalación de la propia app
                 setUninstallBlocked(componentName, packageName, true)
             }
+            val frpPolicy = FactoryResetProtectionPolicy.Builder()
+                .addAccount("admin@tu-dominio.com")
+                .build()
+            dpm.setFactoryResetProtectionPolicy(componentName, frpPolicy)
+
             val policyManager = PolicyManager(context)
-            policyManager.disableFactoryReset()
-            policyManager.lockBrightness()
-            policyManager.lockGPS()
-            policyManager.lockDateTime()
+            val accountManager = AccountManager.get(context)
+            val hasFrpAccount = accountManager
+                .getAccountsByType("com.google")
+                .any { it.name == "admin@tu-dominio.com" }
+
+            if (hasFrpAccount) {
+                policyManager.disableFactoryReset()
+                policyManager.lockBrightness()
+                policyManager.lockGPS()
+                policyManager.lockDateTime()
+            } else {
+                Log.w(
+                    "MDM",
+                    "Agregue la cuenta admin@tu-dominio.com antes de bloquear la configuración del usuario."
+                )
+            }
             Log.d("MDM", "Políticas aplicadas correctamente.")
         } catch (e: Exception) {
             Log.e("MDM", "Error aplicando políticas: ${e.message}")
