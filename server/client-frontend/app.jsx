@@ -99,6 +99,8 @@ function DeviceLogs({ id }) {
 
 function DeviceDetails({ id, onBack }) {
   const [info, setInfo] = useState(null);
+  const [qrSrc, setQrSrc] = useState(null);
+  const [showQr, setShowQr] = useState(false);
   useEffect(() => {
     apiFetch(`/devices/${id}`).then(setInfo).catch(console.error);
   }, [id]);
@@ -111,6 +113,21 @@ function DeviceDetails({ id, onBack }) {
       alert('Comando enviado');
     } catch (e) {
       alert('Error enviando comando');
+    }
+  };
+  const fetchQr = async () => {
+    try {
+      const res = await fetch(`/provisioning/qr/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('clientToken') || ''}`
+        }
+      });
+      if (!res.ok) throw new Error('QR error');
+      const blob = await res.blob();
+      setQrSrc(URL.createObjectURL(blob));
+      setShowQr(true);
+    } catch (e) {
+      alert('No se pudo obtener el QR');
     }
   };
   return (
@@ -129,10 +146,42 @@ function DeviceDetails({ id, onBack }) {
         <button onClick={() => sendCommand('reboot')}>Reiniciar</button>
         <button onClick={() => sendCommand('lock')}>Bloquear</button>
         <button onClick={() => sendCommand('screenshot')}>Tomar Captura</button>
+        <button onClick={fetchQr}>Mostrar QR</button>
       </div>
       <h3>Historial de Logs</h3>
       <DeviceLogs id={id} />
       <button onClick={onBack}>Volver</button>
+      {showQr && qrSrc && (
+        <div
+          className="qr-modal"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+          onClick={() => setShowQr(false)}
+        >
+          <div style={{ background: '#fff', padding: '1rem' }} onClick={e => e.stopPropagation()}>
+            <img src={qrSrc} alt="QR de aprovisionamiento" style={{ maxWidth: '100%' }} />
+            <div>
+              <a href={qrSrc} download={`qr-${id}.png`}>Descargar QR</a>
+            </div>
+            <h4>Instalación en Android</h4>
+            <ol>
+              <li>Abrir la app de cámara o escáner QR.</li>
+              <li>Escanear el código y abrir el enlace.</li>
+              <li>Seguir las instrucciones para instalar Bizon MDM.</li>
+            </ol>
+            <button onClick={() => setShowQr(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
