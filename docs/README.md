@@ -2,6 +2,10 @@
 
 La documentación completa de BizonMDM se encuentra en `documentation.html`. Abre este archivo en tu navegador para obtener una guía detallada de instalación y uso.
 
+## Manual técnico completo
+
+Descarga el [manual técnico](manual_tecnico.pdf) con la arquitectura detallada de la plataforma.
+
 ## Novedades
 
 - La carpeta `DEMO/` ahora utiliza un estilo unificado para el panel administrativo y el del cliente.
