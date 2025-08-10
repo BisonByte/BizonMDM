@@ -145,8 +145,8 @@
       <li>Instale dependencias del servidor e inicie el instalador:</li>
     </ol>
     <pre><button class="copy" data-copy="pip install -r server/Servidor/requirements.txt
-python server/install_script.py">Copiar</button><code>pip install -r server/Servidor/requirements.txt
-python server/install_script.py</code></pre>
+python server/install.py">Copiar</button><code>pip install -r server/Servidor/requirements.txt
+python server/install.py</code></pre>
     <ol start="3">
       <li>Abra <code>http://localhost:5000/install</code> y complete el formulario con la cadena de conexión de BD, clave JWT, clave de FCM y un usuario admin inicial.</li>
       <li>Tras finalizar, arranque el servidor:</li>
@@ -189,7 +189,7 @@ pip install -r server/Servidor/requirements.txt</code></pre>
         <ol start="3">
           <li>Ejecute el instalador y complete <code>/install</code>:</li>
         </ol>
-        <pre><button class="copy" data-copy="python server/install_script.py">Copiar</button><code>python server/install_script.py</code></pre>
+        <pre><button class="copy" data-copy="python server/install.py">Copiar</button><code>python server/install.py</code></pre>
         <ol start="4">
           <li>Inicie el servidor en segundo plano (opción simple):</li>
         </ol>
@@ -225,10 +225,10 @@ WantedBy=multi-user.target</code></pre>
         <pre><button class="copy" data-copy="git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\\Scripts\\Activate.ps1
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
+python server/install.py">Copiar</button><code>git clone https://github.com/BisonByte/BizonMDM; cd BizonMDM
 python -m venv .venv; .venv\Scripts\Activate.ps1
 pip install -r server/Servidor/requirements.txt
-python server/install_script.py</code></pre>
+python server/install.py</code></pre>
         <p>Abra <code>http://localhost:5000/install</code>, complete el formulario y después ejecute:</p>
         <pre><button class="copy" data-copy="python server/Servidor/server.py">Copiar</button><code>python server/Servidor/server.py</code></pre>
         <details>

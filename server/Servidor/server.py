@@ -30,7 +30,10 @@ from models import (
     Store,
 )
 from sqlalchemy import text
-from install_script import install_application
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+from install import install_application
 
 app = Flask(__name__)
 
