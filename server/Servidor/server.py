@@ -5,7 +5,7 @@ mantener todo en memoria. Permite opcionalmente proteger los endpoints
 mediante un token firmado mediante JWT.
 """
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory, redirect
 import os
 import json
 import base64
@@ -17,6 +17,16 @@ from functools import wraps
 from datetime import timedelta, date
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
+# Load .env as early as possible so models.py sees DATABASE_URL
+BASE_DIR = os.path.dirname(__file__)
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+if os.path.exists(ENV_PATH):
+    with open(ENV_PATH, 'r', encoding='utf-8') as fh:
+        for line in fh:
+            if '=' in line:
+                k, v = line.strip().split('=', 1)
+                os.environ.setdefault(k, v)
 
 from flask_jwt_extended import (
     JWTManager,
@@ -46,13 +56,6 @@ app = Flask(__name__)
 
 # Configuración ---------------------------------------------------------------
 BASE_DIR = os.path.dirname(__file__)
-ENV_PATH = os.path.join(BASE_DIR, '.env')
-if os.path.exists(ENV_PATH):
-    with open(ENV_PATH, 'r', encoding='utf-8') as fh:
-        for line in fh:
-            if '=' in line:
-                k, v = line.strip().split('=', 1)
-                os.environ.setdefault(k, v)
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 REGISTRATION_TOKEN = os.getenv("REGISTRATION_TOKEN")
@@ -645,7 +648,8 @@ def api_device_wipe():
     device_id = data.get('deviceId')
     if not device_id:
         return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
-    if not _queue_command(device_id, 'device_wipe'):
+    # Mobile app expects action "factory_reset"
+    if not _queue_command(device_id, 'factory_reset'):
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     return jsonify({'success': True, 'message': 'Comando enviado'}), 200
 
@@ -657,7 +661,8 @@ def api_device_reboot():
     device_id = data.get('deviceId')
     if not device_id:
         return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
-    if not _queue_command(device_id, 'device_reboot'):
+    # Mobile app expects action "reboot"
+    if not _queue_command(device_id, 'reboot'):
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     return jsonify({'success': True, 'message': 'Comando enviado'}), 200
 
@@ -667,9 +672,12 @@ def api_device_reboot():
 def api_device_lock():
     data = request.get_json() or {}
     device_id = data.get('deviceId')
+    message = data.get('message')
     if not device_id:
         return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
-    if not _queue_command(device_id, 'device_lock'):
+    # Mobile app expects action "lock_device" and optional message
+    extra = {'message': message} if message else None
+    if not _queue_command(device_id, 'lock_device', extra):
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     return jsonify({'success': True, 'message': 'Comando enviado'}), 200
 
@@ -681,7 +689,36 @@ def api_device_screenshot():
     device_id = data.get('deviceId')
     if not device_id:
         return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
-    if not _queue_command(device_id, 'device_screenshot'):
+    # Mobile app expects action "screenshot"
+    if not _queue_command(device_id, 'screenshot'):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+# Additional admin endpoints to expose mobile app capabilities
+@app.route('/admin/device/hide-app', methods=['POST'])
+@require_admin
+def api_device_hide_app():
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    package = data.get('package')
+    if not device_id or not package:
+        return jsonify({'success': False, 'message': 'deviceId y package requeridos'}), 400
+    # Mobile app expects action "hide_app" with packageName
+    if not _queue_command(device_id, 'hide_app', {'packageName': package}):
+        return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
+    return jsonify({'success': True, 'message': 'Comando enviado'}), 200
+
+
+@app.route('/admin/device/hide-all', methods=['POST'])
+@require_admin
+def api_device_hide_all():
+    data = request.get_json() or {}
+    device_id = data.get('deviceId')
+    if not device_id:
+        return jsonify({'success': False, 'message': 'deviceId requerido'}), 400
+    # Mobile app expects action "hide_all_apps"
+    if not _queue_command(device_id, 'hide_all_apps'):
         return jsonify({'success': False, 'message': 'Dispositivo no encontrado'}), 404
     return jsonify({'success': True, 'message': 'Comando enviado'}), 200
 
@@ -885,6 +922,20 @@ def install():
         return jsonify({"success": True, "message": "Instalación completada."})
     except Exception as e:
         return jsonify({"success": False, "message": str(e)}), 500
+
+ADMIN_DIR = os.path.join(os.path.dirname(BASE_DIR), 'admin-frontend')
+
+@app.route('/panel')
+def admin_panel_root():
+    return redirect('/panel/')
+
+@app.route('/panel/')
+def admin_panel_index():
+    return send_from_directory(ADMIN_DIR, 'index.html')
+
+@app.route('/panel/<path:path>')
+def admin_panel_files(path: str):
+    return send_from_directory(ADMIN_DIR, path)
 
 if __name__ == '__main__':
     import argparse

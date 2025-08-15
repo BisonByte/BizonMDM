@@ -1,17 +1,18 @@
-const { useState, useEffect } = React;
-const { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } = Recharts;
-const { motion } = window.framerMotion || {};
+import { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, CartesianGrid } from 'recharts';
+import { motion } from 'framer-motion';
+import { apiFetch } from '../../App.jsx'; // Assuming App.jsx is in the same directory
 
 function FinancialDashboard() {
   const [summary, setSummary] = useState(null);
   const [devices, setDevices] = useState([]);
 
   useEffect(() => {
-    if (window.apiFetch) {
-      window.apiFetch('/admin/contracts/summary')
+    if (apiFetch) {
+      apiFetch('/api/contracts/summary')
         .then(setSummary)
         .catch(() => setSummary(null));
-      window.apiFetch('/admin/devices')
+      apiFetch('/devices')
         .then(setDevices)
         .catch(() => setDevices([]));
     }
@@ -76,4 +77,4 @@ function FinancialDashboard() {
   );
 }
 
-window.FinancialDashboard = FinancialDashboard;
+export default FinancialDashboard;

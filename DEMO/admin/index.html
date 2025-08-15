@@ -1,48 +1,308 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Panel Administrativo - BizonMDM</title>
+  <title>Panel Administrativo - BizonMDM (DEMO)</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link rel="stylesheet" href="../style.css" />
+  <script>
+    (function(){ try{ const t=localStorage.getItem('demo-theme'); if(t) document.documentElement.setAttribute('data-theme', t);}catch(e){} })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="panel-container">
     <aside class="sidebar">
-      <h2><i class="fa-solid fa-gears"></i> Admin</h2>
+      <h2><span class="logo-badge" style="width:28px;height:28px;display:inline-grid;place-items:center;background:var(--primary);border-radius:6px;margin-right:6px;">B</span> Admin</h2>
       <nav>
         <ul>
-          <li><a href="#"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
-          <li><a href="#"><i class="fa-solid fa-users"></i>Usuarios</a></li>
-          <li><a href="#"><i class="fa-solid fa-sliders"></i>Configuración</a></li>
+          <li><a class="nav-dash" href="#"><i class="fa-solid fa-chart-line"></i>Dashboard</a></li>
+          <li><a class="nav-devs" href="#devices"><i class="fa-solid fa-mobile-screen"></i>Dispositivos</a></li>
+          <li><a class="nav-users" href="#users"><i class="fa-solid fa-users"></i>Usuarios</a></li>
+          <li><a class="nav-conf" href="#config"><i class="fa-solid fa-sliders"></i>Configuración</a></li>
         </ul>
       </nav>
-      <div class="sidebar-footer">&copy; 2024 BizonMDM</div>
+      <div class="sidebar-footer">BizonMDM &middot; DEMO</div>
     </aside>
     <main class="content">
       <div class="topbar">
-        <h1>Dashboard</h1>
-        <div class="profile"><i class="fa-solid fa-user-circle fa-2x"></i></div>
+        <h1 id="page-title">Dashboard</h1>
+        <div class="right">
+          <select id="theme" class="input">
+            <option value="light">Claro</option>
+            <option value="dark">Oscuro</option>
+          </select>
+          <span class="badge" id="server-badge">Servidor simulado</span>
+          <div class="profile"><i class="fa-solid fa-user-circle fa-2x"></i></div>
+        </div>
       </div>
-      <p>Bienvenido al panel administrativo de BizonMDM. Usa el menú para gestionar los dispositivos y usuarios del sistema.</p>
-      <section class="card-grid">
-        <article class="card">
-          <h3>Dispositivos Activos</h3>
-          <p>256</p>
-        </article>
-        <article class="card">
-          <h3>Usuarios Registrados</h3>
-          <p>42</p>
-        </article>
-        <article class="card">
-          <h3>Peticiones de Soporte</h3>
-          <p>5</p>
-        </article>
-      </section>
+
+      <div id="view"></div>
     </main>
   </div>
+
+  <div id="toast" class="toast" style="display:none"></div>
+
+  <script>
+    // --- Fake data ---
+    const demoDevices = Array.from({length: 24}, (_,i)=>({
+      id: 'dev-' + String(i+1).padStart(3,'0'),
+      imei: '3560' + (10000000000 + i),
+      model: ['Galaxy A14','Moto G23','Redmi 12','Galaxy S22'][i%4],
+      serial: 'SN' + (100000 + i),
+      status: {
+        battery: Math.max(5, 100 - (i*3)%100),
+        rootAttempt: i%11===0,
+        wipeDetected: i%17===0,
+        bootloaderTampered: i%19===0,
+        lastSync: Date.now()/1000 - (i*3600)
+      }
+    }));
+    const demoUsers = [
+      {id:1, username:'admin', role:'admin'},
+      {id:2, username:'soporte', role:'user'},
+      {id:3, username:'cliente01', role:'client'}
+    ];
+
+    // Helpers
+    function $(s){ return document.querySelector(s); }
+    function h(html){ const d=document.createElement('div'); d.innerHTML=html.trim(); return d.firstChild; }
+    function toast(msg){ const t=$('#toast'); t.textContent=msg; t.style.display='block'; clearTimeout(t._tid); t._tid=setTimeout(()=>{ t.style.display='none'; }, 2200); }
+
+  // charts registry
+  const charts = {};
+
+    // Theme
+    const themeSel = $('#theme');
+    themeSel.value = document.documentElement.getAttribute('data-theme') || 'light';
+    themeSel.addEventListener('change', ()=>{ document.documentElement.setAttribute('data-theme', themeSel.value); try{localStorage.setItem('demo-theme', themeSel.value);}catch(e){} });
+
+    // Router
+    function route(){
+      const hash = location.hash.replace('#','');
+      if(hash.startsWith('device/')) return viewDeviceDetail(hash.split('/')[1]);
+      if(hash.startsWith('devices')) return viewDevices();
+      if(hash.startsWith('users')) return viewUsers();
+      if(hash.startsWith('config')) return viewConfig();
+      return viewDashboard();
+    }
+    window.addEventListener('hashchange', route);
+
+    // Views
+  function viewDashboard(){
+      $('#page-title').textContent = 'Dashboard';
+      const total = demoDevices.length;
+      const alerts = demoDevices.filter(d => d.status.battery<20 || d.status.rootAttempt || d.status.wipeDetected || d.status.bootloaderTampered).length;
+      const models = [...new Set(demoDevices.map(d=>d.model))].length;
+      const tpl = `
+        <section class="kpi-grid accent">
+          <article class="card glass stat-card"><div><div class="stat-title">Dispositivos</div><div class="stat-value">${total}</div></div><span class="stat-delta delta-pos">+4%</span></article>
+          <article class="card glass stat-card"><div><div class="stat-title">Modelos</div><div class="stat-value">${models}</div></div><span class="stat-delta">=</span></article>
+          <article class="card glass stat-card"><div><div class="stat-title">Alertas</div><div class="stat-value">${alerts}</div></div><span class="stat-delta delta-neg">-2%</span></article>
+          <article class="card glass stat-card"><div><div class="stat-title">Salud</div><div class="stat-value">${Math.max(0,100-alerts)}</div></div><span class="stat-delta delta-pos">+1%</span></article>
+        </section>
+        <div class="row" style="margin-top:1rem;">
+          <div class="col card chart-card">
+            <header><h3>Visitantes del sitio</h3><div class="legend"><span class="dot" style="background:#a855f7"></span>Orgánico <span class="dot" style="background:#60a5fa"></span>Social</div></header>
+      <div style="height:220px; display:grid; place-items:center; color:var(--muted);"><canvas id="chartVisitors" width="400" height="220"></canvas></div>
+          </div>
+          <div class="col card chart-card">
+            <header><h3>Ingresos por tipo de cliente</h3><div class="legend"><span class="dot" style="background:#a855f7"></span>Actuales <span class="dot" style="background:#60a5fa"></span>Nuevos</div></header>
+      <div style="height:220px; display:grid; place-items:center; color:var(--muted);"><canvas id="chartRevenue" width="400" height="220"></canvas></div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:1rem;">
+          <div class="col card chart-card">
+            <header><h3>Tareas completadas</h3><div class="legend"><span class="dot" style="background:#60a5fa"></span>Mensual</div></header>
+      <div style="height:180px; display:grid; place-items:center; color:var(--muted);"><canvas id="chartTasks" width="400" height="180"></canvas></div>
+          </div>
+          <div class="col card">
+            <h3>Productos</h3>
+            <p class="muted">Ejemplos de items con stock simulado.</p>
+            <ul style="margin-top:.5rem; line-height:1.9;">
+              <li>MDM Box &mdash; 52 en stock</li>
+              <li>Licencia Enterprise &mdash; 320 en stock</li>
+            </ul>
+          </div>
+        </div>`;
+      $('#view').innerHTML = tpl;
+      setActive('dash');
+    initCharts();
+    }
+
+  function deviceRow(d){
+      const flags = [ d.status.rootAttempt && 'Root', d.status.wipeDetected && 'Wipe', d.status.bootloaderTampered && 'Boot' ].filter(Boolean).join(' · ');
+      return `<tr>
+    <td><a href="#device/${d.id}">${d.imei}</a></td>
+        <td>${d.model}</td>
+        <td>${d.serial}</td>
+        <td>Bat ${d.status.battery}% ${flags? ' · '+flags : ''}</td>
+        <td class="actions">
+          <button class="btn-outline" data-act="reboot" data-id="${d.id}"><i class="fa-solid fa-rotate"></i> Reboot</button>
+          <button class="btn-outline" data-act="lock" data-id="${d.id}"><i class="fa-solid fa-lock"></i> Lock</button>
+          <button class="btn-outline" data-act="screenshot" data-id="${d.id}"><i class="fa-regular fa-image"></i> Screenshot</button>
+          <button class="btn-primary" data-act="wipe" data-id="${d.id}"><i class="fa-solid fa-broom"></i> Wipe</button>
+        </td>
+      </tr>`;
+    }
+
+    function viewDevices(){
+      $('#page-title').textContent = 'Dispositivos';
+      const header = `<div class="row" style="margin-bottom:1rem"><input id="q" class="input" placeholder="Buscar IMEI, modelo o serial" style="flex:1" /><button id="refresh" class="btn-outline"><i class="fa-solid fa-rotate"></i> Refrescar</button></div>`;
+      const table = `<table class="table">
+        <thead><tr><th>IMEI</th><th>Modelo</th><th>Serial</th><th>Estado</th><th></th></tr></thead>
+        <tbody id="rows">${demoDevices.map(deviceRow).join('')}</tbody>
+      </table>`;
+      $('#view').innerHTML = header + table;
+      setActive('devs');
+      // Interactions
+      $('#q').addEventListener('input', (e)=>{
+        const v = e.target.value.toLowerCase();
+        const rows = demoDevices.filter(d => [d.imei,d.model,d.serial].some(x=>String(x).toLowerCase().includes(v))).map(deviceRow).join('');
+        $('#rows').innerHTML = rows;
+      });
+      $('#view').addEventListener('click', (e)=>{
+        const btn = e.target.closest('button[data-act]'); if(!btn) return;
+        const id = btn.getAttribute('data-id'); const act = btn.getAttribute('data-act');
+        toast(`${act.toUpperCase()} enviado a ${id}`);
+      });
+      $('#refresh').addEventListener('click', ()=> toast('Lista de dispositivos actualizada'));
+    }
+
+    function viewUsers(){
+      $('#page-title').textContent = 'Usuarios';
+      const tpl = `<div class="card"><h3>Usuarios</h3>
+        <table class="table"><thead><tr><th>Usuario</th><th>Rol</th></tr></thead>
+        <tbody>${demoUsers.map(u=>`<tr><td>${u.username}</td><td>${u.role}</td></tr>`).join('')}</tbody></table>
+      </div>`;
+      $('#view').innerHTML = tpl; setActive('users');
+    }
+
+    function viewDeviceDetail(id){
+      const d = demoDevices.find(x=>x.id===id);
+      if(!d){ toast('Dispositivo no encontrado'); return viewDevices(); }
+      $('#page-title').textContent = `Dispositivo ${d.id}`;
+      const flags = [ d.status.rootAttempt && 'Root', d.status.wipeDetected && 'Wipe', d.status.bootloaderTampered && 'Boot' ].filter(Boolean).join(' · ') || 'OK';
+      const tpl = `
+        <div class="row">
+          <div class="col card">
+            <h3>Resumen</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;">
+              <div><div class="muted">IMEI</div><div>${d.imei}</div></div>
+              <div><div class="muted">Modelo</div><div>${d.model}</div></div>
+              <div><div class="muted">Serial</div><div>${d.serial}</div></div>
+              <div><div class="muted">Batería</div><div>${d.status.battery}%</div></div>
+              <div><div class="muted">Flags</div><div>${flags}</div></div>
+              <div><div class="muted">Últ. sync</div><div>${new Date(d.status.lastSync*1000).toLocaleString()}</div></div>
+            </div>
+          </div>
+          <div class="col card">
+            <h3>Acciones</h3>
+            <div class="actions" id="detail-actions">
+              <button class="btn-outline" data-act="reboot" data-id="${d.id}"><i class="fa-solid fa-rotate"></i> Reboot</button>
+              <button class="btn-outline" data-act="lock" data-id="${d.id}"><i class="fa-solid fa-lock"></i> Lock</button>
+              <button class="btn-outline" data-act="screenshot" data-id="${d.id}"><i class="fa-regular fa-image"></i> Screenshot</button>
+              <button class="btn-primary" data-act="wipe" data-id="${d.id}"><i class="fa-solid fa-broom"></i> Wipe</button>
+            </div>
+          </div>
+        </div>
+        <div class="row" style="margin-top:1rem;">
+          <div class="col card chart-card">
+            <header><h3>Uso (CPU/Mem)</h3><div class="legend"><span class="dot" style="background:#a855f7"></span>CPU <span class="dot" style="background:#60a5fa"></span>Mem</div></header>
+            <div style="height:200px; display:grid; place-items:center;"><canvas id="chartDevicePerf" width="400" height="200"></canvas></div>
+          </div>
+          <div class="col card">
+            <h3>Actividad</h3>
+            <ul style="margin-top:.5rem; line-height:1.9;">
+              <li>Policy sync completado</li>
+              <li>App BizonMDM actualizada</li>
+              <li>Captura de pantalla solicitada</li>
+            </ul>
+          </div>
+        </div>`;
+      $('#view').innerHTML = tpl;
+      setActive('devs');
+      // actions handler
+      $('#detail-actions').addEventListener('click', (e)=>{
+        const btn = e.target.closest('button[data-act]'); if(!btn) return;
+        const act = btn.getAttribute('data-act');
+        toast(`${act.toUpperCase()} enviado a ${d.id}`);
+      });
+      // detail chart
+      if(charts.devicePerf){ charts.devicePerf.destroy(); }
+      const ctx = document.getElementById('chartDevicePerf');
+      if(ctx){
+        charts.devicePerf = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: Array.from({length: 12}, (_,i)=>`T${i+1}`),
+            datasets: [
+              { label: 'CPU', data: Array.from({length:12},()=>Math.floor(30+Math.random()*50)), borderColor: '#a855f7', backgroundColor: 'rgba(168,85,247,0.2)', tension:.3 },
+              { label: 'Mem', data: Array.from({length:12},()=>Math.floor(20+Math.random()*40)), borderColor: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.2)', tension:.3 }
+            ]
+          },
+          options: { responsive:true, plugins: { legend: { display:false } }, scales: { x: { display:false }, y: { display:false, suggestedMax: 100 } } }
+        });
+      }
+    }
+
+    function initCharts(){
+      // visitors doughnut
+      const cv = document.getElementById('chartVisitors');
+      if(cv){
+        if(charts.visitors) charts.visitors.destroy();
+        charts.visitors = new Chart(cv, {
+          type: 'doughnut', data: { labels:['Orgánico','Social'], datasets:[{ data:[62,38], backgroundColor:['#a855f7','#60a5fa'] }] },
+          options: { plugins:{ legend:{ display:false } }, cutout: '68%' }
+        });
+      }
+      // revenue stacked bars
+      const cr = document.getElementById('chartRevenue');
+      if(cr){
+        if(charts.revenue) charts.revenue.destroy();
+        charts.revenue = new Chart(cr, {
+          type: 'bar',
+          data: {
+            labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
+            datasets: [
+              { label:'Actuales', data:[12,14,11,15,18,17,19], backgroundColor:'#a855f7', stack:'stack1' },
+              { label:'Nuevos', data:[6,5,7,6,8,9,7], backgroundColor:'#60a5fa', stack:'stack1' }
+            ]
+          },
+          options: { responsive:true, plugins:{ legend:{ display:false } }, scales:{ x:{ stacked:true, display:false }, y:{ stacked:true, display:false } } }
+        });
+      }
+      // tasks line
+      const ct = document.getElementById('chartTasks');
+      if(ct){
+        if(charts.tasks) charts.tasks.destroy();
+        charts.tasks = new Chart(ct, {
+          type: 'line', data: { labels:Array.from({length:14},(_,i)=>i+1), datasets:[{ data:Array.from({length:14},()=>Math.floor(60+Math.random()*30)), borderColor:'#60a5fa', backgroundColor:'rgba(96,165,250,0.25)', fill:true, tension:.35 }] },
+          options: { plugins:{ legend:{ display:false } }, scales:{ x:{ display:false }, y:{ display:false } } }
+        });
+      }
+    }
+
+    function viewConfig(){
+      $('#page-title').textContent = 'Configuración';
+      const tpl = `<div class="card"><h3>Firebase</h3>
+        <div class="row"><input class="input" placeholder="FCM Server Key" style="flex:1"/><button class="btn-primary" id="savefcm">Guardar</button></div>
+      </div>`;
+      $('#view').innerHTML = tpl; setActive('conf');
+      $('#savefcm').addEventListener('click', ()=> toast('Clave guardada (simulado)'));
+    }
+
+    function setActive(key){
+      document.querySelectorAll('.sidebar a').forEach(a=>a.classList.remove('active'));
+      const el = {dash:'.nav-dash', devs:'.nav-devs', users:'.nav-users', conf:'.nav-conf'}[key];
+      if(el) document.querySelector(el).classList.add('active');
+    }
+
+    // start
+    route();
+  </script>
 </body>
 </html>
 

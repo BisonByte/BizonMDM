@@ -1,6 +1,25 @@
 const { useState, useEffect } = React;
 
 function AuditLogs() {
+  const [items, setItems] = useState([]);
+  useEffect(() => {
+    // Placeholder: backend not yet providing system logs; avoid breaking the UI
+    setItems([]);
+  }, []);
+  return (
+    <div>
+      <h2>Logs de auditoría</h2>
+      {items.length === 0 ? <p className="muted">Sin registros</p> : (
+        <ul>{items.map((x,i) => <li key={i}>{JSON.stringify(x)}</li>)}</ul>
+      )}
+    </div>
+  );
+}
+
+window.AuditLogs = AuditLogs;
+const { useState, useEffect } = React;
+
+function AuditLogs() {
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {

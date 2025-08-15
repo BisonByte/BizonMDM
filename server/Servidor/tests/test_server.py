@@ -142,10 +142,10 @@ class ServerTestCase(unittest.TestCase):
     def test_device_control_endpoints(self):
         self.client.post('/admin/devices/register', json={'deviceId': 'd1'}, headers=self.auth_header())
         actions = [
-            ('device_wipe', '/admin/device/wipe'),
-            ('device_reboot', '/admin/device/reboot'),
-            ('device_lock', '/admin/device/lock'),
-            ('device_screenshot', '/admin/device/screenshot'),
+            ('factory_reset', '/admin/device/wipe'),
+            ('reboot', '/admin/device/reboot'),
+            ('lock_device', '/admin/device/lock'),
+            ('screenshot', '/admin/device/screenshot'),
         ]
         for action, endpoint in actions:
             resp = self.client.post(endpoint, json={'deviceId': 'd1'}, headers=self.auth_header())
@@ -198,7 +198,7 @@ class ServerTestCase(unittest.TestCase):
             mock_send.assert_called_once()
             token, payload = mock_send.call_args.args
             self.assertEqual(token, 'tok')
-            self.assertEqual(payload['action'], 'device_reboot')
+            self.assertEqual(payload['action'], 'reboot')
         finally:
             del os.environ['FCM_SERVER_KEY']
 

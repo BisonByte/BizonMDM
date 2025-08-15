@@ -1,0 +1,28 @@
+2025-08-14 05:34:28,287 INFO [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://172.18.0.3:5000
+2025-08-14 05:34:28,289 INFO [33mPress CTRL+C to quit[0m
+2025-08-14 05:34:38,804 INFO 172.18.0.1 - - [14/Aug/2025 05:34:38] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:35:06,863 INFO 172.18.0.1 - - [14/Aug/2025 05:35:06] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:35:08,295 INFO 172.18.0.1 - - [14/Aug/2025 05:35:08] "GET /panel/ HTTP/1.1" 200 -
+2025-08-14 05:35:09,189 INFO 172.18.0.1 - - [14/Aug/2025 05:35:09] "GET /panel/app.jsx HTTP/1.1" 200 -
+2025-08-14 05:35:09,195 INFO 172.18.0.1 - - [14/Aug/2025 05:35:09] "GET /panel/admin/logs/index.jsx HTTP/1.1" 200 -
+2025-08-14 05:35:09,195 INFO 172.18.0.1 - - [14/Aug/2025 05:35:09] "GET /panel/admin/clients/index.jsx HTTP/1.1" 200 -
+2025-08-14 05:35:09,196 INFO 172.18.0.1 - - [14/Aug/2025 05:35:09] "GET /panel/admin/dashboard/index.jsx HTTP/1.1" 200 -
+2025-08-14 05:35:14,195 INFO 172.18.0.1 - - [14/Aug/2025 05:35:14] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:36:00,247 INFO 172.18.0.1 - - [14/Aug/2025 05:36:00] "[36mGET /panel/ HTTP/1.1[0m" 304 -
+2025-08-14 05:36:00,815 INFO 172.18.0.1 - - [14/Aug/2025 05:36:00] "[36mGET /panel/app.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:36:00,823 INFO 172.18.0.1 - - [14/Aug/2025 05:36:00] "[36mGET /panel/admin/dashboard/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:36:00,824 INFO 172.18.0.1 - - [14/Aug/2025 05:36:00] "[36mGET /panel/admin/clients/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:36:00,825 INFO 172.18.0.1 - - [14/Aug/2025 05:36:00] "[36mGET /panel/admin/logs/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:36:14,890 INFO 172.18.0.1 - - [14/Aug/2025 05:36:14] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:37:14,195 INFO 172.18.0.1 - - [14/Aug/2025 05:37:14] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:38:14,213 INFO 172.18.0.1 - - [14/Aug/2025 05:38:14] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:39:14,194 INFO 172.18.0.1 - - [14/Aug/2025 05:39:14] "GET /api/status HTTP/1.1" 200 -
+2025-08-14 05:39:47,647 INFO 172.18.0.1 - - [14/Aug/2025 05:39:47] "[36mGET /panel/ HTTP/1.1[0m" 304 -
+2025-08-14 05:39:48,857 INFO 172.18.0.1 - - [14/Aug/2025 05:39:48] "[36mGET /panel/app.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:39:48,861 INFO 172.18.0.1 - - [14/Aug/2025 05:39:48] "[36mGET /panel/admin/clients/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:39:48,862 INFO 172.18.0.1 - - [14/Aug/2025 05:39:48] "[36mGET /panel/admin/dashboard/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:39:48,862 INFO 172.18.0.1 - - [14/Aug/2025 05:39:48] "[36mGET /panel/admin/logs/index.jsx HTTP/1.1[0m" 304 -
+2025-08-14 05:39:55,649 INFO 172.18.0.1 - - [14/Aug/2025 05:39:55] "[33mGET / HTTP/1.1[0m" 404 -
