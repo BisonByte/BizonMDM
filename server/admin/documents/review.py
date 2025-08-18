@@ -5,11 +5,13 @@ from __future__ import annotations
 from flask import Blueprint, jsonify
 
 from documents.storage import list_pending, set_status
+from ..auth import require_admin
 
 bp = Blueprint("document_review", __name__, url_prefix="/documents")
 
 
 @bp.route("/pending", methods=["GET"])
+@require_admin
 def pending():
     """Lista los documentos que aún no han sido revisados."""
 
@@ -21,6 +23,7 @@ def pending():
 
 
 @bp.route("/approve/<doc_id>", methods=["POST"])
+@require_admin
 def approve(doc_id: str):
     """Aprueba un documento."""
 
@@ -30,6 +33,7 @@ def approve(doc_id: str):
 
 
 @bp.route("/reject/<doc_id>", methods=["POST"])
+@require_admin
 def reject(doc_id: str):
     """Rechaza un documento."""
 
