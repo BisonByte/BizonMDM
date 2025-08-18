@@ -21,7 +21,7 @@ def upload():
     if not file or file.filename == "":
         return jsonify({"success": False, "message": "Archivo requerido"}), 400
     doc = save(file)
-    return jsonify({"success": True, "document_id": doc.id}), 201
+    return jsonify({"success": True, "document_id": doc.id, "url": doc.url}), 201
 
 
 @bp.route("/status/<doc_id>", methods=["GET"])
@@ -31,7 +31,14 @@ def status(doc_id: str):
     doc = get(doc_id)
     if not doc:
         return jsonify({"success": False, "message": "No encontrado"}), 404
-    return jsonify({"id": doc.id, "filename": doc.filename, "status": doc.status})
+    return jsonify(
+        {
+            "id": doc.id,
+            "filename": doc.filename,
+            "status": doc.status,
+            "url": doc.url,
+        }
+    )
 
 
 __all__ = ["bp"]
