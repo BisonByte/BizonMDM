@@ -22,4 +22,6 @@ __pycache__/
 # Frontend
 node_modules/
 dist/
+next/
+public/uploads/
 
