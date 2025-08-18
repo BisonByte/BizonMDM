@@ -7,6 +7,7 @@ from unittest import mock
 
 # Configure database and token before importing the server
 DB_FD, DB_PATH = tempfile.mkstemp()
+os.close(DB_FD)
 os.environ['DATABASE_URL'] = f'sqlite:///{DB_PATH}'
 os.environ['JWT_SECRET'] = 'testsecret'
 os.environ['SKIP_ALEMBIC'] = '1'
@@ -20,7 +21,6 @@ from models import Admin, Device, Client, User, Store
 class ServerTestCase(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
-        os.close(DB_FD)
         os.unlink(DB_PATH)
 
     def setUp(self):

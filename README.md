@@ -64,7 +64,7 @@ Define variables antes de levantar los contenedores:
 - `DATABASE_URL`: cadena de conexión a la base de datos. **Obligatoria**.
 - `BIZON_HOST`: dirección en la que el servidor escucha (opcional, por defecto `0.0.0.0`).
 - `BIZON_PORT`: puerto interno del servidor (opcional, por defecto `5000`).
-- `JWT_SECRET`: clave para firmar tokens JWT.
+- `JWT_SECRET`: clave para firmar tokens JWT. **Obligatoria**.
 - `FCM_SERVER_KEY`: clave de Firebase Cloud Messaging para notificaciones.
 
 ### Detener o eliminar contenedores
