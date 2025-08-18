@@ -5,13 +5,13 @@ const { motion } = window.framerMotion || {};
 const API_BASE = '/api/client';
 
 async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem('clientToken');
   const headers = options.headers ? { ...options.headers } : {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const csrfMatch = document.cookie.match(/(?:^|; )csrf_token=([^;]+)/);
+  if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch[1];
   if (options.body && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-  const res = await fetch(API_BASE + path, { ...options, headers });
+  const res = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
   if (!res.ok) throw new Error('API error');
   return res.json();
 }
@@ -165,10 +165,12 @@ function DeviceDetails({ id, onBack }) {
   };
   const fetchQr = async () => {
     try {
+      const csrfMatch = document.cookie.match(/(?:^|; )csrf_token=([^;]+)/);
+      const headers = {};
+      if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch[1];
       const res = await fetch(`/provisioning/qr/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('clientToken') || ''}`
-        }
+        headers,
+        credentials: 'include'
       });
       if (!res.ok) throw new Error('QR error');
       const blob = await res.blob();

@@ -3,13 +3,13 @@ const { useState, useEffect } = React;
 const API_BASE = '';
 
 async function apiFetch(path, options = {}) {
-  const token = localStorage.getItem('token');
   const headers = options.headers ? { ...options.headers } : {};
-  if (token) headers['Authorization'] = `Bearer ${token}`;
+  const csrfMatch = document.cookie.match(/(?:^|; )csrf_token=([^;]+)/);
+  if (csrfMatch) headers['X-CSRF-Token'] = csrfMatch[1];
   if (options.body && !headers['Content-Type']) {
     headers['Content-Type'] = 'application/json';
   }
-  const res = await fetch(API_BASE + path, { ...options, headers });
+  const res = await fetch(API_BASE + path, { ...options, headers, credentials: 'include' });
   if (!res.ok) throw new Error('API error');
   return res.json();
 }
@@ -461,7 +461,8 @@ function App() {
       const res = await fetch('/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: 'admin', password: 'admin' })
+        body: JSON.stringify({ username: 'admin', password: 'admin' }),
+        credentials: 'include'
       });
       if(!res.ok){ throw new Error('login'); }
       const data = await res.json();
