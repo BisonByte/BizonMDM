@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Optional
+import os
+import shutil
 import uuid
 
 
@@ -16,10 +18,14 @@ class Document:
     filename: str
     content_type: str
     path: Path
+    url: Optional[str] = None
     status: str = "pending"  # pending, approved, rejected
 
 
-_STORAGE_DIR = Path(__file__).resolve().parent / "files"
+_STORAGE_DIR = Path(
+    os.environ.get("EXTERNAL_STORAGE_DIR", Path(__file__).resolve().parent / "files")
+)
+_BASE_URL = os.environ.get("EXTERNAL_STORAGE_URL")
 _METADATA: Dict[str, Document] = {}
 
 # Nos aseguramos de que exista el directorio físico donde guardar los archivos.
@@ -33,7 +39,14 @@ def save(file) -> Document:
     filename = file.filename
     path = _STORAGE_DIR / f"{doc_id}_{filename}"
     file.save(path)
-    doc = Document(id=doc_id, filename=filename, content_type=file.mimetype, path=path)
+    url = f"{_BASE_URL.rstrip('/')}/{path.name}" if _BASE_URL else None
+    doc = Document(
+        id=doc_id,
+        filename=filename,
+        content_type=file.mimetype,
+        path=path,
+        url=url,
+    )
     _METADATA[doc_id] = doc
     return doc
 
@@ -59,10 +72,23 @@ def set_status(doc_id: str, status: str) -> bool:
     return False
 
 
+def migrate_from_public_uploads(src: Path = Path("public/uploads")) -> None:
+    """Mueve archivos existentes desde ``public/uploads`` al almacenamiento externo."""
+
+    if not src.exists():
+        return
+    for file in src.iterdir():
+        if file.is_file():
+            dest = _STORAGE_DIR / file.name
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(file), dest)
+
+
 __all__ = [
     "Document",
     "save",
     "get",
     "list_pending",
     "set_status",
+    "migrate_from_public_uploads",
 ]
