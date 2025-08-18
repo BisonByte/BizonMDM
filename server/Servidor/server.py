@@ -65,9 +65,9 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s",
 )
-
-if JWT_SECRET:
-    app.config["JWT_SECRET_KEY"] = JWT_SECRET
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET environment variable is required")
+app.config["JWT_SECRET_KEY"] = JWT_SECRET
 jwt = JWTManager(app)
 
 
