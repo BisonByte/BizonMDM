@@ -1,21 +1,26 @@
 """Vistas para gestionar permisos de acciones sobre dispositivos.
 
-Proporciona un pequeño formulario (endpoint JSON) para habilitar o
-inhabilitar acciones por tienda o contrato. La información se almacena en
-memoria para simplificar el ejemplo.
+Los permisos se almacenan en una tabla de base de datos. Opcionalmente se
+cachean en memoria para acelerar las consultas. Cada vez que se actualizan los
+permisos de una entidad, la caché correspondiente se invalida.
 """
 
 from __future__ import annotations
 
+import os
 from typing import Dict, Set, Tuple
+
 from flask import Blueprint, jsonify, request
 
-from device.permissions import AVAILABLE_ACTIONS
+from ...device.permissions import AVAILABLE_ACTIONS
+from .models import Permission, SessionLocal, init_db
 
 bp = Blueprint("permissions", __name__, url_prefix="/permissions")
 
-# Almacén en memoria: {(tipo, id): {acciones}}
-_ALLOWED_ACTIONS: Dict[Tuple[str, str], Set[str]] = {}
+CACHE_ENABLED = os.getenv("PERMISSIONS_CACHE", "1") == "1"
+_cache: Dict[Tuple[str, str], Set[str]] = {}
+
+init_db()
 
 
 def _key(entity_type: str, entity_id: str) -> Tuple[str, str]:
@@ -43,14 +48,40 @@ def configure_permissions():
             jsonify({"success": False, "invalid": invalid}),
             400,
         )
-    _ALLOWED_ACTIONS[_key(entity_type, entity_id)] = set(actions)
+    with SessionLocal() as session:
+        session.query(Permission).filter_by(
+            entity_type=entity_type, entity_id=str(entity_id)
+        ).delete()
+        session.add_all(
+            [
+                Permission(
+                    entity_type=entity_type, entity_id=str(entity_id), action=a
+                )
+                for a in actions
+            ]
+        )
+        session.commit()
+    if CACHE_ENABLED:
+        _cache.pop(_key(entity_type, entity_id), None)
     return jsonify({"success": True})
 
 
 def get_allowed_actions(entity_type: str, entity_id: str) -> Set[str]:
     """Obtiene las acciones permitidas para la entidad indicada."""
 
-    return _ALLOWED_ACTIONS.get(_key(entity_type, entity_id), set())
+    key = _key(entity_type, entity_id)
+    if CACHE_ENABLED and key in _cache:
+        return _cache[key]
+    with SessionLocal() as session:
+        rows = (
+            session.query(Permission.action)
+            .filter_by(entity_type=entity_type, entity_id=str(entity_id))
+            .all()
+        )
+        actions = {r[0] for r in rows}
+    if CACHE_ENABLED:
+        _cache[key] = actions
+    return actions
 
 
 __all__ = ["bp", "get_allowed_actions"]
