@@ -16,6 +16,7 @@ import urllib.request
 from functools import wraps
 from datetime import timedelta, date
 import sys
+import secrets
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 # Load .env as early as possible so models.py sees DATABASE_URL
@@ -32,8 +33,6 @@ from flask_jwt_extended import (
     JWTManager,
     create_access_token,
     decode_token,
-    verify_jwt_in_request,
-    get_jwt,
 )
 
 from models import (
@@ -119,17 +118,35 @@ def decode_jwt(token: str, secret: str) -> dict:
 
 
 def require_auth(request) -> dict | None:
-    """Valida el encabezado Authorization mediante JWT si está configurado.
+    """Valida la autenticación basada en JWT.
 
-    Devuelve el payload con los campos ``role`` y ``client_id`` si el token es
-    válido. Si la autenticación no está habilitada, retorna un diccionario vacío.
-    En caso de fallo devuelve ``None``.
+    Si ``JWT_SECRET`` no está configurado devuelve un diccionario vacío. Se
+    intenta primero obtener el token desde una cookie ``token`` para soportar
+    sesiones basadas en cookies. En ese caso también se verifica un token CSRF
+    enviado en la cabecera ``X-CSRF-Token`` que debe coincidir con la cookie
+    ``csrf_token``.
+
+    Como medida de compatibilidad, si no se encuentra la cookie se revisa el
+    encabezado ``Authorization`` y no se exige CSRF.
     """
     if not JWT_SECRET:
         return {}
+
+    token = request.cookies.get("token")
+    if token:
+        csrf_cookie = request.cookies.get("csrf_token")
+        csrf_header = request.headers.get("X-CSRF-Token")
+        if not csrf_cookie or csrf_cookie != csrf_header:
+            return None
+    else:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1]
+        else:
+            return None
+
     try:
-        verify_jwt_in_request()
-        return get_jwt()
+        return decode_jwt(token, JWT_SECRET)
     except Exception:  # noqa: BLE001
         return None
 
@@ -299,11 +316,19 @@ def login():
             admin = db.query(Admin).filter_by(username=username).first()
             if admin and admin.check_password(password):
                 token = encode_jwt(username, JWT_SECRET, role='admin')
-                return jsonify({'token': token}), 200
+                csrf_token = secrets.token_hex(16)
+                resp = jsonify({'token': token})
+                resp.set_cookie('token', token, httponly=True, secure=True, samesite='Lax')
+                resp.set_cookie('csrf_token', csrf_token, httponly=False, secure=True, samesite='Lax')
+                return resp, 200
             user = db.query(User).filter_by(username=username).first()
             if user and user.check_password(password):
                 token = encode_jwt(username, JWT_SECRET, role='user', store_id=user.store_id)
-                return jsonify({'token': token}), 200
+                csrf_token = secrets.token_hex(16)
+                resp = jsonify({'token': token})
+                resp.set_cookie('token', token, httponly=True, secure=True, samesite='Lax')
+                resp.set_cookie('csrf_token', csrf_token, httponly=False, secure=True, samesite='Lax')
+                return resp, 200
         if client_id:
             device = db.query(Device).filter_by(device_id=client_id).first()
             if device and device.clients:
@@ -315,7 +340,11 @@ def login():
                     client_id=client_id,
                     store_id=store_id,
                 )
-                return jsonify({'token': token}), 200
+                csrf_token = secrets.token_hex(16)
+                resp = jsonify({'token': token})
+                resp.set_cookie('token', token, httponly=True, secure=True, samesite='Lax')
+                resp.set_cookie('csrf_token', csrf_token, httponly=False, secure=True, samesite='Lax')
+                return resp, 200
     return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
 
 
