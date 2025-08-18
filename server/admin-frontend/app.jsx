@@ -1,6 +1,6 @@
 const { useState, useEffect } = React;
 
-const API_BASE = '';
+const API_BASE = process.env.API_BASE || '';
 
 async function apiFetch(path, options = {}) {
   const headers = options.headers ? { ...options.headers } : {};

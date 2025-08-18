@@ -2,7 +2,7 @@ const { useState, useEffect } = React;
 const { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } = Recharts;
 const { motion } = window.framerMotion || {};
 
-const API_BASE = '/api/client';
+const API_BASE = process.env.API_BASE || '/api/client';
 
 async function apiFetch(path, options = {}) {
   const headers = options.headers ? { ...options.headers } : {};

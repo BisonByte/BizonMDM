@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Aplicación web de administración para Bizon MDM",
   "scripts": {
+    "build": "esbuild app.jsx --bundle --define:process.env.API_BASE='$API_BASE' --outfile=app.js",
     "test": "echo 'No tests'"
   },
   "keywords": [],

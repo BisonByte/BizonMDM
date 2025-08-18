@@ -48,6 +48,28 @@ Compila usando el flavor deseado:
 ./gradlew assembleProdRelease # usa PROD_BASE_URL
 ```
 
+### Configurar la URL de la API en los frontends
+
+Las interfaces web leen la dirección de la API desde la variable de entorno `API_BASE` (o `VITE_API_BASE` en el caso del proyecto basado en Vite).
+
+- **Panel de administración y cliente:**
+
+  ```bash
+  cd server/admin-frontend   # o server/client-frontend
+  npm install
+  API_BASE=https://mi-servidor/api npm run build
+  ```
+
+- **Frontend React con Vite:**
+
+  ```bash
+  cd server/temp_admin_frontend
+  npm install
+  VITE_API_BASE=https://mi-servidor/api npm run build
+  ```
+
+Durante el despliegue, ajusta estas variables para apuntar al endpoint de tu servidor.
+
 ## Instalación rápida
 
 ```bash
